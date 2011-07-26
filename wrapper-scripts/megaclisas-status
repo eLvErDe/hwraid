@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: megaclisas-status,v 1.1 2011/01/14 09:10:44 root Exp $
+# $Id: megaclisas-status,v 1.2 2011/07/26 16:52:51 root Exp $
 
 import os
 import re
@@ -84,7 +84,7 @@ def returnDiskInfo(output,controllerid):
     state = 'Offline'
     model = 'Unknown'
     for line in output:
-        if re.match(r'^Virtual Disk: [0-9]+.*$',line.strip()):
+        if re.match(r'^Virtual Drive: [0-9]+.*$',line.strip()):
             arrayid = line.split('(')[0].split(':')[1].strip()
         if re.match(r'Firmware state: .*$',line.strip()):
             state = line.split(':')[1].strip()
@@ -150,8 +150,7 @@ while controllerid < controllernumber:
     output = getOutput(cmd)
     arraynumber = returnArrayNumber(output)
     #### BUG: -LdPdInfo shows all PD on the adapter, not just for said LD..
-    ####  while arrayid < arraynumber:
-    while arrayid < 1:
+    while arrayid <= arraynumber:
         cmd = 'megacli -LdPdInfo -a'+str(controllerid)+' -NoLog'
         output = getOutput(cmd)
         arraydisk = returnDiskInfo(output,controllerid)
