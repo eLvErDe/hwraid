@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: megaclisas-status,v 1.2 2011/07/26 16:52:51 root Exp $
+# $Id: megaclisas-status,v 1.3 2012/01/27 11:59:08 root Exp $
 
 import os
 import re
@@ -41,7 +41,7 @@ def returnControllerModel(output):
 def returnArrayNumber(output):
     i = 0
     for line in output:
-	if re.match(r'^Virtual Disk.*$',line.strip()):
+	if re.match(r'^Virtual Drive:.*$',line.strip()):
             i += 1
     return i
 
@@ -49,10 +49,14 @@ def returnArrayInfo(output,controllerid,arrayid):
     id = 'c'+str(controllerid)+'u'+str(arrayid)
     operationlinennumber = False
     linenumber = 0
+    type = ''
+    size = ''
+    state = ''
     for line in output:
-        if re.match(r'^RAID Level:.*$',line.strip()):
-            type = 'RAID'+line.strip().split(':')[1].split(',')[0].split('-')[1].strip()
-        if re.match(r'^Size:.*$',line.strip()):
+        if re.match(r'^RAID Level.*?:.*$',line.strip()):
+            # type = 'RAID'+line.strip().split(':')[1].split(',')[0].split('-')[1].strip()
+            type = 'RAID'+line.strip().split(':')[1]
+        if re.match(r'^Size.*?:.*$',line.strip()):
             # Size reported in MB
             if re.match(r'^.*MB$',line.strip().split(':')[1]):
                 size = line.strip().split(':')[1].strip('MB').strip()
@@ -65,9 +69,9 @@ def returnArrayInfo(output,controllerid,arrayid):
             else:
                 size = line.strip().split(':')[1].strip('GB').strip()
                 size = str(int(round((float(size)))))+'G'
-        if re.match(r'^State:.*$',line.strip()):
+        if re.match(r'^State.*?:.*$',line.strip()):
             state = line.strip().split(':')[1].strip()
-        if re.match(r'^Ongoing Progresses:.*$',line.strip()):
+        if re.match(r'^Ongoing Progresses.*?:.*$',line.strip()):
 	    operationlinennumber = linenumber
         linenumber += 1
         if operationlinennumber:
@@ -86,19 +90,20 @@ def returnDiskInfo(output,controllerid):
     for line in output:
         if re.match(r'^Virtual Drive: [0-9]+.*$',line.strip()):
             arrayid = line.split('(')[0].split(':')[1].strip()
+        if re.match(r'PD: [0-9]+ Information.*$',line.strip()):
+            olddiskid = diskid
+            diskid = line.split()[1].strip()
+            if olddiskid != False:
+               state = 'Offline'
+               model = 'Unknown'
         if re.match(r'Firmware state: .*$',line.strip()):
             state = line.split(':')[1].strip()
         if re.match(r'Inquiry Data: .*$',line.strip()):
             model = line.split(':')[1].strip()
 	    model = re.sub(' +', ' ', model)
-        if re.match(r'PD: [0-9]+ Information.*$',line.strip()):
-            olddiskid = diskid
-            diskid = line.split()[1].strip()
-            if olddiskid != False:
-                table.append([str(arrayid), str(olddiskid), state, model])
-                state = 'Offline'
-		model = 'Unknown'
-    table.append([str(arrayid), str(diskid), state, model])
+	    if model != 'Unknown':
+		#### print str(arrayid)+' '+str(diskid)+' '+str(olddiskid)
+		table.append([str(arrayid), str(diskid), state, model])
     return table
 
 cmd = 'megacli -adpCount -NoLog'
@@ -109,7 +114,7 @@ bad = False
 
 # List available controller
 if printcontroller:
-    print '-- Controller informations --'
+    print '-- Controller information --'
     print '-- ID | Model'
     controllerid = 0
     while controllerid < controllernumber:
@@ -150,13 +155,12 @@ while controllerid < controllernumber:
     output = getOutput(cmd)
     arraynumber = returnArrayNumber(output)
     #### BUG: -LdPdInfo shows all PD on the adapter, not just for said LD..
-    while arrayid <= arraynumber:
-        cmd = 'megacli -LdPdInfo -a'+str(controllerid)+' -NoLog'
-        output = getOutput(cmd)
-        arraydisk = returnDiskInfo(output,controllerid)
-        for array in arraydisk:
-            print 'c'+str(controllerid)+'u'+array[0]+'p'+array[1]+' | '+array[3]+' | '+array[2]
-	arrayid += 1
+    #### while arrayid <= arraynumber:
+    cmd = 'megacli -LdPdInfo -a'+str(controllerid)+' -NoLog'
+    output = getOutput(cmd)
+    arraydisk = returnDiskInfo(output,controllerid)
+    for array in arraydisk:
+       print 'c'+str(controllerid)+'u'+array[0]+'p'+array[1]+' | '+array[3]+' | '+array[2]
     controllerid += 1
 
 if bad:
