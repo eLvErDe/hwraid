@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: megaclisas-status,v 1.3 2012/01/27 11:59:08 root Exp $
+# $Id: megaclisas-status,v 1.4 2012/01/27 12:13:18 root Exp $
 
 import os
 import re
@@ -87,6 +87,7 @@ def returnDiskInfo(output,controllerid):
     table = []
     state = 'Offline'
     model = 'Unknown'
+    speed = 'Unknown'
     for line in output:
         if re.match(r'^Virtual Drive: [0-9]+.*$',line.strip()):
             arrayid = line.split('(')[0].split(':')[1].strip()
@@ -101,9 +102,11 @@ def returnDiskInfo(output,controllerid):
         if re.match(r'Inquiry Data: .*$',line.strip()):
             model = line.split(':')[1].strip()
 	    model = re.sub(' +', ' ', model)
+        if re.match(r'Device Speed: .*$',line.strip()):
+            speed = line.split(':')[1].strip()
 	    if model != 'Unknown':
 		#### print str(arrayid)+' '+str(diskid)+' '+str(olddiskid)
-		table.append([str(arrayid), str(diskid), state, model])
+		table.append([str(arrayid), str(diskid), state, model, speed])
     return table
 
 cmd = 'megacli -adpCount -NoLog'
@@ -160,7 +163,7 @@ while controllerid < controllernumber:
     output = getOutput(cmd)
     arraydisk = returnDiskInfo(output,controllerid)
     for array in arraydisk:
-       print 'c'+str(controllerid)+'u'+array[0]+'p'+array[1]+' | '+array[3]+' | '+array[2]
+       print 'c'+str(controllerid)+'u'+array[0]+'p'+array[1]+' | '+array[3]+' | '+array[2]+' ('+array[4]+')'
     controllerid += 1
 
 if bad:
