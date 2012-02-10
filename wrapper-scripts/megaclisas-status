@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: megaclisas-status,v 1.5 2012/02/10 15:52:33 root Exp $
+# $Id: megaclisas-status,v 1.6 2012/02/10 16:00:59 root Exp $
 
 import os
 import re
@@ -54,8 +54,8 @@ def returnArrayInfo(output,controllerid,arrayid):
     state = ''
     for line in output:
         if re.match(r'^RAID Level.*?:.*$',line.strip()):
-            # type = 'RAID'+line.strip().split(':')[1].split(',')[0].split('-')[1].strip()
-            type = 'RAID'+line.strip().split(':')[1]
+            type = 'RAID-'+line.strip().split(':')[1].split(',')[0].split('-')[1].strip()
+            # type = 'RAID'+line.strip().split(':')[1]
         if re.match(r'^Size.*?:.*$',line.strip()):
             # Size reported in MB
             if re.match(r'^.*MB$',line.strip().split(':')[1]):
@@ -107,6 +107,7 @@ def returnDiskInfo(output,controllerid):
             speed = line.split(':')[1].strip()
         if re.match(r'Drive Temperature :.*$',line.strip()):
             temp = line.split(':')[1].strip()
+            temp = re.sub('\(.*\)', '', temp)
 	    if model != 'Unknown':
 		#### print str(arrayid)+' '+str(diskid)+' '+str(olddiskid)
 		table.append([str(arrayid), str(diskid), state, model, speed, temp])
@@ -152,7 +153,7 @@ if printarray:
     print ''
 
 print '-- Disks informations'
-print '-- ID | Model | Status'
+print '-- ID | Model | Status | Speed | Temperature'
 
 controllerid = 0
 while controllerid < controllernumber:
