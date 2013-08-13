@@ -1,4 +1,4 @@
-hwraid
+HWRaid
 ======
 
-HWRaid: Free code from http://hwraid.le-vert.net
+Free code from http://hwraid.le-vert.net
