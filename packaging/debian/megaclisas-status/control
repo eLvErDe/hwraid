@@ -1,0 +1,15 @@
+Source: megaclisas-status
+Section: admin
+Priority: optional
+Maintainer: Adam Cécile (Le_Vert) <gandalf@le-vert.net>
+Build-Depends: debhelper (>= 5)
+Standards-Version: 3.9.2
+
+Package: megaclisas-status
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, python, lsb-base, daemon, bsd-mailx | mailx, megacli
+Description: get RAID status out of LSI MegaRAID SAS HW RAID controllers
+ The megacli-status software is a query tool to access the running
+ configuration and status of LSI MegaRAID SAS HBAs.
+ .
+ It uses LSI MegaCli proprietary command line tool.

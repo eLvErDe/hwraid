@@ -1,0 +1,208 @@
+#!/usr/bin/python
+
+import os
+import re
+import sys
+
+binarypath = "/usr/sbin/megacli"
+
+if len(sys.argv) > 2:
+	print 'Usage: megaclisas-status [--nagios]'
+	sys.exit(1)
+
+nagiosmode=False
+nagiosoutput=''
+nagiosgoodarray=0
+nagiosbadarray=0
+nagiosgooddisk=0
+nagiosbaddisk=0
+
+# Check command line arguments to enable nagios or not
+if len(sys.argv) > 1:
+	if sys.argv[1] == '--nagios':
+		nagiosmode=True
+	else:
+		print 'Usage: megaclisas-status [-nagios]'
+		sys.exit(1)
+
+# Check binary exists (and +x), if not print an error message
+# or return UNKNOWN nagios error code
+if os.path.exists(binarypath) and os.access(binarypath, os.X_OK):
+	pass
+else:
+	if nagiosmode:
+		print 'UNKNOWN - Cannot find '+binarypath
+	else:
+		print 'Cannot find '+binarypath+'. Please install it.'
+	sys.exit(3)
+
+# Get command output
+def getOutput(cmd):
+	output = os.popen(cmd)
+	lines = []
+	for line in output:
+		if not re.match(r'^$',line.strip()):
+			lines.append(line.strip())
+	return lines
+
+def returnControllerNumber(output):
+	for line in output:
+		if re.match(r'^Controller Count.*$',line.strip()):
+			return int(line.split(':')[1].strip().strip('.'))
+
+def returnControllerModel(output):
+	for line in output:
+		if re.match(r'^Product Name.*$',line.strip()):
+			return line.split(':')[1].strip()
+
+def returnArrayNumber(output):
+	i = 0
+	for line in output:
+		if re.match(r'^Number of Virtual (Disk|Drive).*$',line.strip()):
+			i = line.strip().split(':')[1].strip()
+	return i
+
+def returnArrayInfo(output,controllerid,arrayid):
+	id = 'c'+str(controllerid)+'u'+str(arrayid)
+	operationlinennumber = False
+	linenumber = 0
+
+	for line in output:
+		if re.match(r'Number Of Drives\s*((per span))?:.*[0-9]+$',line.strip()):
+			ldpdcount = line.split(':')[1].strip()
+		if re.match(r'Span Depth *:.*[0-9]+$',line.strip()):
+			spandepth = line.split(':')[1].strip()
+		if re.match(r'^RAID Level\s*:.*$',line.strip()):
+			raidlevel = line.strip().split(':')[1].split(',')[0].split('-')[1].strip()
+			type = 'RAID' + raidlevel
+		if re.match(r'^Size\s*:.*$',line.strip()):
+			# Size reported in MB
+			if re.match(r'^.*MB$',line.strip().split(':')[1]):
+				size = line.strip().split(':')[1].strip('MB').strip()
+				size = str(int(round((float(size) / 1000))))+'G'
+			# Size reported in TB
+			elif re.match(r'^.*TB$',line.strip().split(':')[1]):
+				size = line.strip().split(':')[1].strip('TB').strip()
+				size = str(int(round((float(size) * 1000))))+'G'
+			# Size reported in GB (default)
+			else:
+				size = line.strip().split(':')[1].strip('GB').strip()
+				size = str(int(round((float(size)))))+'G'
+		if re.match(r'^State\s*:.*$',line.strip()):
+			state = line.strip().split(':')[1].strip()
+		if re.match(r'^Ongoing Progresses\s*:.*$',line.strip()):
+			operationlinennumber = linenumber
+		linenumber += 1
+		if operationlinennumber:
+			inprogress = output[operationlinennumber+1]
+		else:
+			inprogress = 'None'
+
+	if ldpdcount and (int(spandepth) > 1):
+		ldpdcount = int(ldpdcount) * int(spandepth)
+		if int(raidlevel) < 10:
+			type = type + "0"
+
+	return [id,type,size,state,inprogress]
+
+def returnDiskInfo(output,controllerid):
+	arrayid = False
+	diskid = False
+	table = []
+	state = 'undef'
+	model = 'undef'
+	for line in output:
+		if re.match(r'^Virtual (Disk|Drive): [0-9]+.*$',line.strip()):
+			arrayid = line.split('(')[0].split(':')[1].strip()
+		if re.match(r'Firmware state: .*$',line.strip()):
+			state = line.split(':')[1].strip()
+		if re.match(r'Inquiry Data: .*$',line.strip()):
+			model = line.split(':')[1].strip()
+			model = re.sub(' +', ' ', model)
+		if re.match(r'PD: [0-9]+ Information.*$',line.strip()):
+			diskid = line.split()[1].strip()
+
+		if arrayid != False and state != 'undef' and model != 'undef' and diskid != False:
+			table.append([str(arrayid), str(diskid), state, model])
+			state = 'undef'
+			model = 'undef'
+
+	return table
+
+cmd = binarypath+' -adpCount -NoLog'
+output = getOutput(cmd)
+controllernumber = returnControllerNumber(output)
+
+bad = False
+
+# List available controller
+if not nagiosmode:
+	print '-- Controller informations --'
+	print '-- ID | Model'
+	controllerid = 0
+	while controllerid < controllernumber:
+		cmd = binarypath+' -AdpAllInfo -a'+str(controllerid)+' -NoLog'
+		output = getOutput(cmd)
+		controllermodel = returnControllerModel(output)
+		print 'c'+str(controllerid)+' | '+controllermodel
+		controllerid += 1
+	print ''
+
+controllerid = 0
+if not nagiosmode:
+	print '-- Arrays informations --'
+	print '-- ID | Type | Size | Status | InProgress'
+
+while controllerid < controllernumber:
+	arrayid = 0
+	cmd = binarypath+' -LdGetNum -a'+str(controllerid)+' -NoLog'
+	output = getOutput(cmd)
+	arraynumber = returnArrayNumber(output)
+	while arrayid < int(arraynumber):
+		cmd = binarypath+' -LDInfo -l'+str(arrayid)+' -a'+str(controllerid)+' -NoLog'
+		output = getOutput(cmd)
+		arrayinfo = returnArrayInfo(output,controllerid,arrayid)
+		if not nagiosmode:
+			print arrayinfo[0]+' | '+arrayinfo[1]+' | '+arrayinfo[2]+' | '+arrayinfo[3]+' | '+arrayinfo[4]
+		if not arrayinfo[3] == 'Optimal':
+			bad = True
+			nagiosbadarray=nagiosbadarray+1
+		else:
+			nagiosgoodarray=nagiosgoodarray+1
+		arrayid += 1
+	controllerid += 1
+if not nagiosmode:
+	print ''
+
+if not nagiosmode:
+	print '-- Disks informations'
+	print '-- ID | Model | Status'
+
+controllerid = 0
+while controllerid < controllernumber:
+	arrayid = 0
+	cmd = binarypath+' -LDInfo -lall -a'+str(controllerid)+' -NoLog'
+	output = getOutput(cmd)
+	cmd = binarypath+' -LdPdInfo -a'+str(controllerid)+' -NoLog'
+	output = getOutput(cmd)
+	arraydisk = returnDiskInfo(output,controllerid)
+	for array in arraydisk:
+		if not array[2] == 'Online' and not array[2] == 'Online, Spun Up':
+			bad=True
+			nagiosbaddisk=nagiosbaddisk+1
+		else:
+			nagiosgooddisk=nagiosgooddisk+1
+		if not nagiosmode:
+			print 'c'+str(controllerid)+'u'+array[0]+'p'+array[1]+' | '+array[3]+' | '+array[2]
+	controllerid += 1
+
+if nagiosmode:
+	if bad:
+		print 'RAID ERROR - Arrays: OK:'+str(nagiosgoodarray)+' Bad:'+str(nagiosbadarray)+' - Disks: OK:'+str(nagiosgooddisk)+' Bad:'+str(nagiosbaddisk)
+		sys.exit(2)
+	else:
+		print 'RAID OK - Arrays: OK:'+str(nagiosgoodarray)+' Bad:'+str(nagiosbadarray)+' - Disks: OK:'+str(nagiosgooddisk)+' Bad:'+str(nagiosbaddisk)
+else:
+	if bad:
+		print '\nThere is at least one disk/array in a NOT OPTIMAL state.'
+		sys.exit(1)

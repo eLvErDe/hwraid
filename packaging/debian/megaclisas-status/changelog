@@ -1,0 +1,59 @@
+megaclisas-status (0.9) unstable; urgency=low
+
+  * Fix the duplicate disk issue (Closes: #26).
+    Many thanks to Nicolas Raspail who provided a patch.
+  * Will now fail if megacli binary cannot be found.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Thu, 02 Feb 2012 13:38:15 +0100
+
+megaclisas-status (0.8) unstable; urgency=low
+
+  * Support megacli 8.02.16.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Mon, 30 Jan 2012 20:59:13 +0100
+
+megaclisas-status (0.7) unstable; urgency=low
+
+  * Add nagios mode (--nagios).
+  * improve disk error reporting.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Mon, 31 Oct 2011 15:58:39 +0100
+
+megaclisas-status (0.6) unstable; urgency=low
+
+  * Import init script changes from mpt-status-1.2.0-7 package:
+    - Script won't stop anymore because of set -e
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Wed, 11 May 2011 14:52:38 +0200
+
+megaclisas-status (0.5) unstable; urgency=low
+
+  * Some new cards report array size in TB.
+  * Bump Standards-Version to 3.8.2.
+  * Improve debian/copyright.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Mon, 27 Jul 2009 10:28:24 +0200
+
+megaclisas-status (0.4) unstable; urgency=low
+
+  * Fix a nasty bug with cards reporting size in GB instead of MB (Closes: #2).
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Tue, 19 May 2009 18:42:06 +0200
+
+megaclisas-status (0.3) unstable; urgency=low
+
+  * Depends on megacli instead of megaclisas.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Thu, 11 Dec 2008 17:41:18 +0100
+
+megaclisas-status (0.2) unstable; urgency=low
+
+  * Packaging cleanup.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Thu, 21 Aug 2008 15:36:27 +0200
+
+megaclisas-status (0.1) unstable; urgency=low
+
+  * Initial release.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Tue, 11 Dec 2007 17:06:56 +0100

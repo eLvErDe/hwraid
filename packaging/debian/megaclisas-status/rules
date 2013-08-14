@@ -1,0 +1,40 @@
+#!/usr/bin/make -f
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+build: build-arch build-indep
+build-arch:
+build-indep:
+
+clean:
+	dh_testdir
+	dh_testroot
+	dh_clean 
+
+install:
+	dh_testdir
+	dh_testroot
+	dh_clean -k 
+	dh_installdirs
+
+binary-arch: build install
+binary-indep: build install
+	dh_testdir -i
+	dh_testroot -i
+	dh_installchangelogs -i
+	dh_installdocs -i
+	dh_install -i
+	dh_installinit -i --name megaclisas-statusd
+	dh_link -i
+	dh_strip -i
+	dh_compress -i
+	dh_fixperms -i
+	dh_installdeb -i
+	dh_shlibdeps -i
+	dh_gencontrol -i
+	dh_md5sums -i
+	dh_builddeb -i
+
+binary: binary-indep binary-arch
+.PHONY: build clean binary-indep binary-arch binary install

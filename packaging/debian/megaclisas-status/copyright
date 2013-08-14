@@ -1,0 +1,25 @@
+This package was debianized by Adam Cécile (Le_Vert) <gandalf@le-vert.net> on
+Tue, 11 Dec 2007 17:06:56 +0100.
+
+It was downloaded from http://hwraid.le-vert.net
+
+Copyright Holder:
+  Copyright (C) 2007-2009 Adam Cécile (Le_Vert) <gandalf@le-vert.net>
+
+License:
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License, version 2
+as published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANDABILITY of FITNESS FOR A PARTICULAR PURPOSE.
+See the GNU General Public License for details.
+
+On Debian GNU/Linux systems, the complete text of the GNU General
+Public License can be found in `/usr/share/common-licenses/GPL-2'.
+
+This package is highly based on Steffen Joeris <white@debian.org> works done
+for the mpt-status package.
+Thanks a lot Steffen!
