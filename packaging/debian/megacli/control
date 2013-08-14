@@ -1,0 +1,16 @@
+Source: megacli
+Section: admin
+Priority: optional
+Maintainer: Adam Cécile (Le_Vert) <gandalf@le-vert.net>
+Build-Depends: debhelper (>= 5)
+Standards-Version: 3.9.3
+Homepage: http://www.lsi.com/support/Pages/Download-Results.aspx?keyword=megacli
+
+Package: megacli
+Provides: megaclisas
+Replaces: megaclisas
+Conflicts: megaclisas
+Architecture: i386 amd64
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: LSI Logic MegaRAID SAS MegaCLI
+ Tool to read and setup LSI Logic MegaRAID SAS HW RAID HBAs.

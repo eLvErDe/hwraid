@@ -1,0 +1,47 @@
+#!/usr/bin/make -f
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+DEB_BUILD_ARCH  ?= $(shell dpkg-architecture -qDEB_BUILD_ARCH)
+
+build: build-arch build-indep
+build-arch:
+build-indep:
+
+clean:
+	dh_testdir
+	dh_testroot
+	dh_clean
+
+install: build
+	dh_testdir
+	dh_testroot
+	dh_clean -k
+	dh_installdirs
+	install $(CURDIR)/debian/megacli.wrapper $(CURDIR)/debian/megacli/usr/sbin/megacli
+ifeq ($(DEB_BUILD_ARCH),amd64)
+	install $(CURDIR)/opt/MegaRAID/MegaCli/MegaCli64 $(CURDIR)/debian/megacli/usr/lib/megacli/megacli.real
+	install $(CURDIR)/opt/lsi/3rdpartylibs/x86_64/libsysfs.so.2.0.2 $(CURDIR)/debian/megacli/usr/lib/megacli/libsysfs.so.2.0.2
+endif
+ifeq ($(DEB_BUILD_ARCH),i386)
+	install $(CURDIR)/opt/MegaRAID/MegaCli/MegaCli $(CURDIR)/debian/megacli/usr/lib/megacli/megacli.real
+	install $(CURDIR)/opt/lsi/3rdpartylibs/libsysfs.so.2.0.2 $(CURDIR)/debian/megacli/usr/lib/megacli/libsysfs.so.2.0.2
+endif
+
+binary-indep:
+binary-arch: build install
+	dh_testdir
+	dh_testroot
+	dh_installchangelogs 8.04.07_MegaCLI.txt
+	dh_installdocs
+	dh_compress
+	dh_fixperms
+	dh_installdeb
+	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary: binary-arch
+.PHONY: build clean binary-indep binary-arch binary install

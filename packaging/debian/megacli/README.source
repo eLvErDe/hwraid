@@ -1,0 +1,10 @@
+megacli (8.04.07-1) unstable; urgency=low
+
+  Sources have been repacked from the following upstream archive:
+
+    246ca19750965066f97730e704718cb8  8.04.07_MegaCLI.zip
+
+  Contents of MegaCli-8.04.07-1.noarch.rpm and Lib_Utils-1.00-09.noarch.rpm
+  have been extracted after being turned into tarball using alien.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Mon, 20 Aug 2012 22:23:22 +0200
