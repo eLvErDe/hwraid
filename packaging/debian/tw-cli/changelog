@@ -1,0 +1,30 @@
+tw-cli (2:2.00.11.020+10.2.1-1) unstable; urgency=low
+
+  * New upstream release.
+  * Do not use separate tarball for each architecture anymore.
+  * Improve debian/copyright to explain how to generate sources tarball.
+  * Update licence and copyright information.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Mon, 30 Jan 2012 16:00:10 +0100
+
+tw-cli-x86-64 (2:2.00.09.012+9.5.2-1) unstable; urgency=low
+
+  * New upstream release.
+  * Bump epoch... Once again, thanks to 3Ware insane versionning.
+  * PDF user guide updated to 9.5.2 release.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Tue, 07 Jul 2009 19:34:46 +0200
+
+tw-cli-x86-64 (1:2.02.08.008+9.5.1.1-1) unstable; urgency=low
+
+  * New upstream release.
+  * Better versionning.
+  * PDF user guide updated to 9.5.1.1 release.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Sun, 21 Dec 2008 23:00:30 +0100
+
+tw-cli-x86-64 (9.5.0.1-1) unstable; urgency=low
+
+  * Initial release.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Thu, 21 Aug 2008 14:18:31 +0200

@@ -1,0 +1,16 @@
+Source: tw-cli
+Section: admin
+Priority: optional
+Maintainer: Adam Cécile (Le_Vert) <gandalf@le-vert.net>
+Build-Depends: debhelper (>= 5), sharutils
+Standards-Version: 3.9.2
+Homepage: http://www.lsi.com/channel/support/products/Pages/3wareSAS9750-8e.aspx
+
+Package: tw-cli
+Architecture: amd64 i386
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: 3Ware management tool (tw-cli)
+ This package contains tw-cli, the management tool for 3Ware Eskalad
+ RAID cards.
+ .
+ It should works fine for 9000, 8000 as well as 7000 series.
