@@ -1,0 +1,199 @@
+#! /bin/sh
+
+# Author: Petter Reinholdtsen <pere@hungry.com>
+# License: GNU General Public License v2 or later
+#
+### BEGIN INIT INFO
+# Provides:          aacraid-statusd
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Check aacraid-status values in the background.
+### END INIT INFO
+
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+DESC="aacraid-status monitor"
+NAME=aacraid-statusd
+PIDFILE=/var/run/$NAME.pid
+STATUSFILE=/var/run/$NAME.status
+SCRIPTNAME=/etc/init.d/$NAME
+
+
+# Do not touch you can configure this in /etc/default/aacraid-statusd
+MAILTO=root   # Where to report problems
+PERIOD=600    # Seconds between each check    (default 10 minutes)
+REMIND=7200   # Seconds between each reminder (default 2 hours)
+RUN_DAEMON=yes
+
+[ -e /etc/default/aacraid-statusd ] && . /etc/default/aacraid-statusd
+
+# Gracefully exit if the package has been removed.
+test -x /usr/sbin/aacraid-status || exit 0
+
+. /lib/lsb/init-functions
+[ -e /etc/default/rcS ] && . /etc/default/rcS
+
+if [ $RUN_DAEMON = "no" ] ; then
+	log_begin_msg "aacraid-statusd is disabled in /etc/default/aacraid-statusd, not starting."
+    	log_end_msg 0
+	exit 0
+fi
+
+check_aacraid() {
+    echo $$ > $PIDFILE.new && mv $PIDFILE.new $PIDFILE
+    while true ; do
+        # Check ever $PERIOD seconds, send email on every status
+        # change and repeat ever $REMIND seconds if the raid is still
+        # bad.
+        if (aacraid-status) |grep -q 'NOT OPTIMAL' ; then
+            BADRAID=true
+            logger -t aacraid-statusd "detected non-optimal RAID status"
+        else
+            BADRAID=false
+        fi
+        STATUSCHANGE=false
+        if [ true = "$BADRAID" ] ; then
+            # RAID not OK
+            (aacraid-status) > $STATUSFILE.new
+            if [ ! -f $STATUSFILE ] ; then # RAID just became broken
+                STATUSCHANGE=true
+                mv $STATUSFILE.new $STATUSFILE
+            elif cmp -s $STATUSFILE $STATUSFILE.new ; then
+                # No change.  Should we send reminder?
+                LASTTIME="`stat -c '%Z' $STATUSFILE`"
+                NOW="`date +%s`"
+                SINCELAST="`expr $NOW - $LASTTIME`"
+                if [ $REMIND -le "$SINCELAST" ]; then
+                    # Time to send reminder
+                    STATUSCHANGE=true
+                    mv $STATUSFILE.new $STATUSFILE
+                else
+                    rm $STATUSFILE.new
+                fi
+            else
+                STATUSCHANGE=true
+                mv $STATUSFILE.new $STATUSFILE
+            fi
+        else
+            # RAID OK
+            if [ -f $STATUSFILE ] ; then
+                rm $STATUSFILE
+                STATUSCHANGE=true
+            fi
+        fi
+                
+        if [ true = "$STATUSCHANGE" ]; then
+            hostname="`uname -n`"
+            (
+                cat <<EOF 
+This is a RAID status update from aacraid-statusd.  The aacraid-status
+program reports that one of the RAIDs changed state:
+
+EOF
+                if [ -f $STATUSFILE ] ; then
+                    cat $STATUSFILE
+                else
+                    (aacraid-status)
+                fi
+                echo
+                echo "Report from $0 on $hostname"
+            ) | mail -s "info: AACRaid raid status change on $hostname" $MAILTO
+        fi
+        sleep $PERIOD
+    done
+}
+
+check_daemon() {
+        # Let's check if there is a daemon which is really running and not timing out
+        DAEMON_RUN=`ps aux | grep "/etc/init.d/aacraid-statusd check_aacraid" | grep -v grep | grep -v daemon`
+        if [ -n "$DAEMON_RUN" ] ; then
+                return 1;
+        else
+                return 0;
+        fi
+}
+
+#
+#       Function that starts the daemon/service.
+#
+d_start() {
+    [ -f $PIDFILE ] && PID="`cat $PIDFILE`"
+    if [ "$PID" ] ; then
+        log_progress_msg "Daemon already running. Refusing to start another"
+        return 0
+    elif check_daemon ; then
+        # Use the daemon package to turn this script into a daemon
+        start-stop-daemon --start --quiet --pidfile $PIDFILE \
+                --oknodo --exec /usr/bin/daemon $SCRIPTNAME check_aacraid
+	return 0
+    else
+        log_progress_msg "Daemon is already running. Refusing to start another"
+        return 0
+    fi
+}
+
+#
+#       Function that stops the daemon/service.
+#
+d_stop() {
+        if [ -f $PIDFILE ] ; then
+                # Doesn't work (kill init script instance, but not daemon...)
+                #start-stop-daemon --stop --oknodo --quiet --pidfile $PIDFILE > /dev/null 2>&1
+                DAEMONPID=`ps aux | grep '/usr/bin/daemon /etc/init.d/aacraid-statusd check_aacraid' | grep -v 'grep' | awk '{ print $2 }'`
+                SCRIPTPID=`cat $PIDFILE`
+                kill -9 $DAEMONPID $SCRIPTPID || true
+		rm -f $PIDFILE
+        else
+                log_progress_msg "Daemon is already stopped."
+                return 0
+        fi
+}
+
+# This is a workaround function which does not directly exit and
+# therefore can be used by a restart
+d_stop_by_restart() {
+        if [ -f $PIDFILE ] ; then
+                # Doesn't work (kill init script instance, but not daemon...)
+                #start-stop-daemon --oknodo --stop --quiet --pidfile $PIDFILE
+                DAEMONPID=`ps aux | grep '/usr/bin/daemon /etc/init.d/aacraid-statusd check_aacraid' | grep -v 'grep' | awk '{ print $2 }'`
+                SCRIPTPID=`cat $PIDFILE`
+                kill -9 $DAEMONPID $SCRIPTPID || true
+                rm -f $PIDFILE
+                log_end_msg 0
+        else
+                log_progress_msg "Daemon is already stopped."
+                log_end_msg 0
+        fi
+}
+
+case "$1" in
+  start)
+        echo -n ""
+        log_begin_msg "Starting $DESC: $NAME"
+        d_start ; CODE=$?
+        log_end_msg $CODE
+        ;;
+  stop)
+        log_begin_msg "Stopping $DESC: $NAME"
+        d_stop ; CODE=$?
+        log_end_msg $CODE
+        ;;
+  check_aacraid)
+        check_aacraid
+        ;;
+  restart|force-reload)
+        log_begin_msg "Restarting $DESC: $NAME"
+        d_stop_by_restart
+        sleep 1
+        d_start || CODE=$?
+        log_end_msg $CODE
+        ;;
+  *)
+        # echo "Usage: $SCRIPTNAME {start|stop|restart|reload|force-reload}" >&2
+        echo "Usage: $SCRIPTNAME {start|stop|restart|force-reload}" >&2
+        exit 1
+        ;;
+esac
+
+exit 0

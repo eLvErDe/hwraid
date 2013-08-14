@@ -1,0 +1,23 @@
+README.Debian for aacraid-status package
+----------------------------------------
+
+Possible configuration:
+----------------------
+
+If you want to change the default configuration of the init script you
+can create the file /etc/default/aacraid-statusd and specify the following
+values.
+
+MAILTO=
+PERIOD=
+REMIND=
+
+Use MAILTO to specify which user shall get the status mails 
+(default is root).
+
+With PERIOD you can fix the seconds between each check.
+
+And REMIND specifies the seconds between each reminder.
+
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Mon, 24 Sep 2007 15:55:09 +0200 

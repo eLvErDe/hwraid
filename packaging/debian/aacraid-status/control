@@ -1,0 +1,14 @@
+Source: aacraid-status
+Section: admin
+Priority: extra
+Maintainer: Adam Cécile (Le_Vert) <gandalf@le-vert.net>
+Build-Depends: debhelper (>= 5)
+Standards-Version: 3.9.3
+
+Package: aacraid-status
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, python, lsb-base, daemon, bsd-mailx | mailx, arcconf (>= 7.30.18837)
+Description: get RAID status out of Adaptec AACRaid HW RAID controllers
+ The aacraid-status software is a query tool to access the running
+ configuration and status of Adaptec SCSI HBAs. aacraid-status allows you to
+ monitor the health and status of your RAID setup.

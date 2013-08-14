@@ -1,0 +1,221 @@
+#!/usr/bin/python
+
+import os
+import re
+import sys
+
+if len(sys.argv) > 2:
+    print 'Usage: aacraid-status [-d]'
+    sys.exit(1)
+
+printarray = True
+printcontroller = True
+
+bad = False
+
+if len(sys.argv) > 1:
+    if sys.argv[1] == '-d':
+        printarray = False
+        printcontroller = False
+    else:
+        print 'Usage: aacraid-status [-d]'
+        sys.exit(1)
+
+# Get command output
+def getOutput(cmd):
+    output = os.popen(cmd+' 2>/dev/null')
+    lines = []
+    for line in output:
+        if not re.match(r'^$',line.strip()):
+            lines.append(line.strip())
+    return lines
+
+def returnControllerNumber(output):
+    for line in output:
+        if re.match(r'^Controllers found: [0-9]+$',line.strip()):
+            return int(line.split(':')[1].strip().strip('.'))
+
+def returnControllerModel(output):
+    for line in output:
+        if re.match(r'^Controller Model.*$',line.strip()):
+            return line.split(':')[1].strip()
+
+def returnControllerStatus(output):
+    for line in output:
+        if re.match(r'^Controller Status.*$',line.strip()):
+            return line.split(':')[1].strip()
+
+def returnArrayIds(output):
+    ids = []
+    for line in output:
+        if re.match(r'^Logical device number [0-9]+$',line.strip()):
+            ids.append(line.strip('Logical device number').strip())
+    return ids
+
+def returnArrayInfo(output):
+    members = []
+    for line in output:
+        # RAID level may be either N or Simple_Volume
+        # (a disk connected to the card, not hotspare, not part of any array)
+        if re.match(r'^RAID level\s+: .+$',line.strip()):
+            type = line.split(':')[1].strip()
+        if re.match(r'^Status of logical device\s+: .*$',line.strip()):
+            status = line.split(':')[1].strip()
+        if re.match(r'^Size\s+: [0-9]+ MB$',line.strip()):
+            size = str(int(line.strip('MB').split(':')[1].strip()) / 1000)
+        if re.match(r'^(Group\s[0-9]+,\s)?Segment [0-9]+\s+: .*$',line.strip()):
+            splitter = re.compile('(\(.*\))')
+            # The line can be either
+            # Segment 0 : Present (Controller:1,Enclosure:0,Slot:0) JPW9J0N00RWMUV
+            # Or
+            # Segment 0 : Present (Controller:1,Channel:0,Device:0) S13PJ1CQ719255
+            # Or
+            # Segment 0 : Present (Controller:1,Connector:1,Device:2) 9QJ7D0MJ
+            line = re.sub('Controller:','',line)
+            line = re.sub('(Channel|Enclosure|Connector):','',line)
+            line = re.sub('(Device|Slot):','',line)
+            line = line.split(':')[1]
+            if re.match(r'^ Missing',line):
+                members.append('?,?')
+            else:
+                members.append(splitter.split(line)[1].strip('(').strip(')'))
+        if re.match(r'^Group [0-9], Segment [0-9]+\s+: .*$',line.strip()):
+            splitter = re.compile('(\(.*\))')
+            line = line.split(':')[1]
+            if re.match(r'^ Missing',line):
+                members.append('?,?')
+            else:
+                members.append(splitter.split(line)[1].strip('(').strip(')'))
+    return [type,status,size,members]
+
+def returnControllerTasks(output):
+    arrayid = False
+    type = False
+    state = False
+    tasks = []
+    for line in output:
+        if re.match(r'^Logical device\s+: [0-9]+$',line.strip()):
+            arrayid = line.split(':')[1].strip()
+        if re.match(r'^Current operation\s+: .*$',line.strip()):
+            type = line.split(':')[1].strip()
+        if re.match(r'^Percentage complete\s+: [0-9]+$',line.strip()):
+            state = line.split(':')[1].strip()
+        if arrayid != False and type != False and state != False:
+            tasks.append([arrayid,type,state])
+            arrayid = False
+            type = False
+            state = False
+    return tasks
+
+def returnDisksInfo(output,controllerid):
+    diskid = False
+    vendor = False
+    model = False
+    state = False
+    disks = []
+    for line in output:
+        if re.match(r'^Reported Channel,Device(\(T:L\))?\s+: [0-9]+,[0-9]+(\([0-9]+:[0-9]+\))?$',line.strip()):
+            diskid = re.split('\s:\s',line)[1].strip()
+            diskid = re.sub('\(.*\)','',diskid)
+            diskid = str(controllerid)+','+diskid
+        if re.match(r'^State\s+: .*$',line.strip()):
+            state = line.split(':')[1].strip()
+        if re.match(r'^Vendor\s+: .*$',line.strip()):
+            vendor = line.split(':')[1].strip()
+        if re.match(r'^Model\s+: .*$',line.strip()):
+            model = line.split(':')[1].strip()
+        if diskid != False and vendor != False and model != False and state != False:
+            disks.append([diskid,state,vendor,model])
+            diskid = False
+            vendor = False
+            model = False
+            state = False
+    return disks
+
+cmd = '/usr/sbin/arcconf GETVERSION'
+output = getOutput(cmd)
+controllernumber = returnControllerNumber(output)
+
+# List controllers
+if printcontroller:
+    print '-- Controller informations --'
+    print '-- ID | Model | Status'
+    controllerid = 1
+    while controllerid <= controllernumber:
+        cmd = '/usr/sbin/arcconf GETCONFIG '+str(controllerid)
+        output = getOutput(cmd)
+        controllermodel = returnControllerModel(output)
+        controllerstatus = returnControllerStatus(output)
+        if controllerstatus != 'Optimal':
+            bad = True
+        print 'c'+str(controllerid-1)+' | '+controllermodel+' | '+controllerstatus
+        controllerid += 1
+    print ''
+
+# List arrays
+if printarray:
+    controllerid = 1
+    print '-- Arrays informations --'
+    print '-- ID | Type | Size | Status | Task | Progress'
+    while controllerid <= controllernumber:
+        arrayid = 0
+        cmd = '/usr/sbin/arcconf GETCONFIG '+str(controllerid)
+        output = getOutput(cmd)
+        arrayids = returnArrayIds(output)
+        for arrayid in arrayids:
+            cmd = '/usr/sbin/arcconf GETCONFIG '+str(controllerid)+' LD '+str(arrayid)
+            output = getOutput(cmd)
+            arrayinfo = returnArrayInfo(output)
+            if arrayinfo[1] != 'Optimal':
+                bad = True
+            cmd = '/usr/sbin/arcconf GETSTATUS '+str(controllerid)
+            output = getOutput(cmd)
+            tasksinfo = returnControllerTasks(output)
+            done = False
+            # Usually it should return either [0-9] or Simple_Volume but...
+            # It can also return "6 Reed-Solomon" so we need to handle this too...
+            # So let's match [0-9] followed by a space or EOL.
+            if re.match('^[0-9]+(\s|$)',arrayinfo[0]):
+                raidtype = re.sub('^','RAID',arrayinfo[0])
+            else:
+                raidtype = arrayinfo[0]
+            for tasks in tasksinfo:
+                if int(tasks[0]) == int(arrayid):
+                    print 'c'+str(controllerid-1)+'u'+str(arrayid)+' | '+raidtype+' | '+arrayinfo[2]+'G | '+arrayinfo[1]+' | '+tasks[1]+' | '+tasks[2]+'%'
+                    done = True
+                    break
+            if done == False:
+                print 'c'+str(controllerid-1)+'u'+str(arrayid)+' | '+raidtype+' | '+arrayinfo[2]+'G | '+arrayinfo[1]
+        controllerid += 1
+    print ''
+
+# List disks
+controllerid = 1
+print '-- Disks informations'
+print '-- ID | Model | Status'
+while controllerid <= controllernumber:
+    arrayid = 0
+    cmd = '/usr/sbin/arcconf GETCONFIG '+str(controllerid)
+    output = getOutput(cmd)
+    arrayids = returnArrayIds(output)
+    for arrayid in arrayids:
+        cmd = '/usr/sbin/arcconf GETCONFIG '+str(controllerid)+' LD '+str(arrayid)
+        output = getOutput(cmd)
+        arrayinfo = returnArrayInfo(output)
+        cmd = '/usr/sbin/arcconf GETCONFIG '+str(controllerid)+' PD'
+        output = getOutput(cmd)
+        diskinfo = returnDisksInfo(output,controllerid)
+        for member in arrayinfo[3]:
+            i = 0
+            for disk in diskinfo:
+                if disk[1] != 'Online' and disk[1] != 'Hot Spare' and disk[1] != 'Ready':
+                    bad = True
+                if disk[0] == member:
+                    print 'c'+str(controllerid-1)+'u'+str(arrayid)+'d'+str(i)+' | '+disk[2]+' '+disk[3]+' | '+disk[1]
+                i += 1
+    controllerid += 1
+
+if bad:
+    print '\nThere is at least one disk/array in a NOT OPTIMAL state.'
+    print '\nUse "arcconf GETCONFIG [1-9]" to get details.'
+    sys.exit(1)

@@ -1,0 +1,141 @@
+aacraid-status (0.20) unstable; urgency=low
+
+  * There's at least on more way arcconf can print disk position
+   (Closes: #187).
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Tue, 24 Jul 2012 16:48:39 +0200
+
+aacraid-status (0.19) unstable; urgency=low
+
+  * Handle cards reporting segments with enclosure/slot position
+    (Closes: #187, #207). Many thanks to all people involved in solving
+    this issue.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Thu, 19 Jul 2012 22:59:53 +0200
+
+aacraid-status (0.18) unstable; urgency=low
+
+  * Fixes for arcconf >= 7.30.18837.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Sat, 28 Jan 2012 17:37:21 +0100
+
+aacraid-status (0.17) unstable; urgency=low
+
+  * Merge patch by consult@btoy1.net to handle RAID group (ie: RAID10).
+    Thanks for your contribution! (Closes: #7, #59).
+  * Update initscript using latest mpt-status one (fix unexpecting shutdown
+    issue due to set -e).
+  * Hardcode absolute arcconf path to avoid failures when the binary doesn't
+    exist. This will also ensure the use of the right arcconf binary
+    (Closes: #13).
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Sat, 10 Sep 2011 22:40:37 +0200
+
+aacraid-status (0.16) unstable; urgency=low
+
+  * Do not fail with HotSpare and Ready (fine but not used in any array)
+    disks.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Mon, 16 Aug 2010 10:51:28 +0200
+
+aacraid-status (0.15) unstable; urgency=low
+
+  * Handle 'Simple_Volume' which is disk connected to the card
+    withtout being part of an array or being hot-spare. 
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Thu, 03 Sep 2009 10:24:04 +0200
+
+aacraid-status (0.14) unstable; urgency=low
+
+  * Fix disk/channel ids for arcconf 6.10.18451.
+  * Bump Standards-Version to 3.8.2.
+  * Update my own copyright statement.
+  * Remove S from Default-Stop in initscript's LSB headers.
+  * Fix debian/copyright to be GPL2+ compatible.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Fri, 10 Jul 2009 15:58:46 +0200
+
+aacraid-status (0.13) unstable; urgency=low
+
+  * Fix disk/channel ids for arcconf 6.10.x.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Mon, 22 Dec 2008 23:12:11 +0100
+
+aacraid-status (0.12) unstable; urgency=low
+
+  * Fix disk/channel ids.
+  * Do not need afa0 anymore (initscript) (arcconf do what's required).
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Mon, 10 Mar 2008 10:25:13 +0100
+
+aacraid-status (0.11) unstable; urgency=low
+
+  * Small type fix.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Thu, 06 Mar 2008 17:00:35 +0100
+
+aacraid-status (0.10) unstable; urgency=low
+
+  * In some case, arrays ids doesn't start at 0.
+    Don't compute them, read it.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Thu, 06 Mar 2008 16:16:27 +0100
+
+aacraid-status (0.9) unstable; urgency=low
+
+  * Move from afacli to arrconf (far better).
+    This should fix all parsing problems :-)
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Thu, 06 Mar 2008 15:28:31 +0100
+
+aacraid-status (0.8) unstable; urgency=low
+
+  * Fix broken output with degraded RAID1 array.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Tue, 12 Feb 2008 15:02:05 +0100
+
+aacraid-status (0.7) unstable; urgency=low
+
+  * Return 1 if something wrong detected.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Tue, 09 Oct 2007 16:45:17 +0200
+
+aacraid-status (0.6) unstable; urgency=low
+
+  * Detect and show rebuilding status.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Mon, 01 Oct 2007 15:08:55 +0200
+
+aacraid-status (0.5) unstable; urgency=low
+
+  * Fix a nasty regex bug that could consider bad line as array line.
+  * Afacli do not report any status for good RAID-5 arrays (?!?).
+    Add a dirty hack to report them as 'Normal'.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Wed, 26 Sep 2007 17:46:02 +0200
+
+aacraid-status (0.4) unstable; urgency=low
+
+  * Typos.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Wed, 26 Sep 2007 17:06:28 +0200
+
+aacraid-status (0.3) unstable; urgency=low
+
+  * Run afacli in a sub-shell with nohup to avoid crap output.
+  * Improve failure detection, now checks for arrays status too.
+  * Fake failure feature now creates a bad array too.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Wed, 26 Sep 2007 09:01:50 +0200
+
+aacraid-status (0.2) unstable; urgency=low
+
+  * aacraid-status now return more informations about disks/arrays.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Tue, 25 Sep 2007 17:12:46 +0200
+
+aacraid-status (0.1) unstable; urgency=low
+
+  * Initial release.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Mon, 24 Sep 2007 15:55:09 +0200
