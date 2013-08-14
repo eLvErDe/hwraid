@@ -1,0 +1,14 @@
+Source: lsiutil
+Section: admin
+Priority: optional
+Maintainer: Adam Cécile (Le_Vert) <gandalf@le-vert.net>
+Build-Depends: debhelper (>= 5), sharutils
+Standards-Version: 3.8.0
+Homepage: http://www.lsi.com
+
+Package: lsiutil
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: LSI Logic Fusion MPT Command Line Interface management tool
+ This packages contains the "lsiutil" command line tool to manage LSI Fusion
+ MPT RAID HBAs.

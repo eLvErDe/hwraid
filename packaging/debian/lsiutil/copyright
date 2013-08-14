@@ -1,0 +1,22 @@
+This package was debianized by Adam Cécile (Le_Vert) <gandalf@le-vert.net> on
+Sun, 01 Feb 2009 00:41:44 +0100.
+
+It was downloaded from ftp://ftp.lsil.com/HostAdapterDrivers/linux/lsiutil
+and http://www.lsi.com/DistributionSystem/AssetDocument/support/downloads/
+hbas/fibre_channel/hardware_drivers/LSIUtil Kit_1.60.zip (changes.txt)
+
+Upstream Author:
+
+    LSI Corporation
+
+Copyright:
+    
+    Copyright (C) LSI Corporation
+
+License:
+
+    Unspecified. Probably under a proprietary license but sources are
+    available.
+
+The Debian packaging is (C) 2009, Adam Cécile (Le_Vert) <gandalf@le-vert.net>
+and is licensed under the GPL, see `/usr/share/common-licenses/GPL'.

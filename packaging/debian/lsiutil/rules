@@ -1,0 +1,40 @@
+#!/usr/bin/make -f
+
+DESTDIR = $(CURDIR)/debian/lsiutil
+
+debian/user_guide.pdf:
+	uudecode $@.uu -o $@
+
+build: debian/user_guide.pdf
+
+clean: 
+	dh_testdir
+	dh_testroot
+	dh_clean
+	rm -f debian/user_guide.pdf
+
+install: build
+	dh_testdir
+	dh_testroot
+	dh_clean -k 
+	dh_installdirs
+	$(CC) lsiutil.c -o $(DESTDIR)/usr/sbin/lsiutil
+
+binary-indep: build install
+binary-arch: build install
+	dh_testdir
+	dh_testroot
+	dh_installchangelogs debian/changes.txt 
+	dh_installdocs
+	dh_link
+	dh_strip
+	dh_compress -Xusr/share/doc/lsiutil/user_guide.pdf
+	dh_fixperms
+	dh_installdeb
+	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary: binary-indep binary-arch
+.PHONY: build clean binary-indep binary-arch binary install

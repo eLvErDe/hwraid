@@ -1,0 +1,573 @@
+Changes for 1.60:
+
+- fix bug in doDeleteVolume2 for setting the volume dev handle in the RAID
+  action request.
+- Add option to use default settings on volume creation.
+- Changed default stripe size to 128K
+- fixed a build error that occurred if REGISTER_ACCESS was set to 0 at
+  compile time.
+
+-----------------------------------------------------------------------------
+
+Changes for 1.59:
+
+- Add code that determines BIOS/FCode compatibility for first MPI 2.0 chips.
+- Add "Dump PCI config space".
+- Modify code that allows changing SAS persistent entries, to handle changing
+  a set of mappings from one EnclosureId to another EnclosureId.
+- Enhance display of expander routing tables to accommodate the SAS 2.0
+  committee changing the opcode for REPORT EXPANDER ROUTE TABLE LIST from
+  17h to 22h.
+- After displaying diagnostic pages, don't ask about making changes except for
+  page numbers that are known to be writable.
+- Make modifications to the RAID volume creation code to take drive minimums
+  from config pages, rather than hard-coding them.  Also, allow selecting a
+  stripe size for any volume type except for mirrored (RAID1) volumes.
+- Add ability to send QUERY TASK and ABORT TASK to the "Reset target" routine;
+  this is not the ideal place to put them, but it's the best of the current
+  alternatives.  No allowance is made for specifying the identity of the task
+  to be queried or aborted; the intent is that these will be used merely to
+  verify that such requests can be issued (not that they'll be successful).
+- Add some missing config pages to "Dump all port state".
+- After resetting the chip (DOS/EFI), wait 20 milliseconds before making any
+  chip accesses, per the MPT specification.
+
+-----------------------------------------------------------------------------
+
+Changes for 1.58:
+
+- Add option 66, "Show SAS discovery errors".
+- Fix bug introduced in 1.57 that broke option 13 for SAS.
+- Fix bug introduced in 1.56 that made diagnostic buffer actions appear to
+  fail for Windows, when in fact they had actually succeeded.
+- Fix options 8, 13, 16, 18, 33, 35, 44, 68, 80, and 81, to accommodate
+  differences between MPI 1.x and MPI 2.0 (the new link speed of 6.0 Gbps
+  being the most prominent one).
+- Modify expander firmware download to allow boot records (BufferID 10) to
+  be headerless.  If a header is needed (mode 2), but is not present, add it.
+  If a header is not needed (mode 6), but is present, remove it.  Also fix
+  verification code to be more robust.
+- Fix MPI 2.0 bug that caused duplicate devices to be shown on Windows during
+  a device scan.
+
+-----------------------------------------------------------------------------
+
+Changes for 1.57:
+
+- Implement RAID actions for MPI 2.0, and implement "Delete hot spare".
+- Add Linux support for MPI 2.0.
+- Modify NVDATA concatenation code for latest MPI 2.0 firmware changes.
+- When downloading expander firmware, if mode is 2, use Write Buffer, but if
+  mode is 6 or 7, use SES Download Microcode.  Before downloading, verify the
+  image for Buffer IDs 0, 2, and 10.
+- For SAS, add "Force full discovery".
+- Add "Identify FLASH device".
+- Fix more endian problems, by adding code that allows the compiler to detect
+  them automatically.
+- Skip verification after firmware download when the special bridge firmware
+  (1.18.99) is being used.
+- Fix the multi-path detection code (used when creating volumes), which was
+  reading enclosure pages incorrectly.
+- Fix the code that handles metadata size, to use ManufacturingPage4 instead
+  of IOCPage6 (the former can be modified, while the latter cannot).
+- After reading diagnostic pages, allow the data to be modified and the page
+  written back.
+
+-----------------------------------------------------------------------------
+
+Changes for 1.56:
+
+- Implement -k flag to suppress the "select a device" mechanism for many
+  diagnostic functions, and instead allow directly entering bus and target
+  numbers.
+- Fix the -h (help) display, which got broken when paging was implemented.
+- Add some routines to help debug expanders (read/write expander memory,
+  read/write expander ISTWI devices, expander firmware download, expander
+  reset).
+- Implement all of the diagnostic buffer actions for Solaris (a new driver is
+  required).  Also, when any diagnostic buffer action fails, display detailed
+  information if it's available.
+- Don't try to verify a firmware download for SAS if only a bootloader image
+  is active; the required "firmware upload" support is not implemented.
+- Fix endian issues in various places.
+- Fix the code that was trying to detect multi-pathed disks when creating RAID
+  volumes; it was not correctly determining whether two enclosures were in fact
+  the same enclosure.
+- In the "Log Sense" and "Diagnostic Page" tests, make the buffer larger, and
+  check for the device returning more data than requested.
+- When working with RAID physical disks, consistently use the physical disk
+  count that is in IOCPage3, vs. the one in IOCPage2.
+- Add path information to the display of RAID physical disks, whenever there
+  is more than one path.
+- Enhance "Scan for devices" to also show (hidden) RAID physical disks.
+- Fix the Solaris code that determines device names, to handle SCSI Enclosure
+  Services (SES) devices, and to handle SAS disks with long GUID-based names.
+- For "Send SMP request", if the handle entered is 0, prompt for SAS WWID and
+  physical port to be entered manually.
+- Fix bug in "Send SCSI CDB" that caused loss of detailed failure information
+  (including SCSI status and, if there was a Check Condition, any sense data).
+- More MPI 2.0 work:  add a real list of supported devices, fix the expander
+  routing table display code, fix the SATA Clear Affiliation code, fix SCSI I/O
+  reply handling to correctly obtain sense data.
+- Fix a bug in the EFI implementation of scanf():  %n did not work correctly.
+
+-----------------------------------------------------------------------------
+
+Changes for 1.55:
+
+- Extend paged output in menus to cover all output in all circumstances.
+- Make the maximum number of devices shown in menus compile-time configurable,
+  with the default remaining at 99.
+- Add the ability to turn off MPT register access at compile time, since this
+  causes crashes on some Linux standalone platforms.
+- Accommodate more differences between MPI 1.5 and MPI 2.0 (in SCSI I/O replies
+  and event handling).  Also, for MPI 2.0, use the BTDH IOCTL to get the driver
+  mapping between bus/target and device handle.
+- When the -g flag is used, ask if the fwdiagtool header should be added when
+  doing diagnostic buffer reads.
+- Have options 15, 17, and 20 automatically bring the port online under DOS and
+  EFI.
+- Expand the PCI information printed to include the segment number.
+- Add verification after firmware downloads (read the image back, and compare
+  with what was written).
+- When creating RAID volumes, correctly enforce rules about mixing SAS and
+  SATA drives, and SSD and non-SSD drives.  Also, use the metadata size that
+  is specified in IOC Page 6.
+- Fix code that implements setting the volume name (string length check was
+  wrong, and volume addressing was wrong).
+- When deleting a the last volume, delete any hot spares that remain; otherwise
+  those physical disks are left stranded.
+- For Solaris, use an IOCTL to get the driver name and version.  Use that same
+  IOCTL to get PCI information; only if that fails should the "reg" property be
+  used to get PCI information.
+- When dumping config pages, dump SAS Expander Page 1 correctly (there is one
+  page per expander phy), and fix its name (it was called "SASDevicePage1"!).
+- Implement the new changes for MPI 2.0 NVDATA concatenation.  Add IOC Page 8,
+  BIOS Page 4, and Driver Mapping Page 0.
+- Add MPI 2.0 support to the DOS/EFI driver.
+- Add "Read Buffer (for firmware upload)" to allow reading back device or
+  expander firmware and saving into a file.
+
+-----------------------------------------------------------------------------
+
+Changes for 1.54:
+
+- Fix concatenation bug that caused invalid SAS firmware files to be generated
+- Catch error if no file name is entered for option 15, suboption 8
+- Add ability to issue product-specific SAS IO Unit Control and Diag Data
+  Upload requests
+- When modifying SAS IO Unit settings, if "all phys" is selected, the default
+  should be to preserve existing settings per phy, rather than overwrite with
+  new settings
+- Handle self-configuring expanders when displaying expander route tables
+- When setting a volume name, use the new RAID action
+- Change the display of PCI location information to include the segment number
+- Allow SMP requests and responses to be up to 1024 bytes (per the SAS spec)
+- Fix problem where the maximum target allowed is less than expected, so some
+  targets can be missed in a scan
+- Add preliminary parsing of MPI 2.0 NVDATA
+
+-----------------------------------------------------------------------------
+
+Changes for 1.53:
+
+- Add initial support for MPI 2.0
+- Add -q switch, to query files for version information
+- Add -g switch, to guarantee asking of questions that otherwise would be
+  suppressed (such as the bus number, when there's only one bus); this makes
+  it easier to script lsiutil from Perl
+- Rework the way that ports are found under Solaris, to eliminate what are
+  sometimes lengthy delays waiting for prtconf to run -- the new code uses
+  the devinfo library to directly walk the device tree
+- Fix memory leaks when using the -j switch (ports not selected were not
+  being closed), and when using options 18 or 44
+- Add "Set SAS phy offline/online"
+- Add ability to save persistent mappings to a file, then later restore them
+- Add "Diagnostic Page Test", which reads any SCSI diagnostic pages
+- Add code to enable or disable the read or write caches in SCSI devices
+- Fix incomplete implementation of "Force firmware to fault (with C0FFEE)"
+- Add verification of internal FCode checksum
+- Add verification of PCIR image length
+- Extend "Inject/Repair media error" test so that it works for SATA devices
+- When downloading drive firmware, set default mode to 5 for SATA devices
+- Fix bug in "Show physical disks" that assumed physdisk numbers were dense
+- Detect multi-pathed disks when creating RAID volumes, and suppress their
+  inclusion in the device list
+- Add code to allow binary files to be written when dumping chip locations
+  (the -g switch must be used for force the question)
+- Fix an endian bug when dumping chip locations below 0x10000000
+- Modified SAS phy/link reset code to ask for a device handle, so that remote
+  phys or links (i.e., on expanders) can be reset
+- For DOS/EFI, avoid issuing Port Enable if possible, since that request can
+  take a long time to complete
+- Change method of checking for "context reply" after SCSI request passthrough
+  under Windows, from looking for a specific MsgContext value, to looking for
+  the reply's MsgLength being zero
+- Add retries under Linux if an IOCTL fails with EAGAIN
+- Increase size of DOS/EFI scratch buffer to 1 MB (from 64 KB) to accommodate
+  large drive firmware downloads
+- When exiting on DOS/EFI, don't reset a port that was not brought online
+
+-----------------------------------------------------------------------------
+
+Changes for 1.52:
+
+- Make changes required to allow an EBC version for EFI
+- Make changes required to allow native 64-bit IA64 and AMD64 versions
+  for Windows
+- Modify Linux workarounds for IOC_INIT (needed to write Manufacturing
+  config pages)
+- For Solaris, modify findPorts() to first use "prtconf -D", and then as
+  a fallback, use /etc/path_to_inst, so that working ports can be more
+  accurately identified
+- Fix several big-endian bugs in the RAID-related options
+- Don't print a stripe size for IM volumes (it's not valid like it is for
+  IME and IS volumes)
+- Add support for a few new FC Management toolbox functions
+- Rewrite getOsDeviceName() for Solaris, so that FCA devices are handled
+  as well as SCSA devices
+- Fix an off-by-one message when complaining about incorrect VPD end tags
+- Enhance SAS NVDATA parser to handle version 2D
+- Support NPIV for FC by adding a -v switch (to identify which virtual
+  port to masquerade as)
+
+-----------------------------------------------------------------------------
+
+Changes for 1.51:
+
+- Add date/time stamp when logging to lsiutil.log
+- Add "SEP (SCSI Enclosure Processor) Test"
+- Add "FC management tools"
+- Add "Force firmware to fault (with C0FFEE)" for SAS
+- Add "Report LUNs Test"
+- Fix dumping of memory regions to work with FC919/FC929
+- Increase chunk size for firmware download/upload, for DOS only
+- Allow Sun's mpt driver to work (for Solaris)
+- Fix endian bugs in firmware download when checking for 1MB/2MB issues
+- Dump enclosure pages when displaying attached devices for SAS
+- Add checks for maximum physical disks in a volume
+- When creating a volume, allow user to specify "no initial sync"
+- Display FC WWNs and SAS WWID as part of -i (aka option 68)
+- Add FC949E A2, 53C1030T A2, SAS1064E B3, SAS1068E B3, and 1078 C2 chips
+
+-----------------------------------------------------------------------------
+
+Changes for 1.50:
+
+- Rearrange some source files to allow easier building on Windows
+  and Solaris
+- Add ability to set individual bits, bytes, words, when modifying config
+  pages (e.g., when prompted for a value, type "bit3=1", or "bits7:4=2",
+  or "byte2=17")
+- Add "Show expander routing tables"
+- Add "Disable/Enable drive firmware update mode" to RAID actions
+- Add "Display Log entries" and "Clear (erase) Log entries"
+- Add "Upload FLASH section"
+- Add "Display version information"
+- Add "Display/Program chip VPD information"
+- Add back deleting of persistent entries for SAS, and add "Change
+  Bus/Target of a existing mapping"
+- Add code to firmware download that handles the SAS phase 8 to phase 8
+  bridge firmware image (version 1.18.99)
+- When erasing the BIOS, fill with FF rather than 00 to match the FLASH
+  erase pattern
+- Add ability to control booting under EFI for "Change FC Port settings"
+- Modify "Change WWID" code to allow for variable-sized config page
+- Under DOS or EFI, after any RAID action, sleep for 5 seconds to allow
+  drive metadata to be updated (if necessary)
+- Use the Memory Move toolbox tool to allow "Dump chip memory regions" to
+  be able to dump tightly-couple memory for SAS and FC
+- Beef up the display of SAS control settings in "Dump all port state"
+- Display IOCLogInfo value for any RAID action request that fails
+- Enhance concatenation to handle NVDATA versions 25, 28, 29, and 2B
+- Properly return Check Condition Sense Data under DOS and EFI
+- Switch DOS code to use memory space instead of I/O space, whenever
+  possible
+
+-----------------------------------------------------------------------------
+
+Changes for 1.49:
+
+- Fix build issues with latest SLES10/RHEL5 drivers
+- Add -j <type> to allow selecting just FC, SCSI or SAS ports
+- Add doWaitForResync (RAID action)
+- Add doRemoveSasDevice
+- Fix -b and -r to obey -p, -0, and -1
+- Fix port and driver naming under Windows StorPort drivers
+- Add 1 MB to 2 MB migration code for SAS (phase 9), DOS and EFI only
+- Fix doCreateVolume to obey volume member limits
+- Remove all tabs from output, replace with spaces
+- Add parsing of NVDATA version 28
+
+-----------------------------------------------------------------------------
+
+Changes for 1.48:
+
+- Add -w, -ww, and -www flags to capture debug output
+- Add -x flag to concatenate SAS firmware and NVDATA files
+- Switch from using PortType as a selector, to ProductIdType
+- For DOS and EFI, make sure port is ready for each new option
+- For ports stuck in reset, don't prompt for a firmware file unless and
+  until the port is selected
+- For EFI, do a firmware upload to handle FWDLB cases (no FLASH)
+- Add paged menu mode
+- Move "Beacon on/off" to be FC-specific
+- Add "Erase non-volatile adapter storage"
+- Add "Diagnostic Buffer actions"
+- Add "Program manufacturing information" for FC and SAS
+- Add "Set personal WWNN/WWPN" for FC
+- Add "Send SCSI CDB"
+- Remove most persistence actions for SAS, as they no longer are supported
+  by firmware
+- Add "Inject/Repair media error"
+- Add "Set/Clear write protect"
+- When downloading SAS firmware, make sure the attached NVDATA is correct
+  for the port's board type
+- Fix SAS firmware validity checking to correctly detect wrong chip type
+  and wrong chip revision
+- Allow setting/clearing Native Command Queue Disable and SATA Write Cache
+  Disable for SAS
+- Allow "Read/Write/Verify Logical Blocks" to touch individual volume
+  members, just like "Inject/Repair media error"
+- Fix incorrect ordering of LBA High/Middle/Low parts in "Send SATA
+  request"
+- Add dumping of VPD data (Manufacturing Page 1), if non-zero, to board
+  info display
+- Fix incorrect defaulting of FC's HostSCSIID (15 is no longer correct)
+- Fix EFI code to truncate files properly
+- Fix EFI code to use I/O space properly, if required (1030/1030T)
+- Fix DOS code to not enable chip interrupts (caused a hang while exiting
+  on some platforms)
+
+-----------------------------------------------------------------------------
+
+Changes for 1.47:
+
+- Add support for EFI
+- Add a workaround for older Linux mptbase drivers (fix IOC_INIT failing)
+- Add doWriteLogicalBlocks and doVerifyLogicalBlocks
+- Add generic SATA passthrough
+- Allow -b (showBoardInfo) in combination with any other arguments
+- Increase range of Initiator Device Timeout value, by using the
+  supported scale factor (x16) if necessary
+- Allow setting the Device Missing Report Delay and Device Missing
+  I/O Delay values
+- Fix a bug in configuring wide ports
+- Add support for RAID Volumes of size > 2 TB
+- Add missing config pages to doPortStateDump (-d)
+
+-----------------------------------------------------------------------------
+
+Changes for 1.46:
+
+- Add -0 and -1 options, to skip IOC numbers 0 and 1, for certain
+  operations (so, lsiutil -1 99 would only reset each chip once)
+- Enhance display to show IOC number (same as PCI function number)
+- Check to see if the firmware is in Operational state before trying the
+  first MPT command, to avoid causing a chip reset if the firmware is in
+  Fault state (if so, option 99 will perform a chip reset, if desired)
+- Fix code that obtains MPT register addresses for Linux (was broken for
+  some systems with 2.6 kernels)
+- Fix code that displays operating system device names for Linux (was
+  displaying incorrect names for some SAS and FC devices whose SCSI
+  bus/target numbers were not equal to their MPT bus/target numbers)
+- Move code that enables MPT register access inside the loops for options
+  51 and 52, so that access continues to work even if the chip is reset
+- Add display of IOCFactsReply and PortFactsReply to port state that is
+  dumped by -d, and only display FC Port Page 3 pages that are valid
+
+-----------------------------------------------------------------------------
+
+Changes for 1.45:
+
+- Fixed get2bytes/get3bytes/get4bytes macros to properly truncate
+- Fixed formats for 64-bit integers when printed (Windows is different)
+- Added doDriveFirmwareDownload
+- Added doDisplaySfpPages
+- Added doDefaultPhyRegsSettings
+- Extended event displaying to Linux and Solaris
+- Added some control over port configuration in doSasIoUnitSettings
+- Reworked getOsDeviceName slightly for Linux and Solaris
+- Fixed bug in doPortStateSummary which reversed Yes and No for
+  SSP Initiator Enabled and SSP Target Enabled displays
+- Added support for FC949E A1
+- Fixed Linux version of doMptCommand to correctly gather Sense Data
+
+-----------------------------------------------------------------------------
+
+Changes for 1.44:
+
+- Upgrade to 1.05.13 MPI headers
+- Add doReadLogicalBlocks and doDisplayOsDeviceNames
+- Add EEDP support
+- Add an optional duration to the monitor frequency (-m f,d)
+- Add "reset port" option to all submenus too
+- Don't send quiesce/unquiesce RAID actions to SAS IR (not supported)
+- Don't coerce RAID volume size if it's small (less than 1 GB)
+- Add SAS1068E B1 as a known device
+
+-----------------------------------------------------------------------------
+
+Changes for 1.43:
+
+- Add Clear ACA (option 24)
+- Fix a Linux buffer overrun that caused only the first port to be
+  discovered for some architectures
+- Fix ManufacturingPage2 checksum offset for FC949E
+- Guard against divide-by-zero when displaying volume resync percent
+- Prevent a target from being chosen twice when creating a volume
+- Add the flag that deletes PhysDisks when deleting a Volume
+- Fix a DOS bug (internal buffer corruption) by rearranging the order
+  of operations when starting a new command -- bring the chip online
+  first, before loading the scratch buffers
+- Correctly set RequestDataLength to NOT include the CRC bytes, when
+  sending hand-built SMP Passthrough commands
+- Add a hardware workaround for the FC949E to the Firmware Download Boot
+  code for DOS
+- Fix Adapter Reset for SAS1078 (DOS only)
+
+-----------------------------------------------------------------------------
+
+Changes for 1.42:
+
+- Add Log Sense Test
+- Add SATA SMART Read Test
+- Add Create Hot Spare
+- Add Send SMP Request
+- Add support for the 1078
+- Change number of LUNs probed to 64 for FC and SAS (leave SCSI alone)
+- In doFcPortSettings, preserve original HardALPA setting if user quits
+- Fix endian issue when creating volumes (default settings were incorrect
+  for SPARC and PowerPC)
+- Fix typo in doPhysDiskSettings that used the wrong Action value
+- Ignore IOC Page 3 in doShowNonDefaultSettings
+- Ignore LOG pages in doRestoreDefaultSettings
+- Fix DOS MPT driver to not poll the Doorbell while DMA is active
+
+-----------------------------------------------------------------------------
+
+Changes for 1.41:
+
+- Fix build errors on some Linux systems
+- Filter out bad "what" strings (any of the first 4 characters are bogus)
+- Fix missing 50/51/52/53 from main menu on Linux systems
+- Add checking for 1064 A3 SAS firmware images
+- Use current config page data if non-volatile data is invalid
+- Add "Read Default Write NVRAM" to "Test configuration page actions"
+- Resolve SAS firmware hang by not reading LOG page types
+- Remove IO Unit Page 3 from "Restore default settings"
+
+-----------------------------------------------------------------------------
+
+Changes for 1.40:
+
+- Added MPT and chip register access for Linux
+- Added doShowNonDefaultSettings and doRestoreDefaultSettings
+- Fixed commands to consistently check for errors
+- Added check for overflow of volume size when creating a volume
+- Fixed "free" calls in doDisplayCurrentEvents
+- Added retries around Windows IOCTL calls, to handle BUSY status
+- Added warning message if any Linux IOCTL call is rejected
+- Added speed/width negotiation to DOS driver for SCSI
+- Added a watchdog timer routine to DOS driver to catch faults
+- Fixed firmware download boot for 929X in DOS driver
+
+-----------------------------------------------------------------------------
+
+Changes for 1.39:
+
+- Add DOS support
+- Add 949E support
+- Add MPT register access and chip register access
+- Move diag_targets[99] from stack storage to global storage
+- Add Read Block Limits (like Read Capacity but for tapes)
+- Initialize memory after allocation, always
+- When menu options are picked from -a, don't print the menu itself
+- When showing current firmware version, print both hex and decimal
+- Fix bug in displaying phy error counters that nearly always hid errors
+- Allow 2-member IS volumes (previously, 2-member volumes were always IM)
+- Zero errno (the last error that occurred) prior to each syscall
+- Fixed bug that made "lsiutil -e" (or "lsiutil -u") just exit
+
+-----------------------------------------------------------------------------
+
+Changes for 1.38:
+
+- Update to latest header files, 1.05.10
+- Display chip rev as well as chip name
+- Add Display Phy Counters and Clear Phy Counters
+- Make display of firmware version be accurate, always
+- Add Trigger Analyzer with Echo
+
+-----------------------------------------------------------------------------
+
+Changes for 1.37:
+
+- Fixed all mallocs that did not have frees
+- Added Read Capacity and Mode Page tests
+- Added -n (companion to -y) to answer questions automatically
+- In Identify, print current running firmware version as well as FLASH
+  versions
+- If mptscsih is not loaded, quit (from Scan for Devices) early
+- Increase metadata size for SAS IR volumes
+
+-----------------------------------------------------------------------------
+
+Changes for 1.36:
+
+- Simplify menus using "expert mode", which is enabled with -e on the
+  command line, or by typing "e" at any menu prompt
+- Add display of transfer statistics for FC (-m, for "monitor")
+- Allow -h to print help even if no ports found
+- Fix firmware download and config page reads for old versions of MPT (1.00)
+- Allow easier erasing of BIOS/FCode images
+- Add an explicit error message for Linux if a SCSI I/O fails due to the
+  mptscsih driver not being loaded
+
+-----------------------------------------------------------------------------
+
+Changes for 1.35:
+
+- Check for new Windows split-driver names (lsi_fc, lsi_scsi, lsi_sas)
+- Display all "what" strings that are found
+- Add SATA Clear Affiliation test
+- Add ability to monitor current events (Linux only so far)
+
+-----------------------------------------------------------------------------
+
+Changes for 1.34:
+
+- Add -b option, which gets board info (from manufacturing config pages)
+- Add SATA Identify Drive test
+- Fix bug in -p where ranges didn't quite work right
+- Add routine to get the length of a variable config page, and use it
+- Add warning for trying to use an old FC929X firmware image on an FC929XL
+- When setting FC devices persistent, set SCAN_ID and SCAN_LUNS flags too
+- Add display of what phys are connected to what, in Display Attached Devices
+- Remove all knowledge of EEDP for now
+
+-----------------------------------------------------------------------------
+
+Changes for 1.33:
+
+- On Linux, try "modprobe mptctl" and "mknod /dev/mptctl c 10 220" if
+  IOCTLs don't work
+- Fix bug when manually setting SAS persistence
+- Add additional checking to distinguish 929X from 929XL
+
+-----------------------------------------------------------------------------
+
+Changes for 1.32:
+
+- Added coercion of disk size when making an IR volume
+
+-----------------------------------------------------------------------------
+
+Changes for 1.31:
+
+- Added -a to allow arguments to be entered on the command line
+- Added Beacon on/off
+- Detected Sun FCode for 1030 (and hopefully for 1064 too)
+- Fixed bug when manually entering more than one SAS persistent address
+- Fixed bug when underrun occurs but some data is transferred (NOT an error!)
+
