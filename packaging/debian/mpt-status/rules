@@ -1,0 +1,14 @@
+#!/usr/bin/make -f
+  
+include /usr/share/cdbs/1/class/makefile.mk
+include /usr/share/cdbs/1/rules/debhelper.mk
+include /usr/share/cdbs/1/rules/simple-patchsys.mk
+DESTDIR = $(CURDIR)/debian/mpt-status
+DEB_MAKE_BUILD_TARGET := REDHAT=true
+DEB_DH_INSTALLINIT_ARGS = --init-script=mpt-statusd
+
+common-install-arch::
+	install -D -m 755 mpt-status $(DESTDIR)/usr/sbin/mpt-status
+
+common-binary-post-install-arch::
+	cd $(DESTDIR)/usr/share/doc/mpt-status && mv Changelog changelog

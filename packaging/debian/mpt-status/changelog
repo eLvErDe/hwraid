@@ -1,0 +1,201 @@
+mpt-status (1.2.0-4.2.hwraid1) unstable; urgency=low
+
+  * Non-maintainer upload.
+  * Based on debian's 1.2.0-4.2 release.
+  * Relax debhelper bdep to allow sarge builds.
+  * Allow pciutils-dev bdep as libpci-dev alternative.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Thu, 21 Aug 2008 16:09:53 +0200
+
+mpt-status (1.2.0-4.2) unstable; urgency=low
+
+  * Non-maintainer upload.
+  * Build depend on libpci-dev. Closes: #478386
+
+ -- Anibal Monsalve Salazar <anibal@debian.org>  Sat, 03 May 2008 11:50:27 +1000
+
+mpt-status (1.2.0-4.1) unstable; urgency=low
+
+  * Non-maintainer upload to solve release goal.
+  * Add LSB dependency header to init.d scripts (Closes: #470938).
+
+ -- Petter Reinholdtsen <pere@debian.org>  Sat, 29 Mar 2008 13:40:47 +0100
+
+mpt-status (1.2.0-4) unstable; urgency=high
+
+  * High urgency for RC bugfix
+  * Fix FTBFS with 20-compiler.patch to remove include for
+    linux/compiler.h from the header file, which is no longer available
+    with the switch to linux-libc-dev (Closes: #423789)
+    Thanks to Steve Langasek for the patch
+  * Change arch field to any as it might also be useful for other archs
+  * Bump debhelper level to 5
+
+ -- Steffen Joeris <white@debian.org>  Mon, 14 May 2007 21:12:10 +1000
+
+mpt-status (1.2.0-3) unstable; urgency=low
+
+  * Upload to unstable (Closes: #390923)
+
+ -- Steffen Joeris <white@debian.org>  Mon, 23 Apr 2007 07:01:26 +1000
+
+mpt-status (1.2.0-2) experimental; urgency=low
+
+  * Add dependency against mailx which is needed by the init script
+    to report failures (see #411746)
+
+ -- Steffen Joeris <white@debian.org>  Thu, 22 Feb 2007 00:01:03 +1100
+
+mpt-status (1.2.0-1) experimental; urgency=low
+
+  * New upstream release
+   - Fixed version string (Closes: #390921)
+  * Drop 20-nonlinux.patch as it got included by upstream
+  * Include mpi_raid.h from kernel source package to debian/includes
+  * Include patch to improve the output of mpt-statusd and internal
+    functions, thanks to Jochen Pawletta
+  * Drop debian/mpt-status.8 manpage as it is now included by upstream
+  * Thanks to Petter Reinholdtsen for testing and hardware access
+
+ -- Steffen Joeris <white@debian.org>  Wed, 17 Jan 2007 17:23:34 +0100
+
+mpt-status (1.1.6-12) unstable; urgency=medium
+
+  * Severity set to medium as this upload fixes an important bug
+  * Provide the ID function to explicitely specify the primary id,
+    because the -p argument produces different output by different
+    ids (Closes: #404962)
+  * Thanks to Jochen Pawletta
+
+ -- Steffen Joeris <white@debian.org>  Thu, 11 Jan 2007 17:12:36 +0100
+
+mpt-status (1.1.6-11) unstable; urgency=high
+
+  * Severity is still high as it should go into etch
+  * Revert the debhelper change so that it is back to level 4
+    which was requested by the Release Team
+
+ -- Steffen Joeris <white@debian.org>  Sun,  7 Jan 2007 23:23:01 +0100
+
+mpt-status (1.1.6-10) unstable; urgency=high
+
+  * Set severity to high as it fixes an RC bug and should go into etch
+  * Bump debhelper level to 5
+  * Change my maintainer address
+  * Use the -p option to probe through the id's in case it is not on
+    id 0 (Closes: #404962)
+  * Remove useless additional log message about stopping the daemon in
+    d_stop()
+  * Provide the d_stop_by_restart() function which is needed for a
+    workaround to make sure the init script starts again
+    (Closes: #405938)
+  * Thanks to Petter Reinholdtsen for testing and hardware access
+
+ -- Steffen Joeris <white@debian.org>  Wed,  3 Jan 2007 21:17:56 +0100
+
+mpt-status (1.1.6-9) unstable; urgency=high
+
+  * Severity high because this upload fixes two RC bugs
+  * Make sure that d_start() exits with error code 0 if there is
+    already a running daemon (Closes: #401580)
+    Thanks to Morten Werner Olsen
+  * Add check to the d_stop() function to see if the daemon is already
+    stopped which according to lsb standards should exit with error
+    code 0
+  * Start the daemon with the --oknodo option which allows us to start
+    other daemons later, while the first one is defunct and waits for
+    the sleep call to exit afterwards (Closes: #401554)
+  * Remove the check for the "/proc/scsi/mptspi" directory, as there
+    might be others in use instead of this one, however the version
+    check should be enough and exits gracefully (see #387963)
+  * Include check_daemon() function to check if there is already a
+    running mpt-statusd which is not timing out at the moment
+  * Gracefully exit with code 0 after the run of start-stop-daemon
+  * Thanks to Klaus Ade Johnstad and Petter Reinholdtsen for feeding me
+    with enough tests and access to hardware
+
+ -- Steffen Joeris <steffen.joeris@skolelinux.de>  Tue,  5 Dec 2006 18:54:08 +0100
+
+mpt-status (1.1.6-8) unstable; urgency=low
+
+  * Add check to mpt-statusd if there are any mpt-devices
+    and exit with a normal message if there are none (Closes: #387963)
+  * Upload sponsored by Petter Reinholdtsen
+
+ -- Steffen Joeris <steffen.joeris@skolelinux.de>  Mon, 18 Sep 2006 13:14:04 +1000
+
+mpt-status (1.1.6-7) unstable; urgency=medium
+
+  * Fix bad typo which causes in a broken init-script
+
+ -- Steffen Joeris <steffen.joeris@skolelinux.de>  Fri, 18 Aug 2006 20:21:35 +1000
+
+mpt-status (1.1.6-6) unstable; urgency=low
+
+  * Change check for mptctl modul to also honour it when it
+    is compiled into the kernel (Closes: #381926)
+  * Upload sponsored by Petter Reinholdtsen
+
+ -- Steffen Joeris <steffen.joeris@skolelinux.de>  Tue,  8 Aug 2006 23:03:31 +1000
+
+mpt-status (1.1.6-5) unstable; urgency=low
+
+  * Change exit code in init script to make sure that it
+    exits sane if it can't start 
+  * Adjust stop call to let it sane exit if the daemon is
+    not running (Closes: #368537)
+  * Include code to check if it can run on the used hardware
+  * Change error message to get it more verbose
+  * Upload sponsored by Petter Reinholdtsen
+
+ -- Steffen Joeris <steffen.joeris@skolelinux.de>  Wed, 24 May 2006 10:44:15 +0200
+
+mpt-status (1.1.6-4) unstable; urgency=low
+
+  * Include RUN_DAEMON option for init script to have the
+    opportunity to use it or not (Closes: #356852)
+  * Bump standards version to 3.7.1
+  * Change priority from optional to extra to prevent
+    override disparities
+  * Upload sponsored by Petter Reinholdtsen
+
+ -- Steffen Joeris <steffen.joeris@skolelinux.de>  Thu,  4 May 2006 19:14:43 +0200
+
+mpt-status (1.1.6-3) unstable; urgency=low
+
+  * Remove linux/compiler.h from mpt-status.c to make this package
+    compatible with kfreebsd (Closes: #362647)
+  * Upload sponsored by Petter Reinholdtsen
+
+ -- Steffen Joeris <steffen.joeris@skolelinux.de>  Sat, 15 Apr 2006 12:23:19 +0200
+
+mpt-status (1.1.6-2) unstable; urgency=low
+
+  * Add kfreebsd-amd64 into architecture list (Closes: #361612)
+
+ -- Steffen Joeris <steffen.joeris@skolelinux.de>  Sun,  9 Apr 2006 14:46:14 +0200
+
+mpt-status (1.1.6-1) unstable; urgency=low
+
+  * new upstream release
+  * small change to init-script to enable possible configuration via
+    file in /etc/default/mpt-statusd
+  * provide README.Debian to explain that the mptctl has to be loaded
+    in order to use mpt-status tool and that configuration can be made
+    in /etc/default/mpt-statusd
+
+ -- Steffen Joeris <steffen.joeris@skolelinux.de>  Thu,  9 Mar 2006 12:38:22 +0100
+
+mpt-status (1.1.4+1.1.5-1) unstable; urgency=low
+
+  * Initial release (Closes: #352262)
+  * This version is a release candidate for 1.1.5 but it is mostly 
+    finish and it works so I choose this version number
+  * The includes in debian/includes/ are neither packaged in the
+    kernel-headers package nor in any other package so i add
+    them to this package to be independent from future development
+  * Added patch (10-include.patch) to fix the includes in
+    mpt-status.h
+
+ -- Steffen Joeris <steffen.joeris@skolelinux.de>  Fri, 10 Feb 2006 20:42:38 +0100
+

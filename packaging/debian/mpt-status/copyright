@@ -1,0 +1,27 @@
+This package was debianized by Steffen Joeris <steffen.joeris@skolelinux.de> on
+Fri, 10 Feb 2006 20:42:38 +0100.
+
+It was downloaded from http://www.drugphish.ch/~ratz/mpt-status/
+
+Copyright Holder: Copyright (C) 2005 Roberto Nibali <ratz@drugphish.ch>
+
+Copyright (C) 2004 CNET Networks, Inc.
+found in mpt-status.c
+
+Copyright (c) 1997--2002 Martin Mares <mj@ucw.cz>
+found in incl/header.h and incl/pci.h
+
+License:
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License, version 2
+as published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANDABILITY of FITNESS FOR A PARTICULAR PURPOSE.
+See the GNU General Public License for details.
+
+On Debian GNU/Linux systems, the complete text of the GNU General
+Public License can be found in `/usr/share/common-licenses/GPL'.
+

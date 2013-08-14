@@ -1,0 +1,31 @@
+README.Debian for mpt-status package
+------------------------------------
+
+Before you can use the mpt-status tool you have to make sure that the
+mptctl module is loaded. You can do that with "modprobe mptctl" or with
+adding mptctl to the file "/etc/modules" to make sure it is always
+loaded during system startup.
+
+Possible configuration:
+----------------------
+
+If you want to change the default configuration of the init script you
+can create the file /etc/default/mpt-statusd and specify the following
+values.
+
+MAILTO=
+PERIOD=
+REMIND=
+ID=
+
+Use MAILTO to specify which user shall get the status mails 
+(default is root).
+
+With PERIOD you can fix the seconds between each check.
+
+And REMIND specifies the seconds between each reminder.
+
+By setting the ID field it is possible to specify the primary device,
+which can be find out by using "mpt-status -p" (the default is 0).
+
+ -- Steffen Joeris <white@debian.org>  Wed,  10 Jan 2007 14:37:46 +0100
