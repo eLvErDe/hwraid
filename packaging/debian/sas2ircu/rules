@@ -1,0 +1,47 @@
+#!/usr/bin/make -f
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+DEB_BUILD_ARCH  ?= $(shell dpkg-architecture -qDEB_BUILD_ARCH)
+
+build:
+build-arch:
+build-indep:
+
+clean:
+	dh_testdir
+	dh_testroot
+	dh_clean
+
+install:
+	dh_testdir
+	dh_testroot
+	dh_clean -k
+	dh_installdirs
+ifeq ($(DEB_BUILD_ARCH),amd64)
+	install $(CURDIR)/sas2ircu_linux_x86_rel/sas2ircu $(CURDIR)/debian/sas2ircu/usr/sbin/sas2ircu
+endif
+ifeq ($(DEB_BUILD_ARCH),i386)
+	install $(CURDIR)/sas2ircu_linux_x86_rel/sas2ircu $(CURDIR)/debian/sas2ircu/usr/sbin/sas2ircu
+endif
+ifeq ($(DEB_BUILD_ARCH),powerpc)
+	install $(CURDIR)/sas2ircu_linux_ppc64_rel/sas2ircu $(CURDIR)/debian/sas2ircu/usr/sbin/sas2ircu
+endif
+
+binary-indep:
+binary-arch: build install
+	dh_testdir
+	dh_testroot
+	dh_installchangelogs Readme_Release_Notes_SAS2IRCU_Phase_16.00.00.00.txt
+	dh_installdocs
+	dh_compress -Xusr/share/doc/sas2ircu/SAS2IRCU_User_Guide.pdf
+	dh_fixperms
+	dh_installdeb
+	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary: binary-arch
+.PHONY: build clean binary-indep binary-arch binary install

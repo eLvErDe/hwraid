@@ -1,0 +1,17 @@
+sas2ircu (16.00.00.00-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Thu, 25 Jul 2013 00:22:04 +0200
+
+sas2ircu (13.00.00.00-1) unstable; urgency=low
+
+  * New upstream release (Closes: #205).
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Tue, 17 Jul 2012 21:27:50 +0200
+
+sas2ircu (5.00.00.00-1) unstable; urgency=low
+
+  * Initial release.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Wed, 08 Dec 2010 15:41:51 +0100

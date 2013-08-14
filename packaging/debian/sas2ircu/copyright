@@ -1,0 +1,26 @@
+This package was debianized by Adam Cécile (Le_Vert) <gandalf@le-vert.net> on
+Wed, 08 Dec 2010 15:41:51 +0100.
+
+It was downloaded from:
+  http://www.lsi.com/support/Pages/download-search.aspx
+  (enter "sas2ircu" in the search box)
+
+Upstream Author:
+
+  LSI Corporation
+
+Copyright:
+
+  Copyright (C) 2009-2012 LSI Corporation
+
+License:
+
+  LSI Corporation, All Rights Reserved.
+
+The Debian packaging is Copyright (C) 2010-2013 Adam Cécile (Le_Vert)
+<gandalf@le-vert.net> and is licensed under the GPL,
+see `/usr/share/common-licenses/GPL'.
+
+Sources have been repacked (windows, solaris... binaries removed,
+PDF userguide added) from:
+  fd59a542e22eb3ed0ea7210d5ce8f22e  SAS2IRCU_P16.zip

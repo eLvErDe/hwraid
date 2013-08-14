@@ -1,0 +1,13 @@
+Source: sas2ircu
+Section: admin
+Priority: optional
+Maintainer: Adam Cécile (Le_Vert) <gandalf@le-vert.net>
+Build-Depends: debhelper (>= 5)
+Standards-Version: 3.9.4
+
+Package: sas2ircu
+Architecture: i386 amd64 powerpc
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: LSI Logic Fusion MPT SAS2 command line management tool
+ Tool to read and setup LSI Logic Fusion MTP SAS2 HW RAID HBAs (mpt2sas
+ driver).
