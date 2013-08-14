@@ -1,0 +1,41 @@
+This work was packaged for Debian by:
+
+    Christian Hofstaedtler <christian@hofstaedtler.name> on Wed, 27 Aug 2008 17:52:21 +0200
+
+It was downloaded from:
+
+    http://cciss.sourceforge.net/
+
+Upstream Author:
+
+    Stephen M. Cameron <smcameron@users.sourceforge.net>
+
+Copyright:
+
+    Copyright (C) 2006,2007 Hewlett-Packard Development Company, L.P.
+
+License:
+
+    cciss_vol_status is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    cciss_vol_status is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with cciss_vol_status; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
+On Debian systems, the complete text of the GNU General
+Public License version 2 can be found in `/usr/share/common-licenses/GPL-2'.
+
+The Debian packaging is:
+
+    Copyright 2008,2009,2010,2011 Christian Hofstaedtler <christian@hofstaedtler.name>
+
+and is licensed under the GPL version 2 or (at your option) any later version,
+see above.

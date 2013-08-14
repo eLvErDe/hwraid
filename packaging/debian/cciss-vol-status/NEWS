@@ -1,0 +1,6 @@
+cciss-vol-status (1:1.09-2hwraid1) unstable; urgency=low
+
+  * Starting from this release cciss-vol-status has been renamed to
+    cciss_vol_status to match upstream and Debian's name.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Tue, 31 Jan 2012 14:37:03 +0100

@@ -1,0 +1,27 @@
+README.Debian for cciss-vol-status package
+------------------------------------------
+
+Possible configuration:
+----------------------
+
+If you want to change the default configuration of the init script you
+can create the file /etc/default/cciss-vol-statusd and specify the following
+values.
+
+MAILTO=
+PERIOD=
+REMIND=
+ID=
+
+Use MAILTO to specify which user shall get the status mails 
+(default is root).
+
+With PERIOD you can fix the seconds between each check.
+
+And REMIND specifies the seconds between each reminder.
+
+ID is set as default to /dev/cciss/c0d0 which should fit most of setups.
+However you need to change it to support multiple cards.
+Look at the cciss-vol-status(8) manpage for more information.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Wed, 20 Aug 2008 12:38:00 +0200

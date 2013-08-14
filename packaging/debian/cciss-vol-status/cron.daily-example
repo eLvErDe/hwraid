@@ -1,0 +1,29 @@
+#!/bin/sh
+
+# This is an example cron.daily file, which one could use to do a cheap
+# daily check of the RAID arrays. You might be better off setting up a
+# proper monitoring system though.
+
+test -x /usr/bin/cciss_vol_status || exit 0
+
+STATUS=0
+
+if [ -d /proc/driver/cciss ]; then
+   DEVS=`grep -h 'cciss/c.*d0:' /proc/driver/cciss/cciss* |awk -F: '{print "/dev/" $1}'`
+   OUTPUT=`/usr/bin/cciss_vol_status $DEVS`
+   if [ $? -ne 0 ];  then
+        printf "%s\n" "$OUTPUT"
+        exit 1
+   fi
+fi
+
+# FIXME: This cronjob should also look at the scsi generic nodes
+# (/dev/sg*?) to cover the hpsa driver, fibre-attached MSA1000 family
+# devices, or the hpahcisr software RAID driver (see cciss_vol_status(8)
+# about how to choose the correct nodes -- i don't use these other
+# devices, so I cannot verify how to check them cleanly)
+#
+# -- Daniel Kahn Gillmor <dkg@fifthhorseman.net> 
+#    Mon, 20 Sep 2010 18:12:31 -0400
+
+exit 0

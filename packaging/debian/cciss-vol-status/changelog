@@ -1,0 +1,61 @@
+cciss-vol-status (1:1.10-1hwraid1) unstable; urgency=low
+
+  * New upstream release.
+  * Drop allow_short_persnickety_option patch. 
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Tue, 05 Feb 2013 16:55:37 +0100
+
+cciss-vol-status (1:1.09-2hwraid1) unstable; urgency=low
+
+  * Brand new package based on 1.09-2 debian's one.
+  * Fully backported to debhelper 5 to keep old releases compatibility.
+  * Improved init script by importing fixes from mpt-status 1.2.0-7 package.
+  * Add an epoch to be sure it will be installed over debian's official 
+    package (Closes: #90).
+  * Binary renamed from cciss-vol-status to cciss_vol_status to match
+    upstream's and Debian's name (Add debian/NEWS).
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Tue, 31 Jan 2012 14:31:50 +0100
+
+cciss-vol-status (1.09-2) unstable; urgency=low
+
+  * Switched to minimal rules file, to fix lintian warning
+    debian-rules-missing-recommended-target.
+  * Reformatted debian/copyright. Also fixes lintian pedantic check
+    copyright-refers-to-symlink-license.
+  * Add patch so the short form of the --persnickety is accepted.
+
+ -- Christian Hofstaedtler <christian@hofstaedtler.name>  Mon, 29 Aug 2011 01:23:05 +0200
+
+cciss-vol-status (1.09-1) unstable; urgency=low
+
+  * New Upstream release 1.09
+    * Drop patch fix-strnlen-missing-arg, fixed upstream
+  * Bump Standards-Version to 3.9.2
+  * Rebuild autotools build system on build, so we don't Depend: on obsolete
+    automake1.10
+  * Add cron.daily example (Closes: #597573)
+  * Set VCS Fields in debian/control
+  * Update Package description
+  * Remove empty /usr/sbin directory
+  * fix example installation
+  * Do not install useless README
+  * Update Maintainer email address
+
+ -- Christian Hofstaedtler <christian@hofstaedtler.name>  Thu, 02 Jun 2011 18:09:06 +0200
+
+cciss-vol-status (1.06-1) unstable; urgency=low
+
+  * New upstream release (Closes: #568415)
+  * Switch to dpkg-source 3.0 (quilt) format
+  * Bump Standards-Version to 3.8.3
+  * Fix lintian warnings by adding ${misc:Depends}
+
+ -- Christian Hofstaedtler <ch+debian-packages@zeha.at>  Thu, 04 Feb 2010 18:39:28 +0000
+
+cciss-vol-status (1.03-1) unstable; urgency=low
+
+  * Initial release (Closes: #496788)
+
+ -- Christian Hofstaedtler <ch+debian-packages@zeha.at>  Wed, 27 Aug 2008 17:52:21 +0200
+

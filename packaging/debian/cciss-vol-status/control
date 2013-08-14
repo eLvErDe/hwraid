@@ -1,0 +1,21 @@
+Source: cciss-vol-status
+Section: admin
+Priority: extra
+Maintainer: Adam Cécile (Le_Vert) <gandalf@le-vert.net>
+Build-Depends: debhelper (>= 5), autotools-dev, quilt
+Standards-Version: 3.9.2
+Homepage: http://cciss.sourceforge.net/
+Vcs-Browser: http://github.com/zeha/cciss-vol-status/
+Vcs-Git: git://github.com/zeha/cciss-vol-status.git
+DM-Upload-Allowed: yes
+
+Package: cciss-vol-status
+Architecture: amd64 i386
+Depends: ${shlibs:Depends}, ${misc:Depends}, lsb-base, daemon, bsd-mailx | mailx
+Description: HP SmartArray RAID Volume Status Checker
+ A RAID monitor for HP SmartArray Controllers, as supported by the "cciss",
+ "hpsa", "hpahcisr" kernel drivers.
+ It will check for problems on your configured logical drives, without relying
+ on the controller's event log.
+ .
+ It also supports MSA500 and MSA1000 controllers.
