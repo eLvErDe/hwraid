@@ -1,0 +1,8 @@
+var/lib/adaptec-storage-manager-agent/RaidAgnt.pps	etc/adaptec-storage-manager-agent.conf
+var/lib/adaptec-storage-manager-agent/RaidErr.log	var/log/adaptec-storage-manager-agent/RaidErr.log
+var/lib/adaptec-storage-manager-agent/RaidErrA.log	var/log/adaptec-storage-manager-agent/RaidErrA.log
+var/lib/adaptec-storage-manager-agent/RaidEvtA.log	var/log/adaptec-storage-manager-agent/RaidEvtA.log
+var/lib/adaptec-storage-manager-agent/RaidJob.ser	var/log/adaptec-storage-manager-agent/RaidJob.ser
+var/lib/adaptec-storage-manager-agent/RaidNLst.ser	var/log/adaptec-storage-manager-agent/RaidNLst.ser
+var/lib/adaptec-storage-manager-agent/RaidSLst.ser	var/log/adaptec-storage-manager-agent/RaidSLst.ser
+var/lib/adaptec-storage-manager-agent/RaidSMTP.ser	var/log/adaptec-storage-manager-agent/RaidSMTP.ser

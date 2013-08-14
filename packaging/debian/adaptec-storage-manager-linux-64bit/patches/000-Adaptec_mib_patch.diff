@@ -1,0 +1,38 @@
+--- 1/StorMan/aus.mib	2012-01-28 16:43:00.000000000 +0100
++++ /tmp/ADAPTEC-UNIVERSAL-STORAGE-MIB.txt	2012-01-28 17:58:10.929553485 +0100
+@@ -177,7 +177,7 @@
+                     {
+                         unknown(0),
+                         okay(1),
+-                        charging/notReady(2),
++                        charging(2),
+                         failed(3),
+                         notInstalled(4)                       
+                     }
+@@ -568,7 +568,7 @@
+     SYNTAX  INTEGER
+     {
+         Dynamic(0),
+-        OLTP/Database(3)
++        OLTPDatabase(3)
+     }
+     ACCESS  read-only
+     STATUS  mandatory
+@@ -3054,7 +3054,7 @@
+ ausArrayMaxCachePreferredCacheSetting OBJECT-TYPE
+     SYNTAX  INTEGER
+     {
+-        Not Supported(0),
++        NotSupported(0),
+         Disabled(1),
+         Enabled(2)
+     }
+@@ -3068,7 +3068,7 @@
+ ausArrayMaxCacheSetting OBJECT-TYPE
+     SYNTAX  INTEGER
+     {
+-        Not Supported(0),
++        NotSupported(0),
+         Disabled(1),
+         Enabled(2)
+     }   

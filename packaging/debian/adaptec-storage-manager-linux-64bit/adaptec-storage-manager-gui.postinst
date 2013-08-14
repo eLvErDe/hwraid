@@ -1,0 +1,14 @@
+#!/bin/sh
+
+set -e
+
+case "$1" in
+
+  configure)
+    # Dirty hack
+    test -e /bin/sort || ln -s /usr/bin/sort /bin/sort
+  ;;
+
+esac
+
+#DEBHELPER#

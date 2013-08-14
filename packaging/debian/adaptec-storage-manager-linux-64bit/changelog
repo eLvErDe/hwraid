@@ -1,0 +1,66 @@
+adaptec-storage-manager-linux-64bit (7.31.18856-1) unstable; urgency=low
+
+  * New upstream release.
+  * Rewrite debian/copyright to use new machine readable format.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Tue, 21 Aug 2012 23:10:02 +0200
+
+adaptec-storage-manager-linux-64bit (7.30.18837-1) unstable; urgency=low
+
+  * New upstream release (Closes: #91).
+  * Fix SNMP mib and its README.Debian (Closes: #95).
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Sat, 28 Jan 2012 16:26:10 +0100
+
+adaptec-storage-manager-linux-64bit (7.00.18781-1) unstable; urgency=low
+
+  * New upstream release (Closes: #28, #29).
+  * Fix SNMP agent packaging.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Sat, 10 Sep 2011 23:25:17 +0200
+
+adaptec-storage-manager-linux-64bit (6.50.18570-1) unstable; urgency=low
+
+  * New upstream release.
+  * Rewrite most of the packaging to fit current standards.
+  * Drop Sarge compatibility.
+  * Force IPV4, IPV6 support is broken.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Wed, 18 Aug 2010 11:54:15 +0200
+
+adaptec-storage-manager-linux-64bit (6.10.18451-1) unstable; urgency=low
+
+  * New upstream release.
+  * Two new awesome packages added:
+    - adaptec-universal-storage-snmpd: contains a connector between SNMP
+      daemon and Adaptec Storage Manager
+    - adaptec-universal-storage-mibs: the associated MIB
+    It was only available on i386 before.
+  * Update download link and homepage.
+  * Update my own copyright statement.
+  * Bump Standards-Version to 3.8.2.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Fri, 10 Jul 2009 14:56:30 +0200
+
+adaptec-storage-manager-linux-64bit (6.10.18359-1) unstable; urgency=low
+
+  * New upstream release.
+  * New repack target in debian/rules.
+  * Add libstdc++5 build-dep (required for Lenny build).
+  * Add libwrap0 build-dep (was missing).
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Sat, 14 Feb 2009 10:35:30 +0100
+
+adaptec-storage-manager-linux-64bit (6.10.18350-1) unstable; urgency=low
+
+  * New upstream release.
+  * Replace libstdc++5-3.3-dev bdep by libstdc++5 rdep (dev packages doesn't
+    exist anymore in Debian Lenny).
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Mon, 22 Dec 2008 21:01:05 +0100
+
+adaptec-storage-manager-linux-64bit (5.20.17414-1) unstable; urgency=low
+
+  * Initial release.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Wed, 13 Feb 2008 13:48:34 +0100

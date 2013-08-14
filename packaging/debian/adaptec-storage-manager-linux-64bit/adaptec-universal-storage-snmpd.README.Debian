@@ -1,0 +1,28 @@
+adaptec-universal-storage-snmpd for Debian
+==========================================
+
+Required SNMPd configuration
+----------------------------
+
+After installing this package, some additional configuration is required to
+connect it to snmp daemon.
+
+Please add the following lines /etc/snmp/snmpd.conf:
+  master agentx
+  agentxsocket /var/agentx/master
+
+Then you need to enable aus-snmpd. Set ENABLE to true in
+  /etc/default/adaptec-universal-storage-snmpd
+
+You can now restart both snmpd and adaptec-universal-storage-snmpd services.
+
+All information can be read by running (may depends of your SNMPd config):
+  snmpwalk -v2c -c public -m ADAPTEC-UNIVERSAL-STORAGE-MIB 127.0.0.1 .1.3.6.1.4.1.795
+
+You SHOULD really install adaptec-universal-storage-mib package to get
+"human-readable" information.
+
+Starting Squeeze release, Debian doesn't include default snmpb mibs anymore.
+Please install "snmp-mibs-downloader" package.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Fri, 13 Feb 2009 23:54:46 +0100

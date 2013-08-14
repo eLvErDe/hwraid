@@ -1,0 +1,71 @@
+#!/usr/bin/make -f
+
+# Quilt patch system
+include /usr/share/quilt/quilt.make
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+# Example:
+# debian/rules repack FILE=../repack/manager/StorMan-7.31.x86_64.rpm VERSION=7.31.18856
+repack:
+	BASE_NAME=adaptec-storage-manager-linux-64bit &&\
+	ABS_FILE=`readlink -f $(FILE)` &&\
+	TMP_DIR=`mktemp -d` &&\
+#	VERSION=`basename $(FILE) | sed 's!^.*StorMan\-\(.*\)\.x86_64\.rpm$$!\1!'` &&\
+	cd $$TMP_DIR && rpm2cpio $$ABS_FILE | cpio -i --make-directories &&\
+	rm -vf $$TMP_DIR/usr/StorMan/sun-jre*.tgz &&\
+	cd $$TMP_DIR && tar czf $$BASE_NAME-$$VERSION.tar.gz usr &&\
+	mv $$TMP_DIR/$$BASE_NAME-$$VERSION.tar.gz /tmp/ &&\
+	rm -rf $$TMP_DIR &&\
+	echo "-----------------------------------------" &&\
+	echo /tmp/$$BASE_NAME-$$VERSION.tar.gz
+
+build: build-arch build-indep patch
+build-arch:
+build-indep:
+
+clean: unpatch
+	dh_testdir
+	dh_testroot
+	dh_clean
+
+install:
+	dh_testdir
+	dh_testroot
+	dh_clean -k
+	dh_installdirs
+	install -D -m 755 StorMan/aus-snmpd \
+	  $(CURDIR)/debian/adaptec-universal-storage-snmpd/usr/sbin/adaptec-universal-storage-snmpd
+	# Do not try to fix the MIBS path. It segfaults when something is found...
+	# Otherwise it just shows warning but seem to work as expected.
+	#
+	# Fix mibs path INSIDE the binary itself (OMG :/)
+	#sed -i 's!/usr/local/share/snmp/mibs!/usr/share/./././snmp/mibs!' \
+	#  $(CURDIR)/debian/adaptec-universal-storage-snmpd/usr/sbin/adaptec-universal-storage-snmpd
+	install -D -m 644 StorMan/aus.mib \
+	  $(CURDIR)/debian/adaptec-universal-storage-mib/usr/share/snmp/mibs/ADAPTEC-UNIVERSAL-STORAGE-MIB.txt
+	dh_install
+
+binary-indep: build install
+binary-arch: build install
+	dh_testdir
+	dh_testroot
+	dh_installchangelogs
+	dh_installdocs
+	dh_installinit -Nadaptec-universal-storage-snmpd
+	# Priority 21, so it will start after snmpd
+	dh_installinit -padaptec-universal-storage-snmpd -- defaults 21
+	dh_link
+	dh_compress
+	dh_fixperms
+	dh_makeshlibs
+	dh_strip
+	dh_installdeb
+	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary: binary-arch binary-indep
+.PHONY: build clean binary-indep binary-arch binary install

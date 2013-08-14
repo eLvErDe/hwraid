@@ -1,0 +1,2 @@
+StorMan/help usr/share/adaptec-storage-manager-gui
+debian/gui-wrapper/adaptec-storage-manager-gui usr/bin

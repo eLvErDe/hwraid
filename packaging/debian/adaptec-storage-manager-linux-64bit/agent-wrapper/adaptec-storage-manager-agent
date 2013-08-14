@@ -1,0 +1,4 @@
+#!/bin/sh
+
+# Now we can run storage manager withing this directory
+cd /var/lib/adaptec-storage-manager-agent; LD_LIBRARY_PATH=/usr/lib/adaptec-storage-manager:$LD_LIBRARY_PATH java -Djava.net.preferIPv4Stack=true -Djava.compiler=NONE -cp /usr/lib/adaptec-storage-manager/RaidMan.jar com.ibm.sysmgt.raidmgr.agent.ManagementAgent $* & 

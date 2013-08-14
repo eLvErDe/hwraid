@@ -1,0 +1,3 @@
+usr/sbin
+var/lib/adaptec-storage-manager-agent
+var/log/adaptec-storage-manager-agent
