@@ -1,0 +1,11 @@
+megaide-status (0.2) unstable; urgency=low
+
+  * Packaging cleanup. 
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Thu, 21 Aug 2008 15:14:04 +0200
+
+megaide-status (0.1) unstable; urgency=low
+
+  * Initial release.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Mon, 04 Feb 2008 17:28:20 +0100
