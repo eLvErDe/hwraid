@@ -1,0 +1,17 @@
+spy (7.24.26-3) unstable; urgency=low
+
+  * Relax debhelper bdep to allow Sarge builds. 
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Thu, 21 Aug 2008 17:48:10 +0200
+
+spy (7.24.26-2) unstable; urgency=low
+
+  * Packaging cleanup.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Thu, 21 Aug 2008 15:19:58 +0200
+
+spy (7.24.26-1) unstable; urgency=low
+
+  * Initial release.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Fri, 01 Feb 2008 14:42:17 +0100

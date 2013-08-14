@@ -1,0 +1,21 @@
+This package was debianized by Adam Cécile (Le_Vert) <gandalf@le-vert.net> on
+Fri, 01 Feb 2008 14:42:17 +0100.
+
+It was downloaded from http://www.lsilogic.com
+
+Upstream Author:
+
+    LSI Logic
+
+Copyright: 
+
+    Copyright (C) LSI Logic
+
+License:
+
+    Proprietary.
+
+The Debian packaging is (C) 2008, Adam Cécile (Le_Vert) <gandalf@le-vert.net>
+and is licensed under the GPL, see `/usr/share/common-licenses/GPL'.
+
+This software as been repacked from a RPM package.

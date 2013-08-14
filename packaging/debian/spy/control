@@ -1,0 +1,17 @@
+Source: spy
+Section: admin
+Priority: optional
+Maintainer: Adam Cécile (Le_Vert) <gandalf@le-vert.net>
+Build-Depends: debhelper (>= 4)
+Standards-Version: 3.8.0
+Homepage: http://www.lsilogic.com
+
+Package: megaide-spyd
+Architecture: i386
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Suggests: megaide-source
+Description: MegaRAID IDE events logger daemon
+ This daemon will log events (disk failure, rebuild...) from the megaide
+ kernel module.
+ .
+ It's only useful with LSI MegaRAID IDE HBAs.
