@@ -1,0 +1,74 @@
+#!/usr/bin/make -f
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+DESTDIR = $(CURDIR)/debian/3dm2
+DEB_BUILD_ARCH  ?= $(shell dpkg-architecture -qDEB_BUILD_ARCH)
+
+build: build-arch build-indep
+build-arch:
+build-indep:
+
+clean:
+	dh_testdir
+	dh_testroot
+	dh_clean
+
+install: build
+	dh_testdir
+	dh_testroot
+	dh_clean -k
+	dh_installdirs
+	# Install data
+ifeq ($(DEB_BUILD_ARCH),amd64)
+	install -m 755 $(CURDIR)/3dm2.x86_64 \
+	               $(DESTDIR)/usr/sbin/3dm2
+endif
+ifeq ($(DEB_BUILD_ARCH),i386)
+	install -m 755 $(CURDIR)/3dm2.x86 \
+	               $(DESTDIR)/usr/sbin/3dm2
+endif
+	install -m 600 $(CURDIR)/3dm2.conf \
+		       $(DESTDIR)/etc/3dm2/3dm2.conf
+	cp -a $(CURDIR)/msg $(DESTDIR)/usr/share/3dm2/
+	cp -a $(CURDIR)/help $(DESTDIR)/usr/share/doc/3dm2/html
+	find $(DESTDIR)/usr/share -type f -exec chmod 644 {} \;
+	# Fix default conf file
+	sed -i 's!^EmailEnable .*$$!EmailEnable 1!' \
+	  $(DESTDIR)/etc/3dm2/3dm2.conf
+	sed -i 's!^EmailSender .*$$!EmailSender 3dm2!' \
+	  $(DESTDIR)/etc/3dm2/3dm2.conf
+	sed -i 's!^EmailServer .*$$!EmailServer 127.0.0.1!' \
+	  $(DESTDIR)/etc/3dm2/3dm2.conf
+	sed -i 's!^EmailRecipient .*$$!EmailRecipient root!' \
+	  $(DESTDIR)/etc/3dm2/3dm2.conf
+	sed -i 's!^RemoteAccess .*$$!RemoteAccess 0!' \
+	  $(DESTDIR)/etc/3dm2/3dm2.conf
+	sed -i 's!^MsgPath .*$$!MsgPath /usr/share/3dm2/msg!' \
+	  $(DESTDIR)/etc/3dm2/3dm2.conf
+	sed -i 's!^Help .*$$!Help /usr/share/doc/3dm2/html!' \
+	  $(DESTDIR)/etc/3dm2/3dm2.conf
+	sed -i 's!^Logger .*$$!Logger 0!' \
+	  $(DESTDIR)/etc/3dm2/3dm2.conf
+
+binary-indep: build install
+binary-arch: build install
+	dh_testdir
+	dh_testroot
+	dh_installchangelogs
+	dh_installdocs
+	dh_installinit
+	dh_installman
+	dh_link
+	dh_strip
+	dh_compress -Xusr/share/doc/3dm2/html
+	dh_fixperms -Xetc/3dm2/3dm2.conf
+	dh_installdeb
+	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary: binary-indep binary-arch
+.PHONY: build clean binary-indep binary-arch binary install

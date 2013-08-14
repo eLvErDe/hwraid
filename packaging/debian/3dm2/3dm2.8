@@ -1,0 +1,35 @@
+.TH 3DM2 8 "2012-01-30" "2.11.00.019+10.2.1" "3Ware Disk Management"
+
+.SH NAME
+3dm2 \- 3ware 3DM 2 Disk Management Utility.
+
+.SH SYNOPSIS
+.B 3dm2
+
+.SH DESCRIPTION
+3ware Disk Manager 2 (3DM 2), allows you to view the status of and manage 3ware
+RAID controllers and associated drives. 3DM 2 runs as a daemon. When it is
+running, you can use your browser to view status and perform administrative
+tasks locally or remotely.
+.PP
+This version of 3DM2 supports all known 3Ware controllers.
+
+.SH OPTIONS
+.B 3dm2
+has no options.
+
+.SH CONFIGURATION
+In /etc/3dm2/3dm2.conf, the following defaults are set:
+.TP
+3DM 2 is listening on <https://localhost:888/>.
+.TP
+Default password for both the user and the administrator is '3ware'.
+.TP
+Remote access is disabled for security reasons (change 'RemoteAccess 0' to 'RemoteAcces 1' to enable it and restart the 3dm2 daemon).
+.PP
+
+.SH AUTHOR
+3dm2 was written by the AMCC 3DM 2 Development Team.
+.PP
+This manual page was written by Jonas Genannt <jonas.genannt@capi2name.de> for
+the Debian project (but may be used by others).

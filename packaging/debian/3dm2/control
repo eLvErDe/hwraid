@@ -1,0 +1,21 @@
+Source: 3dm2
+Section: admin
+Priority: optional
+Maintainer: Adam Cécile (Le_Vert) <gandalf@le-vert.net>
+Build-Depends: debhelper (>= 5)
+Standards-Version: 3.9.2
+Homepage: http://www.3ware.com
+
+Package: 3dm2
+Architecture: amd64 i386
+Depends: ${shlibs:Depends}, ${misc:Depends}, lsb-base, exim4 | postfix | sendmail | mail-transport-agent
+Description: 3ware 3DM2 RAID HBAs Management Utility
+ 3ware Disk Manager 2 (3DM2), allows you to view the status of and manage
+ 3ware RAID controllers and associated drives.
+ .
+ 3DM2 runs as a daemon. When it is running, you can use your browser to view
+ status and perform administrative tasks locally or remotely.
+ .
+ It can also be used to report RAID failures by mail.
+ .
+ This package supports all known 3Ware controller.

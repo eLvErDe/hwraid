@@ -1,0 +1,13 @@
+3dm2 for Debian
+----------------
+
+3DM2 is listening on <https://127.0.0.1:888/> as default.
+Please note that, for evident security reason, it's not available from any
+remote computer.
+You can change this behavior by modifying /etc/3dm2/3dm2.conf and by setting
+RemoteAccess to 1. After modifying the value, please, do restart the service.
+
+Default passwords for both user and administrator are '3ware'.
+PLEASE CHANGE THESE PASSWORDS *BEFORE* ENABLING REMOTE ACCESS !
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Mon, 30 Jan 2012 14:28:34 +0100

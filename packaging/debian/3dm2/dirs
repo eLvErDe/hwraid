@@ -1,0 +1,5 @@
+usr/sbin
+etc/3dm2
+usr/share/3dm2
+usr/share/doc/3dm2
+var/lock/subsys

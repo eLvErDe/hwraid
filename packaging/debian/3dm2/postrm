@@ -1,0 +1,17 @@
+#!/bin/sh -e
+
+case "$1" in
+
+  remove)
+    # Remove lock if still exists
+    rm -f /var/lock/subsys/3dm2 
+  ;;
+
+  purge)
+    # Remove conf and ssl cert
+    rm -rf /etc/3dm2
+  ;;
+
+esac
+
+#DEBHELPER#

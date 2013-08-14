@@ -1,0 +1,47 @@
+3dm2 (2.11.00.019+10.2.1+KB16625-1) unstable; urgency=low
+
+  * New upstream release:
+    - Update binaries according to:
+      http://kb.lsi.com/KnowledgebaseArticle16625.aspx (Closes: #226).
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Mon, 24 Sep 2012 21:41:47 +0200
+
+3dm2 (2.11.00.019+10.2.1-1) unstable; urgency=low
+
+  * New upstream release.
+  * Do not use separate tarball for each architecture anymore.
+  * Improve debian/copyright to explain how to generate sources tarball.
+  * Update licence and copyright information.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Mon, 30 Jan 2012 14:28:34 +0100
+
+3dm2-x86-64 (2.11.00.016+10.2-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Mon, 19 Sep 2011 22:04:56 +0200
+
+3dm2-x86-64 (2.09.00.009+9.5.2-2) unstable; urgency=low
+
+  * Disable logger which breaks daemon's start.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Wed, 08 Jul 2009 19:24:27 +0200
+
+3dm2-x86-64 (2.09.00.009+9.5.2-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Tue, 07 Jul 2009 19:57:18 +0200
+
+3dm2-x86-64 (2.08.00.008+9.5.1.1-1) unstable; urgency=low
+
+  * New upstream release.
+  * Better versionning.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Mon, 22 Dec 2008 13:04:31 +0100
+
+3dm2-x86-64 (2.07.00.009-1) unstable; urgency=low
+
+  * Initial release.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Tue, 26 Aug 2008 14:10:59 +0200
