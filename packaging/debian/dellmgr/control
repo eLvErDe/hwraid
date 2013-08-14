@@ -1,0 +1,20 @@
+Source: dellmgr
+Section: admin
+Priority: optional
+Maintainer: Adam Cécile (Le_Vert) <gandalf@le-vert.net>
+Build-Depends: debhelper (>= 4)
+Standards-Version: 3.8.0
+Homepage: http://linux.dell.com
+
+Package: dellmgr
+Architecture: i386 amd64
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Manage DELL PERC/CERC cards based on LSI MegaRAID chip
+ This tool allow you to access the RAID card BIOS from Linux.
+ .
+ Useful to manage arrays or start maintenance operations.
+ .
+ If you have a MegaRAID card, which doesn't come from Dell, look at
+ megamgr package instead.
+ .
+ This tool will not work on recent SAS cards.

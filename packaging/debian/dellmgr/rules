@@ -1,0 +1,44 @@
+#!/usr/bin/make -f
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+DESTDIR = $(CURDIR)/debian/dellmgr
+
+build:
+
+clean: 
+	dh_testdir
+	dh_testroot
+	dh_clean 
+
+install:
+	dh_testdir
+	dh_testroot
+	dh_clean -k 
+	dh_installdirs
+	install -D -m 755 $(CURDIR)/usr/sbin/dellmgr.bin \
+			  $(DESTDIR)/usr/lib/dellmgr/dellmgr.real
+	install -D -m 644 $(CURDIR)/debian/wrappers/create-device-node \
+			  $(DESTDIR)/usr/lib/dellmgr/create-device-node
+	install -D -m 755 $(CURDIR)/debian/wrappers/dellmgr \
+			  $(DESTDIR)/usr/sbin/dellmgr
+
+binary-indep: build install
+binary-arch: build install
+	dh_testdir
+	dh_testroot
+	dh_installchangelogs debian/Dellmgr-changes.txt 
+	dh_installdocs
+	dh_link
+	dh_strip
+	dh_compress
+	dh_fixperms
+	dh_installdeb
+	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary: binary-indep binary-arch
+.PHONY: build clean binary-indep binary-arch binary install

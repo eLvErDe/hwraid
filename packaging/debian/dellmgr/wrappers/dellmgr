@@ -1,0 +1,12 @@
+#!/bin/sh
+
+. /usr/lib/dellmgr/create-device-node
+
+create_node
+
+if [ $? -eq 0 ]; then
+  /usr/lib/dellmgr/dellmgr.real $@
+else
+  echo "No LSI MegaRAID cards found."
+  exit 1
+fi

@@ -1,0 +1,1768 @@
+*************************************************************************************************
+				OVERALL RELEASE DOCUMENT
+			FOR 40-Logical Drive Supporting MegaMgr Utility
+                                    UNDER LINUX FOR DELL
+                           Revised on Oct-08-2003 by Amit Pandya
+*************************************************************************************************
+
+*************
+THIS RELEASE
+*************
+
+[DELL: Linux: dellmgr+dellmgr.bin: Ver 5.31: Oct-08-2003: AmitP]
+{
+
+  Changes with respect to Ver 5.30 : Oct 03,2003
+
+  CQ Task Id: LSIID100005287
+
+  As per Gerry's suggestion, now the application does not check
+  for the size of the physical drive(s), if the user opts for
+  CC/Init/Rbld.
+
+  This release is an extension of the previous version for the
+  coercion related changes in the application.
+
+
+
+  (A) Coercion related issue
+  --------------------------
+  This release is associated with the following Ids.
+  [though may not be directly reported for Megamgr]. The following
+  Ids are related to the problems faced due to the coercion issue
+  on different applications.
+
+  (1) LSIID100004134
+  (2) LSIID100004755
+  (3) LSIID100004756
+  (4) LSIID100004741
+
+
+  This release takes care of the Coercion issue related to the
+  physical drive size.
+
+  Now the utility gets the drive size based on the following algorithm.
+
+  (1) Fire new f/w cmd 0xA4/0x57 to get the coerced drive size
+      from the f/w.
+
+      (a) If the cmd is successful, take the coerced drive size from f/w.
+      (b) If the cmd fails, proceed to number (2)
+
+  (2) Get the drive size by firing SCSI Disk Capcacity cmd[0x03/0x25]
+
+  (3) Fire SCSI SEEK cmd[0x03/0x0B] & try to seek 32 sectors beyond
+      the drive size returned by (2)
+
+      (a) If SEEK cmd is successful, don't coerce the drive size returned by
+          (2)
+      (b) If SEEK cmd fails, coerce the drive size returned by (2).
+
+
+  Note: This is a major change in the application and this needs to be
+        tested thoroughly. It will affect all the operations on the
+        physical drive(s) and the logical drive(s).
+
+        All options of the utility needs to be thoroughly tested on the
+        following types of f/w.
+
+        (A) New F/w with 0xA4/0x57 cmd implemented.
+        (B) Old F/w which returns the coerce drive size
+        (C) Old F/w which returns uncoerced drive size.
+
+  Thorough testing needs to be done before delivering it to the customer.
+  Expect some issues will be present which were not detected by the
+  developer.
+
+ (B) As per DELL's change request #LSID10005063, Reconstruction option
+     is put back in the dellmgr for Linux also.
+
+     Earlier, this was disabled in Ver 5.28, Apr-29-2003 as per
+     DELL's request.
+
+
+ TESTING PERFORMED:
+ ------------------
+ Testing done on a 493 card with the following f/w on it.
+
+ (a) New f/w           : 112G
+ (b) F/w with coercion
+ (c) F/w without coercion.
+
+
+ File Details:
+ -------------
+        The release is made as release.gz file.
+        release.gz contains the rpm format of the release.
+
+        tar xvfz release.gz will give :
+
+        Dellmgr-5.31-0.i386.rpm
+
+        To install the dellmgr run
+        rpm -i Dellmgr-5.31-0.i386.rpm
+
+        This will install dellmgr & dellmgr.bin in the /usr/sbin directory.
+        
+
+        dellmgr.bin :  592,660 bytes
+        dellmgr     :    1,320 bytes
+}
+
+
+
+
+*****************************
+PREVIOUS RELEASES
+*****************************
+
+[DELL: Linux: dellmgr+dellmgr.bin: Ver 5.30: Oct-03-2003: AmitP]
+{
+
+  Changes with respect to Ver 5.29 : May 05,2003
+
+  (A) Coercion related issue
+  --------------------------
+  This release is associated with the following Ids.
+  [though may not be directly reported for Megamgr]. The following
+  Ids are related to the problems faced due to the coercion issue
+  on different applications.
+
+  (1) LSIID100004134
+  (2) LSIID100004755
+  (3) LSIID100004756
+  (4) LSIID100004741
+
+
+  This release takes care of the Coercion issue related to the
+  physical drive size.
+
+  Now the utility gets the drive size based on the following algorithm.
+
+  (1) Fire new f/w cmd 0xA4/0x57 to get the coerced drive size
+      from the f/w.
+
+      (a) If the cmd is successful, take the coerced drive size from f/w.
+      (b) If the cmd fails, proceed to number (2)
+
+  (2) Get the drive size by firing SCSI Disk Capcacity cmd[0x03/0x25]
+
+  (3) Fire SCSI SEEK cmd[0x03/0x0B] & try to seek 32 sectors beyond
+      the drive size returned by (2)
+
+      (a) If SEEK cmd is successful, don't coerce the drive size returned by
+          (2)
+      (b) If SEEK cmd fails, coerce the drive size returned by (2).
+
+
+  Note: This is a major change in the application and this needs to be
+        tested thoroughly. It will affect all the operations on the
+        physical drive(s) and the logical drive(s).
+
+        All options of the utility needs to be thoroughly tested on the
+        following types of f/w.
+
+        (A) New F/w with 0xA4/0x57 cmd implemented.
+        (B) Old F/w which returns the coerce drive size
+        (C) Old F/w which returns uncoerced drive size.
+
+  Thorough testing needs to be done before delivering it to the customer.
+  Expect some issues will be present which were not detected by the
+  developer.
+
+ (B) As per DELL's change request #LSID10005063, Reconstruction option
+     is put back in the dellmgr for Linux also.
+
+     Earlier, this was disabled in Ver 5.28, Apr-29-2003 as per
+     DELL's request.
+
+
+ TESTING PERFORMED:
+ ------------------
+ Testing done on a 493 card with the following f/w on it.
+
+ (a) New f/w           : 112G
+ (b) F/w with coercion
+ (c) F/w without coercion.
+
+
+ File Details:
+ -------------
+        The release is made as release.gz file.
+        release.gz contains the rpm format of the release.
+
+        tar xvfz release.gz will give :
+
+        Dellmgr-5.30-0.i386.rpm
+
+        To install the dellmgr run
+        rpm -i Dellmgr-5.30-0.i386.rpm
+
+        This will install dellmgr & dellmgr.bin in the /usr/sbin directory.
+        
+
+        dellmgr.bin :  592,852 bytes
+        dellmgr     :    1,320 bytes
+}
+
+
+[DELL : LINUX : dellmgr.bin & dellmgr : Ver 5.29 : May-05-2003 : AmitP]
+{
+ Changes:  With respect to Ver 5.28 : Apr-29-2003
+ --------
+
+ There was a debug message present in the previous version of the utility.
+ If any IOCTL call failed from the driver side, the debug message was printing
+ the same. This was as per the design of the utility as it expected that the
+ IOCTL call will never fail.
+
+ With the new driver, if user tried to do random deletion of the logical drive,
+ when CC/BI was going on, the IOCTL call failed and this message was being
+ printed.
+
+ This never occured at developer level testing as the driver available with
+ the developer end(2.3.10-pre1) never failed any IOCTL call.
+
+ This debug message is disabled in this release.
+
+
+ TESTING PERFORMED:
+ ------------------
+ Tried to test this at developer's end, but could not be tested as the
+ IOCTL call never fails with the said driver version (2.3.10-pre1).
+ Please test it thoroughly before releasing it to the customer.
+
+
+ File Details:
+ -------------
+        The release is made as release.gz file.
+        release.gz contains the rpm format of the release.
+
+        tar xvfz release.gz will give :
+
+        Dellmgr-5.29-0.i386.rpm
+
+        To install the dellmgr run
+        rpm -i Dellmgr-5.29-0.i386.rpm
+
+        This will install dellmgr & dellmgr.bin in the /usr/sbin directory.
+        
+
+        dellmgr.bin :  574,644 bytes
+        dellmgr     :    1,320 bytes
+}
+
+[DELL : LINUX : dellmgr.bin & dellmgr : Ver 5.28 : Apr-29-2003 : AmitP]
+{
+ Changes:  With respect to Ver 5.27 : Feb-14-2003
+ --------
+
+(1) [#CHNG76013]
+
+    Reconstruction option is no longer supported now in Linux Dellmgr as
+    it was incompatible with file system 3.
+    This option and it's functionality is removed from the
+    "Management Menu"
+
+(2) [#DFCT79146]
+
+    There was a cosmetic issue with the previous version of the utility.
+    If the user tried to exit without initializing the newly created
+    logical drive(s), the warning message given to the user said
+
+    "..Intialize the logical drive.."
+    in place of
+
+    "..Initialize the logical drive.."
+
+    corrected in this release.
+
+
+(3) [#DFCT56526]
+
+    There was a cosmetic issue with the previous version of the utility.
+    After reconstruction, the given message said,
+
+    "Actual size Logical Drive has incresed ..."
+    in place of
+
+    "Actual size OF Logical Drive has incresed ..."
+
+    corrected in this release.
+
+    However, this message will not appear in dellmgr, as RECONSTRUCT
+    option no longer exists.
+
+(4) [#DFCT81909]
+
+    There was a bug in the previous version of the utility.
+    During background init, if the deletion of logical drive failed,
+    the utility was closing the device file node.
+    Corrected in this release.
+
+
+(5) [#DFCT82209]
+
+    In the previous version, "Prepare to Remove" option in
+    "Objects->Physical Drive" menu was not working as the code
+    was found to be disabled since 1999.
+
+    The code is enabled in this release. 
+
+       
+
+ TESTING PERFORMED:
+ ------------------
+ 
+ Item no. 1,2 & 3 tested through demo utility & on a 471 card
+
+ Item no. 4 & 5 :
+ ---------------
+ No testing could be done at developer's end due to lack of
+ supporting hardware.
+
+ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+ These needs to be tested thoroughly before giving it to the customer.
+
+ !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+ File Details:
+ -------------
+        The release is made as release.gz file.
+        release.gz contains the rpm format of the release.
+
+        tar xvfz release.gz will give :
+
+        Dellmgr-5.28-0.i386.rpm
+
+        To install the dellmgr run
+        rpm -i Dellmgr-5.28-0.i386.rpm
+
+        This will install dellmgr & dellmgr.bin in the /usr/sbin directory.
+        
+
+        dellmgr.bin :  574,900 bytes
+        dellmgr     :    1,320 bytes
+
+}
+
+[DELL : LINUX : dellmgr.bin & dellmgr : Ver 5.27 : Feb-14-2003 : AmitP]
+{
+ Changes:  With respect to Ver 5.26 : Jan-10-2003
+ --------
+
+  (1) There was a bug in the previous version of the utility. For getting the
+      predictive failure, it was firing 0x65 cmd on 40-ld cards also.
+
+      Predictive failure for 40-ld card is now found out from command
+      0xA4/0x0F on 40-ld card, 0x65 cmd for 8-ld card.
+
+      [Defect #DFCT74531]
+
+  (2) If the user tried to fail any configured physical drive manually
+      in the physical drive menu, the warning message had a mention of
+      R3.
+
+      Corrected in this release. Now it does not mention R3.
+
+      [#CHNG74939]
+
+
+ TESTING PERFORMED:
+ ------------------
+ Most of the testing done through demo utility.
+
+ Testing on actual hardware could not be done for change no.1 due to
+ lack of supporting hardware.
+
+ Actual testing for remaining changes done on a system with one 471
+ card on it.
+
+ File Details:
+ -------------
+        The release is made as release.gz file.
+        release.gz contains the rpm format of the release.
+
+        tar xvfz release.gz will give :
+
+        Dellmgr-5.27-0.i386.rpm
+
+        To install the dellmgr run
+        rpm -i Dellmgr-5.27-0.i386.rpm
+
+        This will install dellmgr & dellmgr.bin in the /usr/sbin directory.
+        
+
+        dellmgr.bin :  587,476 bytes
+        dellmgr     :    1,320 bytes
+}
+
+[DELL : LINUX : dellmgr.bin & dellmgr : Ver 5.26 : Jan-10-2003 : AmitP]
+{
+ Changes:  With respect to Ver 5.25 : Oct-25-2002
+ --------
+        This release takes care of the following
+
+ (1) There was a bug in the previous version of the utility.
+     If back-ground init was going on one logical drive, then
+     if the user tried to start check consistency/Init on some other
+     logical drive, it was failing.
+
+     [Reported By Rubina : 12-06-2002]
+     Corrected in this release.
+
+
+ (2) Added code to display the sync negotiated speed for the physical drive
+     as per the new specs of Nov.14,2002 By Chayan Biswas
+
+     Use Cmd 0xA4/2D to get target transfer speed for U320 adapters(518/520)
+     instead of Enquiry3 cmd. If this command succeeds and gets valid data
+     then give transfer speed in terms of MB/sec following SCSI standard in 
+     physical drive info window. Otherwise, try getting the same information
+     through Enquiry3 command as the utility did earlier.
+
+     The variable for storing this information is changed to "ushort"
+     from "uchar" to accomodate data for (320MB/sec.).
+
+
+ (3) Disallow R0-spanning as it's useless.
+     [Requested by Timir : 12-09-2002]
+
+
+ (4) Disallow partial array spanning even in non random deletion
+     supporting f/w path of the code.
+     [It was already disallowed in random deletion supporting f/w path]
+
+     Requested by Dougg : 12-09-2002.
+
+
+ TESTING PERFORMED:
+ ------------------
+ Testing on actual hardware could not be done for change no.2
+ (display sync negotiaton speed up to 320MB/sec due to lack of
+ supporting hardware)
+
+ Actual testing for remaining changes done on a system with one 493
+ card on it.
+
+ File Details:
+ -------------
+        The release is made as release.gz file.
+        release.gz contains the rpm format of the release.
+
+        tar xvfz release.gz will give :
+
+        Dellmgr-5.26-0.i386.rpm
+
+        To install the dellmgr run
+        rpm -i Dellmgr-5.26-0.i386.rpm
+
+        This will install dellmgr & dellmgr.bin in the /usr/sbin directory.
+        
+
+        dellmgr.bin : 587,252 bytes
+        dellmgr     :   1,320 bytes
+
+
+}
+
+[ DELL : Linux : Dellmgr & Dellmgr.bin  : Ver 5.25 : Oct-25-2002 : AmitP]
+{
+Changes:
+--------
+     With respect to Ver 5.24 : Oct-17-2002
+
+ (1) Some unwanted message was displayed on the screen once the
+     user exited from the utility.
+     Made changes in the script "dellmgr" to take care of this.
+
+
+
+Testing Done At Developer's End:
+--------------------------------
+ Testing done on a Red Hat Linux 8.0 m/c in DELL lab &
+ verified that no unwanted message is displayed now.
+
+File Details:
+
+        The release is made as release.gz file.
+        release.gz contains the rpm format of the release.
+
+        tar xvfz release.gz will give :
+
+        Dellmgr-5.25-0.i386.rpm
+
+        To install the dellmgr run
+        rpm -i Dellmgr-5.25-0.i386.rpm
+
+        This will install dellmgr & dellmgr.bin in the /usr/sbin directory.
+        
+
+        dellmgr.bin : 585,524 bytes
+        dellmgr     :   1,320 bytes
+
+}
+
+[ DELL : Linux : Dellmgr & Dellmgr.bin  : Ver 5.24 : Oct-17-2002 : AmitP]
+{
+Changes:
+--------
+     With respect to Ver 5.23 : Aug-28-2002
+
+ (1) Made changes in the script(Dellmgr) to make it work on Red Hat
+     Linux 8.0
+
+ (2) The utility gives the user the option to view ongoing Init/CC
+     preogress now.
+
+     Affected Menus are :
+
+     Managment Menu->Initialize->
+     and 
+     Managment Menu->Check Consistency->
+
+     Now the bottom message also gives the option to the user to view
+     ongoing Init/CC by pressing F6/F7 keys respectively.
+
+     If no init/cc is going on, the message is given to the user.
+     Once the user enters the viewwing of Init/CC, the "ESC" key
+     has got the same functionality as in the normal init/cc menu.
+
+
+
+Testing Done At Developer's End:
+--------------------------------
+ Testing  done on a 493 card. Started Init/CC and then exited the menu
+ with out aborting the operation.
+
+ Saw the Init/CC progress by pressing F6/F7 keys in Init/CC menu.
+
+ Tested the utility on a Red Hat Linux 8.0 to see that the screen
+ corruption issues are resolved and the utility works fine on it.
+
+
+File Details:
+
+        The release is made as release.gz file.
+        release.gz contains the rpm format of the release.
+
+        tar xvfz release.gz will give :
+
+        Dellmgr-5.24-0.i386.rpm
+
+        To install the dellmgr run
+        rpm -i Dellmgr-5.24-0.i386.rpm
+
+        This will install dellmgr & dellmgr.bin in the /usr/sbin directory.
+        
+
+        dellmgr.bin : 585,396 bytes
+        dellmgr     :   1,189 bytes
+}
+
+[ DELL : Linux : Dellmgr & Dellmgr.bin  : Ver 5.23 : Aug-28-2002 : AmitP]
+{
+Changes:
+--------
+        With respect to Ver 5.22 : Apr-18-2002
+
+        (1) Default WritePolicy for Perc 4/SC (520) is changed to
+            WRITEHTRU per Scott Drake's email of 7-30-02.
+        (2) Added support for x-term.
+            Now the utility works on the normal as well as the x-term
+            of Linux.
+        (3) If any phyiscal drive is mis-behaving and reporting a non-usable
+            size, that physical drive is not allowed in the configuration
+            now.
+
+
+Testing Done At Developer's End:
+-------------------------------
+        Testing done through the demo utility.
+        X-term related testing done on a linux m/c in the normal
+        as well as the x-term.(Red Hat Version 7.2)
+        For change no. 3, simulated one physical drive in the demo utility
+        as size 1 sector and did the related testing.
+
+File Details:
+-------------
+        The release is made as release.gz file.
+        release.gz contains the rpm format of the release.
+
+        tar xvfz release.gz will give :
+        Dellmgr-5.23-0.i386.rpm
+
+        To install the dellmgr run
+        rpm -i Dellmgr-5.23-0.i386.rpm
+
+        This will install dellmgr & dellmgr.bin in the /usr/sbin directory.
+        
+
+        dellmgr.bin : 582,676 bytes
+        dellmgr     : 592 bytes
+        
+}
+[ DELL : LINUX : dellmgr : Ver 5.22 : Apr-18-2002 : P. Dutta]
+{
+Changes: (with respect to 5.21 : Apr 18,2002)
+
+ 1. Disallow spanning across fractured/partial arrays.
+ 2. Support of 518/520/532/533/ZCR series cards
+
+TEST REPORT AT DEVELOPER'S END:
+-------------------------------
+ Change no. 1 & 2 are tested through demo utility.
+
+File Details:
+-------------
+     FileName    SizeInBytes          Description....
+     ---------   -----------          ---------------  
+     dellmgr            692         Shell Script - calls dellmgr.bin
+     dellmgr.bin    672,908         Binary file  - Configuration Utility ver 5.22
+     dellmgr-5.22-0.i386.rpm released file.
+
+     Release has the file "dellmgr-5.22-0.i386.rpm".
+	To install, enter the following on the command line:
+                rpm -ivh dellmgr-5.22-0.i386.rpm
+	This will install following two files in the /usr/sbin directory
+	dellmgr      :  Script to call configuration utility binary (dellmgr.bin)
+	dellmgr.bin  :  Binary for configuration utility 
+
+	After installation type "dellmgr" to start the utility.
+	To uninstall the rpm:
+                rpm -e dellmgr-5.22-0
+
+     Files are compiled/Linked on a Linux OS (RedHAT 7.0)
+                                                    
+}
+[ DELL : LINUX : dellmgr : Ver 5.21 : Apr-02-2002 : P. Dutta]
+{
+Changes: (with respect to 5.20 : Mar 21,2002)
+
+Default write policy on Logical drives on dedicated channel is made to be WRITEBACK as per
+request from Peter on 3/22/02.
+
+"Warning/error message is introduced in case of HSP making failed" in view/add configuration
+ or Easy Configuration menu through F4 option in presence of "Rebuild or any other operation".
+[In Previous Releases: After HSP is made thru F4 in these menus and  then exit - that did not 
+give any "save y/n" option nor did it give any error message thus it was confusing user what 
+happened to the action taken inside the menu].
+
+
+TEST REPORT AT DEVELOPER'S END:
+-------------------------------
+ Tested through demo utility.
+ Testing through actual utility.
+
+
+File Details:
+-------------
+     FileName    SizeInBytes          Description....
+     ---------   -----------          ---------------  
+     dellmgr            692         Shell Script - calls dellmgr.bin
+     dellmgr.bin    672,300         Binary file  - Configuration Utility ver 5.21
+     dellmgr-5.21-0.i386.rpm 287,219  rpm released file.
+
+     Release has the file "dellmgr-5.21-0.i386.rpm".
+	To install, enter the following on the command line:
+                rpm -ivh dellmgr-5.21-0.i386.rpm
+	This will install following two files in the /usr/sbin directory
+	dellmgr      :  Script to call configuration utility binary (dellmgr.bin)
+	dellmgr.bin  :  Binary for configuration utility 
+
+	After installation type "dellmgr" to start the utility.
+	To uninstall the rpm:
+                rpm -e dellmgr-5.21-0
+
+     Files are compiled/Linked on a Linux OS (RedHAT 7.0)
+                                                    
+}
+
+
+[ DELL : LINUX : dellmgr : Ver 5.20 : Mar-21-2002 : AmitP]
+{
+Changes: (with respect to 5.19 : Feb 25,2002)
+
+ There was a bug reported with the previous version
+ of the utility. Even for physical drives on SCSI chnl
+ (chnl on motherboard), it was showing coerced size.
+
+ This is fixed in this version.
+
+TEST REPORT AT DEVELOPER'S END:
+-------------------------------
+ Tested through demo utility.
+ Thorough testing on actual hardware is suggested.
+
+
+File Details:
+-------------
+     FileName    SizeInBytes          Description....
+     ---------   -----------          ---------------  
+     dellmgr            592         Shell Script - calls dellmgr.bin
+     dellmgr.bin    579,764         Binary file  - Configuration Utility ver 5.20
+
+     Release has the file "dellmgr-5.20-0.i386.rpm".
+	To install, enter the following on the command line:
+                rpm -ivh dellmgr-5.20-0.i386.rpm
+	This will install following two files in the /usr/sbin directory
+	dellmgr      :  Script to call configuration utility binary (dellmgr.bin)
+	dellmgr.bin  :  Binary for configuration utility 
+
+	After installation type "dellmgr" to start the utility.
+	To uninstall the rpm:
+                rpm -e dellmgr-5.20-0
+
+     Files are compiled/Linked on a Linux OS (RedHAT 6.2)
+                                                    
+}
+
+
+[ DELL : LINUX : dellmgr : Ver 5.19 : Feb-25-2002 : AmitP]
+{
+Changes: (with respect to 5.18 : Jan 14,2002)
+
+ 1.  Disallow disk spinup time option on IDE-1000 card.
+ 2.  Distinguish between Background Initialization and
+     Check Consistency and display proper message if supported
+     by firmware (0xA4/0x13 call).
+     Corrected the non LD0 related bug.
+ 3.
+     ShiftTab key was not available to the utility on Linux.
+     So the bottom message for changing the rebuild rate is
+     changed from
+
+     "Use Tab/ShiftTab and Arrow Keys to increment/decrement the Rebuild Rate";
+
+     to
+
+     "Use Tab and Arrow Keys to increment/decrement the Rebuild Rate";
+
+  4. At the time of creation of logical drive(s), the cursor display
+     for changing the logical drive size was erratic. This was due
+     to some issues with the "curses" function "move(x,y)". So the
+     cursor is not displayed now.
+
+  5. Resolved the coloring issue at the time of creation of
+     logical drive(s). [Reported by BrianH]
+
+
+  6. Utility supports MixMode Cluster.
+
+  7. Removed the bug which was giving core dump while
+     entering the "Reconstruction Menu" for ld==8.
+
+
+TEST REPORT AT DEVELOPER'S END:
+-------------------------------
+
+     
+
+   471 card (Firmware RT64) with a Raid-5 LD of 5 disks configured:
+   Tested both background initialize case and check consistency case.
+
+   IDE-1000: "Disk spin up timing" option is seen not allowed on this 
+   card.
+	    
+   Mixmode and other enhancements related testing done through demo utility.
+
+
+File Details:
+-------------
+     FileName    SizeInBytes          Description....
+     ---------   -----------          ---------------  
+     dellmgr            592         Shell Script - calls dellmgr.bin
+     dellmgr.bin    579,732         Binary file  - Configuration Utility ver 5.19
+
+     Release has the file "dellmgr-5.19-0.i386.rpm".
+	To install, enter the following on the command line:
+                rpm -ivh dellmgr-5.19-0.i386.rpm
+	This will install following two files in the /usr/sbin directory
+	dellmgr      :  Script to call configuration utility binary (dellmgr.bin)
+	dellmgr.bin  :  Binary for configuration utility 
+
+	After installation type "dellmgr" to start the utility.
+	To uninstall the rpm:
+                rpm -e dellmgr-5.19-0
+
+     Files are compiled/Linked on a Linux OS (RedHAT 6.2)
+                                                    
+}
+
+[ DELL : LINUX : dellmgr : Ver 5.18 : Jan-14-2002 : Priya]
+{
+Changes: (with respect to 5.17 : Dec 05,2001)
+
+1. ROMB related codes as modified for previous HP and Novell release are compiled under
+   Linux OS and tested.
+   The following features of ROMB are modified in this release
+   a. It shows channel as "RAID Ch-x" or "SCSI Ch-x" (Channel on motherboard)
+   In physical drive menu and configuration menus.
+
+   b. Devices on SCSI Chnl( i.e.  channel on motherboard) have limited role
+        to play as said below.
+	-It cannot be configured as Hotspare or part of an array for logical 
+         drives
+        -It cannot take part for rebuild/reconstruction also.
+        -Operations in physical drive menu are denied on SCSI Chnl devices
+          * Make Hotspare     
+          * Rebuild
+          * Force Online/Offline
+          * View rebuild progress
+        -Capacity of Drives on SCSI Channel are shown as the actual SCSI 
+         size(got from SCSI cmd 0x25) rounded to nearest MegaByte.
+         Capacity of Drives on RAID channel are shown in COERCED mode as 
+         before.
+
+
+      
+2.  Background Initialization/Consistency Checking is distinguished thru 0xA4/0x13 
+    firmware command on eligible firmwares and distinctive message is shown during 
+    selection of logical drive for Initialization/Consistency checking.
+
+3. Bug Fix:
+    a. Physical drive properties for "Error Counter" was showing wrong 
+       values on some 8-ld cards because of wrong channel parameter 
+       being passed to the firmware.
+    b. "Number of logical drives" shown in "Logical Drives Configured-xx" 
+       at some places were showing wrong values because of its improper 
+       initialization .
+
+TEST REPORT AT DEVELOPER'S END:
+-------------------------------
+   - Enhancements were tested by simulation program called demomgr.
+   - Change related testing was done via general navigation on the simulator (demomgr) and
+         a 493 card with "ROMB" Test f/w and RT64 f/w on it.
+
+File Details:
+-------------
+     FileName    SizeInBytes     Date	     Description....
+     ---------   -----------    ------      ---------------  
+     dellmgr            694     01-14-02    Shell Script - calls dellmgr.bin
+     dellmgr.bin    660,056     01-14-02    Binary file  - Configuration Utility ver 5.18
+
+     Release has the file "dellmgr-5.18-0.i386.rpm".
+	To install, enter the following on the command line:
+		rpm -ivh dellmgr-5.18-0.i386.rpm
+	This will install following two files in the /usr/sbin directory
+	dellmgr      :  Script to call configuration utility binary (dellmgr.bin)
+	dellmgr.bin  :  Binary for configuration utility 
+
+	After installation type "dellmgr" to start the utility.
+	To uninstall the rpm:
+		rpm -e dellmgr-5.18-0
+
+     Files are compiled/Linked on a Linux OS (RedHAT 7.0)
+                                                    
+}
+ 
+[ DELL : LINUX : dellmgr : Ver 5.17 : Dec-05-2001 : Priya]
+{
+
+Changes: (with respect to 5.16 : Oct 10,2001)
+
+   - ROMB (DELL Discovery Project) features are activated , changed and tested.
+      	   1.Supports SCSI Chnl(Chnl on motherboard) and RAID chnl
+	   2. Devices on SCSI Chnl are not shown during configuration,
+	   	rebuild & reconstruct menus. i.e. user will not be able 
+		to configure the devices on SCSI chnls.
+	   3. All devices ( SCSI + RAID Chnl ) are shown in physical drive 
+	       menu.
+	        Following options are not allowed for devices on SCSI Chnl.
+		      (a)Make Hotspare		(d) Rebuild
+		      (b)Force Online		(e) View Rebuild Progress
+		      (c)Force Offline                       (f) Reconstruction
+	   4. Actual SCSI Size(to nearest MB) is shown for SCSI Drives on 
+	        SCSI-CHANNEL.
+	        For drives on RAID CHANNEL, it shows COERCED size according to
+                the formula supplied by fremont.		
+
+	   5. In physical drive showing menu, RAID chnls are shown as
+	        "RAID Ch-X" and SCSI Chnls are shown as "SCSI Ch-X".
+
+           6. Raid Level 0,1,5,10,50 support
+   
+           7. Reconstruction support
+   
+           8. Foreground Initialization and multiple concurrent initialization support
+   
+           9. Reconstruction Detection support.
+ 
+          10. Global Hotspare support (Dedicated Hotspare is not supported).
+
+          11 Reports SCSI drive on ROMB chnl.
+ 
+
+   - Allow deletion of last logical drive (from Object->Logical Drive menu) on 
+     Random deletion supporting f/w without clearing configuration. 
+     As a result, Logical Drive selection menu appears even in presence of one 
+     logical drive.
+
+   - cosmetic change: Exit message is changed for Dell from "Logical drives have
+     been created and not initialized. Please initialize them" to 
+     "Please initialize newly created logical drives, if any."
+     As user might have deleted all logical drives created in this session.
+  
+   - Packaged with RPM style for DELL requested delivery.
+
+TEST REPORT AT DEVELOPER'S END:
+-------------------------------
+   - Enhancements were tested by simulation program called demomgr.
+   - Change related testing was done via general navigation on the simulator (demomgr) and
+         a 493 card with "ROMB" Test f/w and RT64 f/w on it.
+
+File Details:
+-------------
+     FileName    SizeInBytes     Date	     Description....
+     ---------   -----------    ------      ---------------  
+     dellmgr            694     10-09-01    Shell Script - calls dellmgr.bin
+     dellmgr.bin    660,056     12-05-01    Binary file  - Configuration Utility ver 5.17
+                                                    
+     Copy these files to Linux system, make them executable (chmod +x)
+     and invoke 'dellmgr' script to run the utility 
+
+     File compiled/Linked on OS build RedHAT 7.1		
+
+}
+
+
+[ DELL : LINUX : dellmgr : Ver 5.16 : Oct-10-2001 : Anil]
+{
+
+Changes: (with respect to 5.15 : Aug 29,2001)
+
+   - The configuration utility's banner has been renamed from 
+     "PERC configuration Manager..."  to "PERC/CERC configuration utility..."
+   - The banner's position and length are adjusted accordingly to reflect the changes.	
+
+TEST REPORT AT DEVELOPER'S END:
+-------------------------------
+   - Enhancements were tested by simulation program called demomgr.
+   - The changes were tested to make sure that the banner shows "PERC/CERC configuration uitlity.."
+   - Maximum navigation of different menus was done and looked for any screen corruption
+     issues and found none
+   - Testing was conducted on PERC 3/DC controller and IDE series 511 (IDE 1000) controller
+
+File Details:
+-------------
+     FileName    SizeInBytes     Date	     Description....
+     ---------   -----------    ------      ---------------  
+     dellmgr            694     10-09-01    Shell Script - calls dellmgr.bin
+     dellmgr.bin    722,596     10-09-01    Binary file  - Configuration Utility ver 5.16
+                                                    
+     Copy these files to Linux system, make them executable (chmod +x)
+     and invoke 'dellmgr' script to run the utility 
+
+     File compiled/Linked on OS build RedHAT 7.1		
+
+}
+
+[ DELL : LINUX : dellmgr : Ver 5.15 : Aug -29-2001 : Priya]
+{
+ Changes: (with respect to 5.14 : Aug 06,2001)
+
+ [1] Fixed a bug related to "Logical Info drive" program quit.
+ Below is the description of the above changes.
+}
+
+
+[ DELL : LINUX : dellmgr : Ver 5.14 : Aug-06-2001 : Priya]
+{
+ Changes: (with respect to 5.13 : Jul 24,2001)
+
+ [1] Supports New Firmware dated 7-31-01 for Random deletion of logical drive.
+ [2] Supports IDE and normal PERC cards.
+ [3] DOES NOT support ROMB.
+ [4] MAX ARRAYS supported are 40.
+ [5] Utility uses "curses" library now. "slang" is no more used by
+     the utility. This is done to take care of some screen related
+     issues.
+
+ Below is the description of the above changes.
+
+ [1] Random Deletion support
+ ---------------------------
+
+ OBJECTIVE
+   This release is targetted to support the firmware dated 7-31-01. Changes were made to conform to this firmware.
+   This Dellmgr should work with "Deletetion of
+   logical drive at random" and "successively re-use of the freed space for
+   new logical drive" on eligible firmwares. Utilities will not have any 
+   change on cards that do not support this "random logical drive
+   deletion" feature. The following description just talks about the new
+   firmware-relevant changes only.
+   
+   Old firmwares that do not have "random deletion" support will behave 
+   normally under this new utility.
+   
+
+(1.1) CHANGES:
+--------------
+Changes needed: (include this part in release document)
+   a) mailbox4 is made as 1 during firing of read config cmd on 40-ld card
+   b) mailbox4 is made as 1 during firing of write config(add-config) cmd on 40-ld 
+
+File Details:
+-------------
+        dellmgr :         694 bytes ( Script to invoke dellmgr.bin )
+        dellmgr.bin : 570,452 bytes ( Binary for dellmgr )
+
+}
+
+*****************************
+PREVIOUS RELEASES
+*****************************
+[ DELL : LINUX : dellmgr : Ver 5.13 : Jul-24-2001 : AmitP]
+{
+ Changes: (with respect to 5.12 : Jun 28,2001)
+
+ [1] Supports Random deletion of logical drive.
+ [2] Supports IDE and normal PERC cards.
+ [3] DOES NOT support ROMB.
+ [4] MAX ARRAYS supported are 40.
+ [5] Utility uses "curses" library now. "slang" is no more used by
+     the utility. This is done to take care of some screen related
+     issues.
+
+ Below is the description of the above changes.
+
+ [1] Random Deletion support
+ ---------------------------
+
+ OBJECTIVE
+   This release is targetted to support "Deletetion of
+   logical drive at random" and "successively re-use of the freed space for
+   new logical drive" on eligible firmwares. Utilities will not have any 
+   change on cards that do not support this "random logical drive
+   deletion" feature. The following description just talks about the new
+   firmware-relevant changes only.
+   
+   Old firmwares that do not have "random deletion" support will behave 
+   normally under this new utility.
+   
+
+(1.1) CHANGES:
+--------------
+   =>Configurable Array Selection Menu
+     Create Logical Drive(thru EasyConfig/New Config/View AddConfig) on
+   eligible firmware-fitted cards now has a new menu to show "configurable
+   arrays" with free space in it.
+   
+     User selects the "array(s) to be configured"(thru <SPACE> key) and then
+   presses <F10> key to configure it. The array(s) shown as configurable arrays
+   are those that have one or more empty spaces. In "Easy Configuration" mode
+   it allows selection of only one array at a time. Keys <F2> and <F3> show
+   array elements(channel/Id) and Empty Space information respectively.
+   
+     If more than one arrays are selected - then these are configured as a 
+   SPANNED logical drive with  "SPAN=YES" shown on next menu- that allows
+   RAID,SIZE,ADVANCED,ACCEPT options.
+   
+    SPAN option in this menu is UNCHANGEABLE.
+   
+   SIZE option in this menu is changeable only if both the conditions are 
+   met
+     a) you are not in EASY CONFIGURAITON menu
+     b) you have not selected more than one arrays for configuration.
+
+   Note:
+    Logical drive making logic on older firmware remain UNCHANGED
+    
+ => Deletion of a given logical drive(when there are more than 1-logical drive)
+        On new random-deletion-supporting firmware, hitting <F5> key at
+	Main->Objects->Logical Drive->Logical drive selection menu deletes
+	only the selected logical drive.
+	
+
+ => Deletion of a given logical drive(when there is 1-logical drive)
+	This is possible only by CLEAR CONFIGURATION operation as per 
+	present design.
+ 
+  
+(1.2) RESTRICTIONS
+------------------
+  R1. Only one "free-slot" can be put from one given array to a given
+      logical drive. One logical drive cannot have two "empty-slots" from
+      same array.
+  R2. "FreeSlots" of an array must be consumed in serial order i.e. lower
+  	slot number must be configured first than next higher slot number.
+  R3. It allows Spanning of R0 arrays as it was doing earlier(does not
+      make any sense at all).
+  R4. New Changes are effective only on firmware that support Random-deletion
+      of logical drive.
+  R5. "Automatic Configuration" is not supported on cards with random deletion
+      supporting f/w on it. Utility gives this message if the user opts
+      for this option on cards having random deletion supporting f/w
+      on it.
+
+(1.3) ISSUES:
+-------------
+  i1.  Old utilities(that did not support more than one hole and that too at
+       the end of the last array) will misbehave in presence of multiple
+       freeSlots in the array(s).
+
+  [2] Supports IDE and normal PERC cards.
+  ---------------------------------------
+      Utility supports IDE as well as normal PERC cards.
+
+ (2.1) Banner Shows something like
+      IDE cards->
+      "PERC Configuration Manager Ver 5.13(Jul 24,2001) (IDE)Adapter-x "
+
+      Normal PERC cards->
+      "PERC Configuration Manager Ver 5.13(Jul 24,2001)      Adapter-x "
+
+ (2.2) On IDE cards, in physical drive showing menus, targets are denoted as
+      'M'  (=> Denotes MASTER)
+      'S'  (=> Denotes SLAVE)
+      in place of ID 0 and ID 1
+      In physical drive property showing box, MASTER and SLAVE is also
+      displayed for MASTER and SLAVE respectively.
+
+
+ (2.3) In physical drive property showing box, "Media/Other Erros" and
+      "Predictive Failures" are not shown on IDE Raid Cards.
+
+      For physical drives on IDE Raid cards, "SCSI Standards" 
+      is displayed as
+      SCSI Standards : N/A
+
+ (2.4) Battery option is not supported for IDE Raid cards.
+
+ (2.5) For IDE Raid Cards, if the user goes to SCSI Channel menu and hits
+       ENTER, utility tells that this is not an option item for the adapter.
+
+      Objects->SCSI Channel->
+
+      "...Not An Option Item..."
+
+ [3] Utility does not support ROMB.
+ ---------------------------------
+ ROMB support is dropped from the utility as per DELL's request.
+
+ [4] MAX ARRAYS supported are 40.
+ -------------------------------
+ Utility supports maximum of 40 arrays now. Earlier it supported
+ maximum of 60 arrays. This is done to be in sync with Control-m
+ utility.
+
+
+
+
+TESTING DONE AT DEVELOPER'S END:   Minimal nature.
+  t1. Tested new features thru DEMO program that simulates different variety 
+      of cards( the one that supports random logdrv deletion and that don't).
+  t2. Tested "Array Configuration"/"Delete Logical Drive"/"Re-configure free
+      plus did some basic menu-navigation testing.
+  t3. IDE related testing done through demo utility.
+      
+      
+TESTS SUGGESTED BY DEVELOPER:
+-----------------------------
+  => Rigorous testing with all the following resources present in the
+     system.
+       466,467,493(non random deletion firmware),493(with random deleteion fw).
+  S.T.1) Configure a number of logical drives on 493(with random deletion fw)
+  S.T.2) Delete a logical drive on it to make free slots in it
+  S.T.3) Reconfigure the same array with 1 or more than free slots in it.
+  S.T.4) Try rebuild/reconstruction operations on arrays that have more than
+         one free slots in it.
+  S.T.5) Try init/checkconsistency operations on arrays that have 
+         more than one free slots in it.
+  S.T.6) Look for spelling mistakes or any aesthetic issues
+  S.T.7) Look for screen corruption issues - navigate maximum depths of 
+          different menus and see if screen gets corrupted or not(like some
+	  old stuff remains on screen of debug msg comes up etc).
+  S.T.8) Change adapter number - back and forth and see if you face any data
+  	 corruption/bugs etc.
+
+File Details:
+-------------
+        dellmgr :         694 bytes ( Script to invoke dellmgr.bin )
+        dellmgr.bin : 570,196 bytes ( Binary for dellmgr )
+
+}
+
+
+[ DELL: LINUX : dellmgr : Ver5.12 : Jun-28-2001 : AmitP]
+{
+ Changes: (with respect to 5.11 : May 25,2001)
+    1. Utility supports ROMB (Made Default)
+    2. Battery Menu is not an option item for 475 card.
+    3. Default Write Policy is Write Through for 475 card.
+
+TEST REPORT AT DEVELOPER'S END:
+-------------------------------
+       Change related testing done on a 475 card.
+       Further testing is suggested.
+
+
+ FILE DETAILS:
+          FileName    SizeInBytes         Description....
+        ----------    -----------      ---------------  
+        dellmgr            694         Shell Script - calls dellmgr.bin
+        dellmgr.bin    517,140         Binary file  - Configuration Utility
+                                                      ver 5.12.
+							
+	Copy these files to Linux system - mark them as executable (chmod +x)
+        and then run 'dellmgr'. 
+
+	File compiled/Linked on RedHAT 6.2 system.	
+}
+
+[  Generic: Ver 5.11: May 25,2001 : Timir Pandit]
+{
+ Changes: (with respect to 5.10)
+   <C0>	No ROMB support in this. 
+   <C1>	This release mainly attends the "logical drive making" bug -
+	 If you try select non-default RAID level(from RAID-1 to RAID-0 or from
+	 RAID-5 to Raid-0) in the Configuration Menu that shows 
+	 "RAID=xx,Size=yyyyy,Advanced,Accept,Span options" - size calculation
+	 was wrong and user was offered a smaller size than maximum possible
+	 with RAID-0.
+	 
+	 This is cured. This bug is not present in "EvalVer 5.10a(ROMB)".
+
+    <C2> Some "PINK color patch" issues resolved
+    	Some color patches used to be left in Physical Drive related menus
+	(Configuration menus and Physical drive menu).
+	e.g.
+	   Main Menu->New Config Menu -> Select some drives and try to
+	    configure
+	    It will take to you menu with options 
+			 	"RAID-xx Size=xxxxxx,Advanced,Accept.."
+	    Select Size option - and deliberately input wrong value as size
+	    It will come up with some message "Invalid size" etc and then used
+	    to leave some "Pink patch" on some column .
+
+	 This is cured.
+
+	Similar type of "coloured patch" was visible in Physical drive menu
+	Select a drive->Hit ENTER-> Try some invalid operation on this drive
+	-so that utility gives some message such as "No Rebuild Allowed on 
+	this drive" or "This operation is not allowed on this drive" etc.
+	
+	It used to leave PINK PATCH . This patch does not come any more.
+
+    <C3> "Force Offline" option changed to "Force Offline/Remove HSP"
+	    as per DELL's Philip FU's instruction .
+	    Its help is changed from
+      
+      	"Configure Physical Drive State As OFFLINE"
+			to 
+      "Change Physical Drive State from ONLINE to FAILED or HOTSPARE to READY"
+
+     <C4>  Supports 60-arrays( 5.10 release supported 40)
+     
+ TEST REPORT:
+ 	Tested the above fix on a 428-card(PERC) with 2-drives on it 
+	on RedHat 6.2.
+	
+ FILE DETAILS:
+          FileName    SizeInBytes   Date & Time       Description....
+	----------    -----------  ---------------    ---------------  
+	dellmgr            694     05-23-01 11:07A    Shell Script - 
+						      cals dellmgr.bin
+	dellmgr.bin    516,604     05-25-01 12:05A    Binary file.
+						      Configuration Utility
+						      ver 5.11.
+							
+	Copy these files to Linux system - mark them as executable (chmod +x)
+	and then run 'dellmgr'.
+
+	File compiled/Linked on RedHAT 6.2 system.	
+}
+[  Evaluation Ver 5.10a: With ROMB support : May 23,2001 : Timir Pandit]
+{
+ CHANGES:   Mainly Raid-On-Mother-Board support added.
+ 	C1. Warning message on entry related to driver version is removed.
+	C2. ROMB support added
+	   2.1. Supports SCSI Chnl(Chnl on motherboard) and RAID chnl
+	   2.2. Devices on SCSI Chnl are not shown during configuration,
+	   	rebuild & reconstruct menus. i.e. user will not be able 
+		to configure the devices on SCSI chnls.
+	   2.3. All devices ( SCSI + RAID Chnl ) are shown in physical drive 
+	        menu.
+	        Following options are not allowed for devices on SCSI Chnl.
+		      (a)Make Hotspare		(d) Rebuild
+		      (b)Force Online		(e) View Rebuild Progress
+		      (c)Force Offline
+	   2.4. Actual SCSI Size(to nearest MB) is shown for SCSI Drives on 
+	        SCSI-CHANNEL.
+		
+		For drives on RAID CHANNEL, it shows COERCED size.
+
+	   2.5. In physical drive showing menu, RAID chnls are shown as
+	        "RAID Ch-X" and SCSI Chnls are shown as "SCSI Ch-X".
+
+	C3. "Force Offline" option changed to "Force Offline/Remove HSP"
+	    as per DELL's Philip FU's instruction .
+	    Its help is changed from
+      
+      	"Configure Physical Drive State As OFFLINE"
+			to 
+      "Change Physical Drive State from ONLINE to FAILED or HOTSPARE to READY"
+
+	C4. Supports upto 60-arrays( earlier 40) .
+
+ BUG FIX:
+   B1. In the recent enhancement related to "Logical Drive Size" in new 
+       Logical Drive making( the menu that shows "RAID-x,Size-yyyy,Advanced 
+       menu,Accept,.." options ), there was a bug - if you change the RAID 
+       level, the drive size allowed was less than maximum possible.
+
+	The bug was reported by DELL on 5-21-01 via PeterJ.
+	This is Corrected .
+
+ TESTING:
+         Testing was done on a 493 card with "ROMB" Test f/w on it.
+
+ FILE DETAILS:	
+          FileName    SizeInBytes   Date & Time       Description....
+	----------    -----------  ---------------    ---------------  
+	dellmgr            694     05-23-01 10:22A    Shell Script - 
+						      cals dellmgr.bin
+	dellmgr.bin    516,436     05-23-01 11:00A    Binary file.
+						      Configuration Utility
+						      ver 5.10a.
+
+	Copy these files to Linux system - mark them as executable (chmod +x)
+	and then run 'dellmgr'.
+						      
+}
+
+[ Ver 5.10 : Mar 29,2001 : Timir Pandit]
+{
+Changes:
+	AMI-test group reported "too much CPU usage" by previous dellmgr 
+	program as per the Linux Utility 'top'( as dellmgr was waiting 
+	constantly for keyboard input by user ).
+	
+	This version got rid of this issue. 
+
+File Details:
+	megamgr.bin       513,684  03-29-01  4:21P Binary file
+	megamgr               690  03-29-01  4:21P Script File
+	
+Test Report:
+	Tested only the time-hogging issue - nothing beyond .
+		
+}
+[ Ver 5.09 : Jan 29,2001 : AmitP]
+{
+ Changes:
+ --------
+          (With respect to ver 5.08 : Jan 26,2001)
+
+          1. There was a bug in 5.08 in battery backup option.
+             Removed the bug in this release.
+
+          2. Script dellmgr is in UNIX format now.
+
+             (in 5.08 it was in DOS format)
+
+             CARE MUST BE TAKEN NOT TO EDIT THE SCRIPT ON DOS SYSTEM.
+             ELSE IT WILL BE CONVERTED TO DOS FORMAT.
+
+ File Details:
+ --------------
+               This release contains two files.
+
+               (a) dellmgr    : Script (    690 bytes)
+               (b) dellmgr.bin: Binary (513,044 bytes)
+      
+
+ TEST REPORT:
+ ------------
+               Only changes related testing done on a system with
+               one 438 & one 493 card on it.
+
+               Further testing is suggested.
+}
+
+
+
+[ DELL : Ver 5.08 : Jan 26,2001 : AmitP]
+{
+ Changes:
+ --------
+          (With respect to ver 5.07 : Oct 30,2000)
+
+          1. Utility made compliant to new driver specifications
+             Ver 1.14B (as provided by VenkateshR)
+
+             (Document : Specification for Linux Application Rev 1.1/1.2)
+
+             Now the utility uses the MIMD IOCTL interface to talk
+             with the driver/firmware.
+
+             Old SCSI IOCTL interface is not supported now.
+
+          2. Utility comes in a form of a script now.
+             The script takes care of creation of node and after that
+             it calls the actual binary.
+
+             This release contains two files.
+
+             (a) dellmgr (script) (b) dellmgr.bin (binary)
+
+             Both of these should be present in the same directory
+             for invocation.
+
+             Change the execute permissions of script & binary by:
+
+             chmod +x ./dellmgr
+             chmod +x ./dellmgr.bin
+
+             And then invoke utility as:
+
+             ./dellmgr 
+
+          3. Driver version 1.14 or above is a must to run the utility.
+             If lower version of driver is used, utility gives the message
+             and quits.
+
+          4. Configuration options:
+             ----------------------
+             Automatic Configuration
+             Easy Configuration
+             New Configuration
+             View/Add Configuration
+             Clear Configuration
+             ----------------------
+
+             are supported in the utility now.
+
+         5.  Logical drive size - Once selected could not be increased in
+             New logical drive configuration menu.
+             Changed this feature to allow to reselect the free available
+             space at will.
+
+             i.e.
+
+             Logical drive size selection field in NewLogicalDriveConfiguration
+             menu is enhanced to allow user-mistake-and-go-back-to-leftover
+             -size-of the array.
+	   
+             e.g. 
+             If a logical array has 2000MB and user selects 100MB as size   
+             and again changes mind(before hitting ACCEPT option) and goes
+             back to size option to make it bigger than 100MB - it used to
+             give an error "Invalid logical drive size..." with older megamgr.
+             This is now allowed.
+
+
+         6.  Earlier, a card was considered to be a 493Lite, if all of
+             the below conditions were true:
+
+             (a) Card is 40Ld     (b) Card is 493
+             (c) Card does not have a battery charge circuit
+             (d) Card is in DELL's  SABRE system.
+
+             Now apart from this, card is considered to be 493Lite/TaosLite
+             if all of these conditions are true:
+
+             (a)Card is 40Ld     (b) Card is 493
+             (c)TaosLite flag is set to ON on the card.
+
+
+             So a 493 is displayed as PERC 3/DCL if any one of the above
+             set of conditions is true.
+
+             Otherwise, 493 is displayed as PERC 3/DC.
+
+
+
+ File Details:
+ --------------
+               This release contains two files.
+
+               (a) dellmgr    : Script (    957 bytes)
+               (b) dellmgr.bin: Binary (513,012 bytes)
+      
+
+ TEST REPORT:
+ ------------
+               Tested the utility on a system with
+
+               a.  one 471 & one 493 card
+
+               b.  one 471 & one 438 card
+
+               c.  one 471, one 493 & one 438 card
+
+
+               (Driver Version 1.14B)
+
+               Tried to test with 428 card, but the driver gives core
+               dump while doing "insmod".
+
+               --------------------------------------------------------
+               Utility Checks for driver version(which is in form of
+               decimal). If the driver version is lower than 1.14, it
+               gives the messages and quits.
+
+               Utility is not tested with Version 1.14A of driver.
+               
+               --------------------------------------------------------
+
+               Further testing is suggested.
+}
+
+
+[ Ver 5.07 : Oct 30,2000 : Timir]
+{
+ Changes:( with respect to ver 5.06 )
+  1. 	This release is without one "debug message" that was put in the path
+	of detection of 493Lite card - If a 493-card with battery was found in 
+	a SABER system then it used to popup a message such as
+
+	"xx-Adapter: Is493Lite(): Enquiry3 cmd failed
+	 Press Any Key To Continue
+	"
+
+  2.   Cards with following Subsystem device/SubVendorId are treated as 493
+  
+  	subSystemVendorId	SubsysteDeviceId
+	  0x1028		0x0493
+	  0x101E		0x0493
+	  0x103c		0x0493   since 10-30-00.
+	  0x103c		0x60E8
+
+ File Details:	
+      -rwxr-xr-x   1 root     root       507668 Oct 30 18:17 dellmgr
+
+ TEST REPORT:
+	No testing done by Timir as Saber System was not available and it just
+        removed one debug statement.
+}
+
+
+
+[ Ver 5.06 : Oct 10,2000 : AmitP]
+{
+ Changes:
+          With respect to version 5.05, Oct 05,2000
+          Removed the bug related to F2 key as reported
+          by DELL
+File Details:
+          dellmgr : 507,604 bytes
+
+Testing done at developer's end:
+          Only change related testing done at developer's end.
+          Thorough testing is suggested.
+}
+
+[ Ver 5.05 : Oct 05,2000 : AmitP]
+{
+ Changes:
+          With respect to version 5.04, Sep 15,2000
+          There was a debug message coming in the previous
+          version. Removed the message in this version.
+
+File Details:
+          dellmgr : 507,572 bytes
+Testing done at developer's end:
+         No testing could be done at developer's end as
+         the Sabre System was not available.
+}
+
+
+[ Ver 5.04 : Sep  15-2000 : Timir Pandit ]
+{
+ Changes:
+     -with 493Lite specific support as mentioned below as per email from
+     ahmad_ali@dell.com of 9-14-2000.
+ Changes made in this release: (with respect to ver 5.03 )
+        1. No option to see battery status for 493Lite card
+	2. Default writepolicy WRTHRU for new ld  for 493Lite card
+	3. Double prompt warning when WriteBack is opted during/after ld
+	   creation for 493Lite card.
+	4. Adapter type shown by utility as "PERC 3/DCL" for 493Lite
+
+Who's 493Lite ?
+ 	Who meets all the following 3-conditions
+	1. 	If the card is a 493 card
+	2. 	If it does not have battery( BatteryStatus.Bit0 set )
+	3.	If it is in SABER system
+
+Who is Saber System:(per email 9-14-00 from Ahmad_ali@dell.com)
+	A Host with 'Dell System' string in the area 0xF000:0 to 0xF000:FFFF 
+	and no string 'Precision' in the area 0xF000:0 to 0xF000:FFFF and
+	that has a byte at 0xF000:0xE845 as 0xDA( PowerApp) or 0xDF( PowerEdge).
+
+	DOS Megamgr searches the F000-FFFF to find if it's a SABER system 
+	or not.
+	
+	Non-DOS megamgr depends on BIOS for its decision making about Saber
+	system identification - BIOS keeps the SystemIdentification 
+	information in the BIOSPvtArea and non-DOS utilities use that for
+	decision making - utilities check BIOS version to be ">=" "3x08" to
+	avoid "unplugging of NVRAM" from one board and plugging into other
+	board with different BIOS .
+	
+	So if the card is not fitted with a BIOS version "3x08" and/or above
+	it will not be considered for 493Lite( as Bios ver 3.08 and above will
+	follow the above mentioned scheme ).
+	
+
+File Details:	
+	-rwxr-xr-x   1 root     root       507668 Sep 15 18:39 dellmgr
+
+Testing done at developer's end:
+	493Lite-specific changes Thru simulation of 493Lite on a 471 on 
+	AMI's 727-series motherboard.
+	Nothing beyond that.
+
+}
+
+[ Linux Megamgr: Ver 5.03 : June  08-2000 : Vanishree S]
+{
+LIST OF CHANGES: ( With respect to Linux Megamgr ver 5.02 )
+			  
+   -Changes to Configuration and view physical objects screen. 
+    To remove lines and present uniform interface.
+			                       
+      FILE DETAILS : 
+			       
+	       Size        Date             File Name
+	       502036      June 08 11:05     megamgr
+					       
+       TEST REPORT:
+        -Tested with Mega Raid device driver version 1.07 and 1.08
+						
+}
+						
+[ Linux Megamgr: Ver 5.02 : May  31-2000 : Rajesh Prabhakaran]
+{
+LIST OF CHANGES: ( With respect to Linux Megamgr ver 5.01 )
+			  
+ -Check whether Driver Version is Greater than 1.07.If Driver Version is less 
+   than 1.08 this utility will not detect any adapters.
+                    
+ -Provided with Substitute Keys namely
+
+	<F1>        as <Shift> <1>
+	<F2>        as <Shift> <2>
+	<F3>        as <Shift> <3>
+	<F4>        as <Shift> <4>
+	<F5>        as <Shift> <5>
+	<F6>        as <Shift> <6>
+	<F7>        as <Shift> <7>
+	<F8>    	    as <Shift> <8>
+	<F9>        as <Shift> <9>
+	<F0>        as <Shift> <0>
+	UPARROW     as k (Just press k and no Shift or Ctl keys)
+	DOWNARROW   as j (Just press j and no Shift or Ctl keys)
+	RIGHTARROW  as l (Just press l and no Shift or Ctl keys)
+	LEFTARROW   as h (Just press h and no Shift or Ctl keys)
+
+FILE DETAILS : 
+
+	Size        Date             File Name
+	502036      May 31 11:05     megamgr
+
+TEST REPORT:
+	 -Tested with Mega Raid device driver version 1.07 and 1.08
+	 -Substitute keys checked.
+
+TIMIR'S COMMENTS ON 6-3-00
+	This release is to be considered as JUNK as Rajesh generated this
+	from some old source and thus nullifying the recent changes made
+	in the 40-ld megamgr code.
+	
+}
+
+
+[ Linux Megamgr: Ver 5.01 : April 12-2000 : Timir Pandit ]
+{
+LIST OF CHANGES: ( With respect to Linux Megamgr ver 5.00 )
+ -Make Hotspare is now working. Earlier it was crashing.
+
+ -Reconstruction progress reporting had some bug(in case of reconstruction
+  error it could show some wrong info ) - corrected .
+
+ -Searching Adapter phase shows a message and a revolving 'swing' if there is
+  lot of delays in it.
+  This is more evident if you run megamgr in absence of the driver.
+
+ -Running megamgr in absence of driver was unnecessarily allowing entry to
+  main menu and then exiting. Corrected in this.
+
+ -The utility is using now STATIC library to avoid linker issue (with dynamic
+  /shared libararies ) under different Linux flavors.
+
+ -It now Locks the firmware cmd's data area for ioctl protocol for its 
+  memory use by the driver as per recommendation from driver developer
+  ( Venkatesh of AMI-India).
+
+ -It allows the utility to be executed by super user only.
+
+LINUX MEGAMGR FEATURES:
+	Supports 8-ld and 40-ld cards
+	RECONSTRUCT only RAID-x to RAID-y - it does not allow capacity
+	  expansion option
+
+FILE DETAILS
+	megamgr.tgz  is a compressed tar file(used 'tar cvfz' to make it). 
+	Use 'tar xvfz linmgr.tgz' to extract the 'megamgr' file in 
+	uncompressed form.
+	
+	-rw-r--r--   1 root     root       216008 Apr 12 15:23 megamgr.tgz
+
+
+TEST REPORT:
+	Tested minimally with one 471-card.
+
+}
+
+
+*****************************
+PREVIOUS RELEASES
+*****************************
+
+[ Linux Megamgr: Ver 5.00 Feb-14-2000: Timir Pandit ]
+{
+ LIST OF CHANGES:
+	1. Color related improvement for speed and esthetics.
+	   It speeds up the overall execution of 40-ld megamgr	
+	2. Correction made for progress bars of init/rbldrate menu.
+	3. Correction made for color/display of Horizontal Bar in phys 
+	   drive menu
+	4. Configuration Option is no more available 
+	5. Make On/Off line : phys drv option shows drive number now in
+		Decimal if it's not on fiber chnl
+		in Hex  along with 'h' suffix if it's on fiber chnl
+	   This will be effective in all future megamgrs automatically.
+
+	6. Show cursor position alwyas in physical drive menu to indicate 
+	        the current physical drive. This helps in a situation where
+		coloring/highlighting is not that much prominent.
+	  This is right now enabled for Linux version - it can be extended to
+	  other OS also.
+
+	7. Show Warning message in the Linux path on  selection of
+	    FAIL-Drive/Online drive in phys drive menu.
+
+	    Earlier these were offed in pwin.c file.
+
+	    Co-ordinates of 'confirmation window(Y/N)' are also changed to
+	    accommodate these changes.
+	    In case of "NO" option selected by user it comes back to prev
+	    menu to avoid screen corruption - Timir: 2/14/00
+
+	    Only Linux Megamgr.
+
+	8. Spinning up device info was being shown with 'h' suffix on SCSI
+	   chnl - corrected in this.
+
+TEST REPORT:
+	Testing was limited to one 428-card with 2 x 35GB disks on it.
+
+LIBRARY USAGE:
+	It uses dynamic/shared gnu library - that becamse issue of 
+	compatibility  on other Linux versions.
+	
+}
+

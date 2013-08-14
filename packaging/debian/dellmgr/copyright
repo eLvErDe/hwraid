@@ -1,0 +1,19 @@
+This package was debianized by Adam Cécile (Le_Vert) <gandalf@le-vert.net> on
+Tue, 26 Aug 2008 10:01:34 +0200.
+
+It was downloaded from http://linux.dell.com/storage.shtml
+
+Upstream Author:
+
+    Dell Inc.
+
+Copyright:
+
+    Copyright (C) Dell Inc.
+
+License:
+
+    Dell proprietary.
+
+The Debian packaging is (C) 2008, Adam Cécile (Le_Vert) <gandalf@le-vert.net>
+and is licensed under the GPL, see `/usr/share/common-licenses/GPL'.

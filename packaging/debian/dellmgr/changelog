@@ -1,0 +1,11 @@
+dellmgr (5.31-2) unstable; urgency=low
+
+  * Update create-devices-nodes to handle kernels 2.6.25rc2+.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Mon, 16 Feb 2009 19:31:24 +0100
+
+dellmgr (5.31-1) unstable; urgency=low
+
+  * Initial release.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Tue, 26 Aug 2008 10:01:34 +0200
