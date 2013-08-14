@@ -1,0 +1,23 @@
+README.Debian for 3ware-status package
+--------------------------------------
+
+Possible configuration:
+-----------------------
+
+If you want to change the default configuration of the init script you
+can create the file /etc/default/3ware-statusd and specify the following
+values.
+
+MAILTO=
+PERIOD=
+REMIND=
+
+Use MAILTO to specify which user shall get the status mails 
+(default is root).
+
+With PERIOD you can fix the seconds between each check.
+
+And REMIND specifies the seconds between each reminder.
+
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Wed, 10 Oct 2007 10:19:28 +0200 

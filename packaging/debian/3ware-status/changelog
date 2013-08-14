@@ -1,0 +1,26 @@
+3ware-status (0.4) unstable; urgency=low
+
+  * Now handle different tw-cli output for 9000 series cards.
+  * Will now fail if tw-cli binary cannot be found.
+  * Add --nagios parameter (run through nrpe).
+  * Import initscript changes from mpt-status 1.2.0-7 package.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Thu, 02 Feb 2012 11:31:45 +0100
+
+3ware-status (0.3) unstable; urgency=low
+
+  * Do not fail with empty ports.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Mon, 16 Aug 2010 09:27:55 +0200
+
+3ware-status (0.2) unstable; urgency=low
+
+  * Switch logical disk id and disk id.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Wed, 10 Oct 2007 10:55:57 +0200
+
+3ware-status (0.1) unstable; urgency=low
+
+  * Intial release.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Wed, 10 Oct 2007 10:19:28 +0200

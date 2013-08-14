@@ -1,0 +1,153 @@
+#!/usr/bin/python
+
+import os
+import re
+import sys
+
+binarypath = "/usr/sbin/tw-cli"
+
+if len(sys.argv) > 2:
+    print 'Usage: 3ware-status [--nagios]'
+    sys.exit(1)
+
+nagiosmode=False
+nagiosoutput=''
+nagiosgoodarray=0
+nagiosbadarray=0
+nagiosgooddisk=0
+nagiosbaddisk=0
+
+if len(sys.argv) > 1:
+    if sys.argv[1] == '--nagios':
+        nagiosmode=True
+    else:
+        print 'Usage: 3ware-status [--nagios]'
+        sys.exit(1)
+
+# Check binary exists (and +x), if not print an error message
+# or return UNKNOWN nagios error code
+if os.path.exists(binarypath) and os.access(binarypath, os.X_OK):
+        pass
+else:
+        if nagiosmode:
+                print 'UNKNOWN - Cannot find '+binarypath
+        else:
+                print 'Cannot find '+binarypath+'. Please install it.'
+        sys.exit(3)
+
+
+# Get command output
+def getOutput(cmd):
+    output = os.popen(cmd)
+    lines = []
+    for line in output:
+        if not re.match(r'^$',line.strip()):
+            lines.append(line.strip())
+    return lines
+ 
+def returnControllerList(output):
+    lines = []
+    for line in output:
+        if re.match(r'^c[0-9]+\s.*$',line.strip()):
+	    lines.append(line.split()[0])
+    return lines
+
+def returnDiskList(output):
+    lines = []
+    for line in output:
+        if re.match(r'^[p][0-9]+\s.*$',line.strip()):
+            # Shoudl contain something like 'u0'
+            # '-' means the drive doesn't belong to any array
+            # If is NOT PRESENT too, it just means this is an empty port
+            if not line.split()[2].strip() == '-' and not line.split()[1].strip() == 'NOT-PRESENT':
+                lines.append(line.split())
+    if fake_failure:
+        lines[0][1] = 'NOT PRESENT'
+    return lines
+
+def returnArrayList(output):
+    lines = []
+    for line in output:
+        if re.match(r'^[u][0-9]+\s.*$',line.strip()):
+            lines.append(line.split())
+    if fake_failure:
+        lines[0][2] = 'DEGRADED'
+    return lines
+
+# A way to force a fake failure
+fake_failure = False
+if os.path.exists('/root/fake_3ware_failure'):
+    fake_failure = True
+
+cmd = binarypath+' info'
+output = getOutput(cmd)
+controllerlist = returnControllerList(output)
+
+bad = False
+
+
+# List available controller
+if not nagiosmode:
+    print '-- Controller informations --'
+    print '-- ID | Model'
+    for controller in controllerlist:
+        cmd = binarypath+' info '+controller+' model'
+        model = getOutput(cmd)[0].split(' = ')[1].strip()
+        print controller+' | '+model
+    print ''
+
+# List arrays
+if not nagiosmode:
+    print '-- Arrays informations --'
+    print '-- ID\tType\tSize\tStatus'
+for controller in controllerlist:
+    cmd = binarypath+' info '+controller
+    output = getOutput(cmd)
+    arraylist = returnArrayList(output)
+    for array in arraylist:
+        type = array[1].replace('-','')
+        id = controller+array[0]
+        size = array[6].split('.')[0]+'G'
+        status = array[2]
+        if not status == 'OK':
+            bad = True
+            nagiosbadarray=nagiosbadarray+1
+        else:
+            nagiosgoodarray=nagiosgoodarray+1
+        if not nagiosmode:
+            print id+'\t'+type+'\t'+size+'\t'+status
+if not nagiosmode:
+    print ''
+
+# List disks
+if not nagiosmode:
+    print '-- Disks informations'
+    print '-- ID\tModel\t\t\tStatus'
+for controller in controllerlist:
+    cmd = binarypath+' info '+controller
+    output = getOutput(cmd)
+    disklist = returnDiskList(output)
+    for disk in disklist:
+        id = controller+disk[2]+disk[0]
+        cmd = binarypath+' info '+controller+' '+disk[0]+' model'
+        model = getOutput(cmd)[0].split(' = ')[1].strip()
+        cmd = binarypath+' info '+controller+' '+disk[0]+' status'
+        status = getOutput(cmd)[0].split(' = ')[1].strip()
+	if not status == 'OK':
+            bad = Truei
+            nagiosbaddisk=nagiosbaddisk+1
+        else:
+            nagiosgooddisk=nagiosgooddisk+1
+        if not nagiosmode:
+            print id+'\t'+model+'\t'+status
+
+if nagiosmode:
+    if bad:
+        print 'RAID ERROR - Arrays: OK:'+str(nagiosgoodarray)+' Bad:'+str(nagiosbadarray)+' - Disks: OK:'+str(nagiosgooddisk)+' Bad:'+str(nagiosbaddisk)
+        sys.exit(2)
+    else:
+        print 'RAID OK - Arrays: OK:'+str(nagiosgoodarray)+' Bad:'+str(nagiosbadarray)+' - Disks: OK:'+str(nagiosgooddisk)+' Bad:'+str(nagiosbaddisk)
+else:
+    if bad:
+        print '\nThere is at least one disk/array in a NOT OPTIMAL state.'
+        sys.exit(1)

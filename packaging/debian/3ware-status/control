@@ -1,0 +1,14 @@
+Source: 3ware-status
+Section: admin
+Priority: extra
+Maintainer: Adam Cécile (Le_Vert) <gandalf@le-vert.net>
+Build-Depends: debhelper (>= 5)
+Standards-Version: 3.9.2
+
+Package: 3ware-status
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, python, lsb-base, daemon, bsd-mailx | mailx, tw-cli (>= 9.5.0)
+Description: get RAID status out of 3ware Eskalad HW RAID controllers
+ The 3ware-status software is a query tool to access the running
+ configuration and status of 3Ware HBAs. 3ware-status allows you to
+ monitor the health and status of your RAID setup.
