@@ -1,0 +1,20 @@
+Source: megamgr
+Section: admin
+Priority: optional
+Maintainer: Adam Cécile (Le_Vert) <gandalf@le-vert.net>
+Build-Depends: debhelper (>= 5)
+Standards-Version: 3.9.2
+Homepage: http://www.lsi.com/files/support/rsa/utilities/megamgr
+
+Package: megamgr
+Architecture: i386 amd64
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Manage LSI MegaRAID chip based cards
+ This tool allow you to access the RAID card BIOS from Linux.
+ .
+ Useful to manage arrays or start maintenance operations.
+ .
+ If you have a MegaRAID card from DELL (PERC/CERC), look at
+ dellmgr package instead.
+ .
+ This tool will not work on recent SAS cards.

@@ -1,0 +1,21 @@
+# Author: Adam Cécile (Le_Vert) <gandalf@le-vert.net>
+# License: Public domain
+
+create_node() {
+    # Since 2.6.25rc2 linux kernel, megadev0 is created dynamically by udev
+    # See http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=90a95af85f22c82f87e5fb714bac7ee06673b0ff
+    if [ ! -e /dev/megadev0 ]; then
+        # Not available, try to create it by hand for kernel pre 2.6.25rc2
+        grep -q 'megadev$' /proc/devices && MEGARAID="ok"
+        if [ ! -z ${MEGARAID} ]; then
+            MAJOR=`grep 'megadev$' /proc/devices | head -n 1 | awk '{ print $1 }'`
+            mknod /dev/megadev0 c $MAJOR 0
+            return $?
+	fi
+    fi
+    if [ -e /dev/megadev0 ]; then
+        return 0
+    else
+        return 1
+    fi
+}

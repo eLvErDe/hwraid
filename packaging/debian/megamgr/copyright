@@ -1,0 +1,20 @@
+This package was debianized by Adam Cécile (Le_Vert) <gandalf@le-vert.net> on
+Tue, 26 Aug 2008 10:49:33 +0200.
+
+It was downloaded from http://www.lsi.com/files/support/rsa/utilities/megamgr/
+
+Upstream Author:
+
+    LSI
+
+Copyright:
+
+    Copyright (C) LSI
+
+License:
+
+    LSI proprietary.
+
+The Debian packaging is Copyright (C) 2008-2012 Adam Cécile (Le_Vert)
+<gandalf@le-vert.net> and is licensed under GNU General  Public License
+version 2 (or later) see `/usr/share/common-licenses/GPL-2'.

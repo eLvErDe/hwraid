@@ -1,0 +1,17 @@
+megamgr (5.20-3) unstable; urgency=low
+
+  * Fix typo in package's description.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Thu, 02 Feb 2012 14:46:54 +0100
+
+megamgr (5.20-2) unstable; urgency=low
+
+  * Update create-devices-nodes to handle kernels 2.6.25rc2+.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Mon, 16 Feb 2009 19:33:05 +0100
+
+megamgr (5.20-1) unstable; urgency=low
+
+  * Initial release.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Tue, 26 Aug 2008 10:49:33 +0200

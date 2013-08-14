@@ -1,0 +1,12 @@
+#!/bin/sh
+
+. /usr/lib/megamgr/create-device-node
+
+create_node
+
+if [ $? -eq 0 ]; then
+  /usr/lib/megamgr/megamgr.real $@
+else
+  echo "No LSI MegaRAID cards found."
+  exit 1
+fi

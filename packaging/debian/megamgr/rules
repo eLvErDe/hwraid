@@ -1,0 +1,47 @@
+#!/usr/bin/make -f
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+DESTDIR = $(CURDIR)/debian/megamgr
+
+build: build-arch build-indep
+build-arch:
+build-indep:
+
+clean: 
+	dh_testdir
+	dh_testroot
+	dh_clean 
+
+install:
+	dh_testdir
+	dh_testroot
+	dh_clean -k 
+	dh_installdirs
+	install -D -m 755 $(CURDIR)/megamgr.bin \
+                          $(DESTDIR)/usr/lib/megamgr/megamgr.real
+	install -D -m 644 $(CURDIR)/debian/wrappers/create-device-node \
+                          $(DESTDIR)/usr/lib/megamgr/create-device-node
+	install -D -m 755 $(CURDIR)/debian/wrappers/megamgr \
+                          $(DESTDIR)/usr/sbin/megamgr
+
+
+binary-indep: build install
+binary-arch: build install
+	dh_testdir
+	dh_testroot
+	dh_installchangelogs ut_linux_mgr_5.20.txt 
+	dh_installdocs
+	dh_link
+	dh_strip
+	dh_compress
+	dh_fixperms
+	dh_installdeb
+	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary: binary-indep binary-arch
+.PHONY: build clean binary-indep binary-arch binary install configure
