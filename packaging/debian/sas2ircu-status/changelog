@@ -1,0 +1,36 @@
+sas2ircu-status (0.5) unstable; urgency=low
+
+  * Use full sas2ircu path to avoid issues if PATH is not set (Closes: #75).
+  * Don't treat inactive arrays as failed ones (Closes: #219).
+  * Ignore non-RAID controllers (Closes: #240).
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Fri, 26 Jul 2013 15:17:06 +0200
+
+sas2ircu-status (0.4) unstable; urgency=low
+
+  * Fix a stupid mistake breaking multi-array support (Closes: #214).
+    Thanks to <oosterhout@fox-it.com> for his patch.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Tue, 17 Jul 2012 21:38:42 +0200
+
+sas2ircu-status (0.3) unstable; urgency=low
+
+  * One disk may not appear if sas2ircu return an enclosure element after
+    disks list (Closes: http://hwraid.le-vert.net/ticket/65).
+  * Import init script changes from mpt-status-1.2.0-7 package:
+    - Script won't stop anymore because of set -e
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Mon, 18 Jul 2011 17:38:39 +0200
+
+sas2ircu-status (0.2) unstable; urgency=low
+
+  * Add --nagios so the script can be called through NRPE.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Thu, 09 Dec 2010 11:25:54 +0100
+
+sas2ircu-status (0.1) unstable; urgency=low
+
+  * Initial release.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Wed, 08 Dec 2010 19:04:52 +0100
+

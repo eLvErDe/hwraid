@@ -1,0 +1,14 @@
+Source: sas2ircu-status
+Section: admin
+Priority: extra
+Maintainer: Adam Cécile (Le_Vert) <gandalf@le-vert.net>
+Build-Depends: debhelper (>= 5)
+Standards-Version: 3.9.4
+
+Package: sas2ircu-status
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, python, lsb-base, daemon, bsd-mailx | mailx, sas2ircu
+Description: get RAID status out of LSI Fusion MPT SAS2 HW RAID controllers
+ The sas2ircu-status software is a query tool to access the running
+ configuration and status of LSI Fusion MPT SAS2 HBAs. sas2ircu-status allows
+ you to monitor the health and status of your RAID setup.
