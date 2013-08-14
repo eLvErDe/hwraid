@@ -1,0 +1,5 @@
+# This connector requires additional configuration to work.
+# Please read /usr/share/doc/adaptec-universal-storage-snmpd/README.Debian
+# And then set ENABLE to "true".
+
+ENABLE=false

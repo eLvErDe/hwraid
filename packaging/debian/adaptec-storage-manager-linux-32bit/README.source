@@ -1,0 +1,17 @@
+adaptec-storage-manager-linux-64bit (7.31.18856-1) unstable; urgency=low
+
+  Sources have been repacked from the following upstream archive:
+
+    2bdfd5e999a86ac5bd8c7b43d858fdfd  asm_linux_x86_v7_31_18856.tgz
+
+  Contained RPM package has been cleaned and turned into a tarball.
+  See debian/rules repack target for more informations.
+
+  Upstream licence has been reformated using the following command:
+
+    cat /tmp/1 | sed 's!$!\n!' | \
+    sed "s|Bureau of Industry and Security's Lists to Check|http://www.bis.doc.gov/ComplianceAndEnforcement/ListsToCheck.htm|" | \
+    awk 'NR==1 || NF || prvNF {print} {prvNF=NF}' | sed 's!^$!.!' | \
+    vim - -c '%!fold -s -w76' -c '%s/^/ /'
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Tue, 21 Aug 2012 23:28:47 +0200

@@ -1,0 +1,14 @@
+#!/bin/sh
+
+set -e
+
+case "$1" in
+
+  purge)
+    # Remove lib dir
+    rm -rf /var/lib/adaptec-storage-manager-agent
+  ;;
+
+esac
+
+#DEBHELPER#

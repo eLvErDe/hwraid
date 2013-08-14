@@ -1,0 +1,11 @@
+#!/bin/sh
+
+# Well, everything must be in current directory
+# Let's create this one first
+test -d $HOME/.adaptec-storage-manager-gui || mkdir $HOME/.adaptec-storage-manager-gui
+
+# We should have doc here
+test -L $HOME/.adaptec-storage-manager-gui/help || ln -s /usr/share/adaptec-storage-manager-gui/help $HOME/.adaptec-storage-manager-gui/help
+
+# Now we can run storage manager withing this directory
+cd $HOME/.adaptec-storage-manager-gui; LD_LIBRARY_PATH=/usr/lib/adaptec-storage-manager:$LD_LIBRARY_PATH java -Djava.net.preferIPv4Stack=true -Djava.compiler=NONE -cp /usr/lib/adaptec-storage-manager/RaidMan.jar com.ibm.sysmgt.raidmgr.mgtGUI.Launch $* 

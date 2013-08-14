@@ -1,0 +1,16 @@
+#!/bin/sh
+
+set -e
+
+case "$1" in
+
+  configure)
+    chown root:adm /var/log/adaptec-storage-manager-agent
+    chmod 750 /var/log/adaptec-storage-manager-agent
+    # Dirty hack
+    test -e /bin/sort || ln -s /usr/bin/sort /bin/sort
+  ;;
+
+esac
+
+#DEBHELPER#

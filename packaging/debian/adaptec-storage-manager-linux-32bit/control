@@ -1,0 +1,80 @@
+Source: adaptec-storage-manager-linux-32bit
+Section: admin
+Priority: optional
+Maintainer: Adam Cécile (Le_Vert) <gandalf@le-vert.net>
+Build-Depends: debhelper (>= 5), libwrap0, libstdc++5, quilt
+Homepage: http://www.adaptec.com/en-US/support/raid/sas_raid/SAS-5805Z/
+Standards-Version: 3.9.3
+
+Package: arcconf
+Architecture: i386
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Suggests: adaptec-storage-manager-gui | adaptec-storage-manager-agent
+Description: Adaptec AACRaid HBAs command line tool
+ Management and monitoring command line tool by Adaptec for the
+ Adaptec Advanced Raid HBAs (aacraid).
+ .
+ It replace the old afacli command line utility.
+ .
+ Adaptec AACRaid controllers are also used under theses names:
+ Dell PERC2, 2/Si, 3/Si, 3/Di, HP NetRAID-4M, IBM ServeRAID
+ & ICP SCSI driver
+
+Package: hrconf
+Architecture: i386
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Suggests: adaptec-storage-manager-gui | adaptec-storage-manager-agent
+Description: Adaptec HostRaid HBAs command line tool
+ Management and monitoring command line tool by Adaptec for the
+ Adaptec HostRaid HBAs.
+
+Package: adaptec-storage-manager-common
+Architecture: i386
+Depends: ${shlibs:Depends}, ${misc:Depends}, sun-java6-jre | sun-java5-jre
+Description: Common files for storage-manager-gui and storage-manager-agent
+ This package contains shared files between storage-manager-gui and
+ storage-manager-agent.
+ .
+ You should not install this package directly.
+
+Package: adaptec-storage-manager-gui
+Architecture: i386
+Depends: ${misc:Depends}, adaptec-storage-manager-common (= ${binary:Version})
+Suggests: arcconf | hrconf, storage-manager-agent
+Description: Adaptec Storage Manager Java UI
+ Graphical interface to monitor and manage RAID arrays
+ on Adaptec HBAs.
+ .
+ This utility can be used to aggregate several servers with
+ RAID HBAs if they run storage-manager-agent or standalone.
+
+Package: adaptec-storage-manager-agent
+Architecture: i386
+Depends: ${misc:Depends}, adaptec-storage-manager-common (= ${binary:Version}), lsb-base
+Suggests: arcconf | hrconf, adaptec-storage-manager-gui
+Description: Adaptec Storage Manager Agent
+ Installing this agent on all your servers with Adaptec RAID HBAs
+ will allow you to monitor and manage them with one main
+ storage-manager-gui.
+ .
+ In exemple, install this agent on your server and then install
+ storage-manager-gui on you primary workstation.
+
+Package: adaptec-universal-storage-snmpd
+Architecture: i386
+Depends: ${shlibs:Depends}, ${misc:Depends}, adaptec-storage-manager-agent (= ${binary:Version}), lsb-base, snmpd
+Recommends: adaptec-universal-storage-mib
+Suggests: arcconf | hrconf, adaptec-storage-manager-gui
+Description: Adaptec Storage Manager SNMP daemon
+ This agent connects Adaptec Storage Manager to your SNMP daemon, so you can
+ monitor your RAID system through SNMP.
+ .
+ This package contains aus-snmpd tool.
+
+Package: adaptec-universal-storage-mib
+Architecture: all
+Depends: ${misc:Depends}
+Suggests: adaptec-storage-manager-snmpd
+Description: Adaptec Universal SNMP mib
+ This package contains the SNMP mib that describes Adaptec Storage
+ Manager's OIDs.
