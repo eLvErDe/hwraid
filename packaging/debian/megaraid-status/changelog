@@ -1,0 +1,66 @@
+megaraid-status (0.10) unstable; urgency=low
+
+  * Update initscript from mpt-status 1.2.0-7 package (Closes: #79).
+  * Hardcode binary path and exit with error if unavailable (Closes: #16).
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Wed, 22 Feb 2012 22:12:56 +0100
+
+megaraid-status (0.9) unstable; urgency=low
+
+  * Do not fail with HotSpare disks.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Mon, 16 Aug 2010 10:35:39 +0200
+
+megaraid-status (0.8) unstable; urgency=low
+
+  * Fix megaraid initscript card detection for recent kernels.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Mon, 20 Apr 2009 15:25:24 +0200
+
+megaraid-status (0.7) unstable; urgency=low
+
+  * Fix parsing issues with disk vendor/model containing spaces.
+  * Now display SMART warnings coming from the disk.
+  * Most of the output parser has been re-written to be more robust.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Fri, 10 Oct 2008 10:54:56 +0200
+
+megaraid-status (0.6) unstable; urgency=low
+
+  * All adapter/logical/physical IDs should are now handled as [0-9]+
+    instead of [0-9].
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Thu, 09 Oct 2008 10:04:29 +0200
+
+megaraid-status (0.5) unstable; urgency=low
+
+  * Initscripts shouldn't rely on device nodes. Use /proc/devices to check
+    available cards instead.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Fri, 22 Aug 2008 13:55:05 +0200
+
+megaraid-status (0.4) unstable; urgency=low
+
+  * Packaging cleanup.
+  * Don't use custom runlevel priority anymore, thanks to megactl packaging
+    improvment.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Thu, 21 Aug 2008 15:32:11 +0200
+
+megaraid-status (0.3) unstable; urgency=low
+
+  * Return 1 if something wrong is detected.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Tue, 09 Oct 2007 16:50:53 +0200
+
+megaraid-status (0.2) unstable; urgency=low
+
+  * Improve regex.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Wed, 26 Sep 2007 18:09:01 +0200
+
+megaraid-status (0.1) unstable; urgency=low
+
+  * Initial release.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Mon, 24 Sep 2007 15:55:09 +0200

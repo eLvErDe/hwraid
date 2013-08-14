@@ -1,0 +1,14 @@
+Source: megaraid-status
+Section: admin
+Priority: optional
+Maintainer: Adam Cécile (Le_Vert) <gandalf@le-vert.net>
+Build-Depends: debhelper (>= 5)
+Standards-Version: 3.9.2
+
+Package: megaraid-status
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, python, lsb-base, daemon, bsd-mailx | mailx, megactl
+Description: get RAID status out of LSI MegaRAID SCSI/SAS HW RAID controllers
+ The megaraid-status software is a query tool to access the running
+ configuration and status of LSI MegaRAID SCSI/SAS HBAs. aacraid-status allows
+ you to monitor the health and status of your RAID setup.
