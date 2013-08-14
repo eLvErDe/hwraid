@@ -1,0 +1,74 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## 000-No_absolute_pathes_in_examples.dpatch
+## by Adam Cécile (Le_Vert) <gandalf@le-vert.net>
+##
+## DP: Drop all absolute pathes to binaries in megarpt and megasasrpt
+## DP: example scripts.
+
+@DPATCH@
+
+diff -u megactl-0.4.1/src/megarpt megactl-0.4.1/src.new/megarpt
+--- megactl-0.4.1/src/megarpt	2007-08-21 09:19:53.000000000 +0200
++++ megactl-0.4.1/src.new/megarpt	2007-09-26 11:07:05.584181968 +0200
+@@ -9,7 +9,7 @@
+ # Date: 2007/08/20
+ 
+ VERSION='0.3'
+-MEGACTL=/root/megactl
++MEGACTL=/usr/sbin/megactl
+ DEVICE=/dev/megadev0
+ DEVICENAME=megadev
+ DEVICEPERM=644
+@@ -32,8 +32,8 @@
+ if [ -e "$DEVICE" ]; then
+ 
+     WARN=
+-    HOST=`/bin/uname -n`
+-    DATE=`/bin/date '+%Y/%m/%d %H:%M:%S %Z'`
++    HOST=`uname -n`
++    DATE=`date '+%Y/%m/%d %H:%M:%S %Z'`
+     HC=/tmp/megactl.$$
+ 
+     $MEGACTL -vH > $HC 2>/dev/null
+@@ -59,7 +59,7 @@
+ 	echo "$ME version: $VERSION"
+ 	echo "megactl version: $MEGACTLVERSION"
+     ) 2>/dev/null |
+-	/bin/mail -s "RAID report:$WARN $HOST $DATE" root
++	mail -s "RAID report:$WARN $HOST $DATE" root
+ 
+     rm -f $HC
+ fi
+
+diff -u megactl-0.4.1/src/megasasrpt megactl-0.4.1/src.new/megasasrpt
+--- megactl-0.4.1/src/megasasrpt	2007-08-21 09:19:53.000000000 +0200
++++ megactl-0.4.1/src.new/megasasrpt	2007-09-26 11:07:05.584181968 +0200
+@@ -9,7 +9,7 @@
+ # Date: 2007/08/20
+ 
+ VERSION='0.3'
+-MEGACTL=/root/megasasctl
++MEGACTL=/usr/sbin/megasasctl
+ DEVICE=/dev/megaraid_sas_ioctl_node
+ DEVICENAME=megaraid_sas_ioctl
+ DEVICEPERM=400
+@@ -32,8 +32,8 @@
+ if [ -e "$DEVICE" ]; then
+ 
+     WARN=
+-    HOST=`/bin/uname -n`
+-    DATE=`/bin/date '+%Y/%m/%d %H:%M:%S %Z'`
++    HOST=`uname -n`
++    DATE=`date '+%Y/%m/%d %H:%M:%S %Z'`
+     HC=/tmp/megactl.$$
+ 
+     $MEGACTL -vH > $HC 2>/dev/null
+@@ -59,7 +59,7 @@
+ 	echo "$ME version: $VERSION"
+ 	echo "megactl version: $MEGACTLVERSION"
+     ) 2>/dev/null |
+-	/bin/mail -s "RAID report:$WARN $HOST $DATE" root
++	mail -s "RAID report:$WARN $HOST $DATE" root
+ 
+     rm -f $HC
+ fi

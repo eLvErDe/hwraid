@@ -1,0 +1,15 @@
+#!/bin/sh
+
+# Author: Adam Cécile (Le_Vert) <gandalf@le-vert.net>
+# License: Public domain
+
+. /usr/lib/megactl/create-devices-nodes
+
+create_node
+
+if [ $? -eq 0 ]; then
+  /usr/lib/megactl/megactl $@
+else
+  echo "No LSI MegaRAID cards found. You may try megasasctl instead."
+  exit 1
+fi

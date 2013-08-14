@@ -1,0 +1,15 @@
+#!/bin/sh
+
+# Author: Adam Cécile (Le_Vert) <gandalf@le-vert.net>
+# License: Public domain
+
+. /usr/lib/megactl/create-devices-nodes
+
+create_node_sas
+
+if [ $? -eq 0 ]; then
+  /usr/lib/megactl/megasasctl $@
+else
+  echo "No LSI MegaRAID SAS cards found. You may try megactl instead."
+  exit 1
+fi

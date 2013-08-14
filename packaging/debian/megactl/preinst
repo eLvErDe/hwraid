@@ -1,0 +1,13 @@
+#!/bin/sh -e
+
+# Skip if there's no previous version
+if [ ! -z $2 ]; then
+  if dpkg --compare-versions $2 lt 0.4.1-4; then
+    update-rc.d -f megactl-makedev remove || true
+    rm -f /etc/init.d/megactl-makedev
+  fi
+fi
+
+#DEBHELPER#
+
+exit 0

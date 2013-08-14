@@ -1,0 +1,17 @@
+Source: megactl
+Section: admin
+Priority: optional
+Maintainer: Adam Cécile (Le_Vert) <gandalf@le-vert.net>
+Build-Depends: debhelper (>= 4), dpatch, libc6-dev-i386 [amd64], gcc-multilib [amd64] | libc6-dev-i386 (<< 2.7) [amd64]
+Standards-Version: 3.8.2
+Homepage: http://sourceforge.net/projects/megactl
+
+Package: megactl
+Architecture: i386 amd64
+Depends: ${shlibs:Depends}, ${misc:Depends}, libc6-i386 [amd64]
+Description: LSI MegaRAID SCSI/SAS reporting tool
+ This package contains both megactl and megasasctl tools that can be used
+ to query LSI's MegaRAID adapters status.
+ .
+ It reports status and informations about the adapter itself, it's
+ logical disks and the physical disks attached.

@@ -1,0 +1,102 @@
+.TH MEGACTL "8" "September 2007" "0.4.1" "User Commands"
+
+.SH NAME
+megactl - a reporting tool for LSI MegaRAID adapters and its attached disks.
+
+.SH DESCRIPTION
+.B megactl
+can report diagnostics on megaraid adapters and attached disks. 
+.br
+It permits dumping of controller log pages for inspection of error, temperature, and self-test conditions, initiates self-test diagnostics, and documents adapter and logical drive configuration.
+.br
+Target devices may be adapters, (e.g. a0), channels (e.g. a0c0), or individual disks (e.g. a0c0t0).
+.br
+If no target is specified, reports configuration and drive state on all
+adapters.
+.br
+If a target matches a collection of disks, operations are
+applied to all matching devices.
+
+.SH REQUIREMENTS
+.B megactl
+requires the device file /dev/megadev0 to be present on
+the system.
+.br
+On Debian systems, this device node will be created at boot time by megactl-makedev init script.
+.br
+If your system does not have this device file, you may create it either by executing Dell's "dellmgr" program once, or by locating the megadev entry in /proc/devices and creating /dev/megadev0 as a character device with suitable permissions with a matching major device number and a minor number of 0.
+
+.SH SYNOPSIS
+.B megactl
+[\-vest] [\-H] [\-l log-page-nr] [\-T long|short] [target ...]
+
+.SH OPTIONS
+.TP
+.I -v
+Increase program verbosity.
+.TP
+.I -e
+Dump read (0x03), write (0x02), and verify (0x05) error log pages.
+.TP
+.I -s
+Dump self-test (0x10) log page.
+.TP
+.I -t
+Dump temperature (0x0d) log page.
+.TP
+.I -l <page>
+Dump the specified log page.
+.br
+Log page 0 documents the log pages the device supports.
+.TP
+.I -p
+Do not report physical disks.
+.br
+Reports only adapters and logical drives.
+.br
+Useful for concisely documenting adapter configuration.
+.TP
+.I -T short|long
+Initiate the background short or long self-test procedure.
+.br
+The test may take up to an hour to complete, but does not inhibit access to the device.
+.br
+The test may be monitored using the \-s option.
+.br
+The background long self test is a useful tool for diagnosing problems with individual disks.
+.br
+But be cautious with program usage. "megactl \-T long" with no targets will initiate a background long self test on every drive on every adapter.
+.br
+This may not be what you want.
+.TP
+.I -H
+Perform an adapter health check.
+.br
+Inspects state of all logical and physical drives and battery backup unit and reports problem conditions.
+.br
+If all is well, generates no output. Useful in a cron job.
+.br
+By default, the health check option inspects log pages 0x02, 0x03, and 0x05 for uncorrected read, write, and verify errors, 0x0d for excess temperature conditions, and 0x10 for failed self tests.
+.br
+If, however, any of the log page options is specified, only the designated log pages are inspected.
+.TP
+.I -B
+When performing health check, do not treat battery problems as failures.
+.TP
+.I -V
+Show version.
+
+
+.SH "SEE ALSO"
+Homepage: http://sourceforge.net/projects/megactl
+.br
+Some examples scripts (Debian systems): /usr/share/doc/megactl/examples/
+.br
+megasasctl(8): Same tool, for SAS adapters.
+
+.SH AUTHOR
+This manual page was written by Adam Cécile (Le_Vert) <gandalf@le-vert.net> for the Debian system (but may be used by others).
+.br
+Permission is granted to copy, distribute and/or modify this document under the terms of the GNU General Public License, Version 2 or any later version published by the Free Software Foundation
+.br
+On Debian systems, the complete text of the GNU General Public License can be found in /usr/share/common-licenses/GPL.

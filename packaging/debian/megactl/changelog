@@ -1,0 +1,46 @@
+megactl (0.4.1+svn20090725.r6-1) unstable; urgency=low
+
+  * New upstream release (based on sv trunk snapshot):
+    - Add RAID6 support,
+    - Fixes for Dell PERC6 cards.
+  * Bump Standards-Version to 3.8.2.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Sat, 25 Jul 2009 13:23:45 +0200
+
+megactl (0.4.1-6) unstable; urgency=low
+
+  * Merge a Gentoo (thanks) patch that drops obsolete asm/user.h.
+  * Add missing amd64 required gcc-multilib b-dep.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Mon, 27 Apr 2009 16:35:59 +0200
+
+megactl (0.4.1-5) unstable; urgency=low
+
+  * Update create-devices-nodes to handle kernels 2.6.25rc2+.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Mon, 01 Sep 2008 12:03:07 +0200
+
+megactl (0.4.1-4) unstable; urgency=low
+
+  * Add preinst script to clean obsolete initscripts used by previous
+    releases.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Fri, 22 Aug 2008 14:02:08 +0200
+
+megactl (0.4.1-3) unstable; urgency=low
+
+  * Fix packaging to allow build and run on amd64.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Thu, 21 Aug 2008 18:03:39 +0200
+
+megactl (0.4.1-2) unstable; urgency=low
+
+  * Device node creation: remove initscript, replaced by binaries wrappers.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Thu, 21 Aug 2008 13:57:02 +0200
+
+megactl (0.4.1-1) unstable; urgency=low
+
+  * Initial release.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Wed, 26 Sep 2007 09:49:57 +0200

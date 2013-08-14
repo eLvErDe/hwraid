@@ -1,0 +1,39 @@
+.TH MEGATRACE "8" "September 2007" "0.4.1" "User Commands"
+
+.SH NAME
+megatrace - a debugging program which can be used to trace LSI MegaRAID-related ioctl() system calls.
+
+.SH DESCRIPTION
+.B megatrace
+is debugging program which can be used to trace LSI MegaRAID-related ioctl() system calls.
+.br
+You won't need that unless you're trying to add features to megactl, or are exceptionally curious.
+.br
+This program uses ptrace(2) and can inspect and modify data structures to help you suss out what's going on in dellmgr and MegaCli.
+.PP
+If you're not developer, please check megactl(8) or megactlsas(8).
+
+.SH SYNOPSIS
+.B megatrace
+<command_to_trace>
+.PP
+You may really consider tracing a command that access MegaRAID card, like Dell's dellmgr or LSI's megacli.
+
+.SH OPTIONS
+.B megatrace
+has no options.
+
+.SH "SEE ALSO"
+Homepage: http://sourceforge.net/projects/megactl
+.br
+Some examples scripts (Debian systems): /usr/share/doc/megactl/examples/
+.br
+megactl(8): Reporting tool for SCSI adapters.
+megasasctl(8): Reporting tool for SAS adapters.
+
+.SH AUTHOR
+This manual page was written by Adam Cécile (Le_Vert) <gandalf@le-vert.net> for the Debian system (but may be used by others).
+.br
+Permission is granted to copy, distribute and/or modify this document under the terms of the GNU General Public License, Version 2 or any later version published by the Free Software Foundation
+.br
+On Debian systems, the complete text of the GNU General Public License can be found in /usr/share/common-licenses/GPL.

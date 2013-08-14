@@ -1,0 +1,11 @@
+#!/bin/sh
+
+# Author: Adam Cécile (Le_Vert) <gandalf@le-vert.net>
+# License: Public domain
+
+. /usr/lib/megactl/create-devices-nodes
+
+create_node
+create_node_sas
+
+/usr/lib/megactl/megatrace $@

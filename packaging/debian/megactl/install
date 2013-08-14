@@ -1,0 +1,7 @@
+src/megactl                             usr/lib/megactl
+src/megasasctl                          usr/lib/megactl
+src/megatrace                           usr/lib/megactl
+debian/wrappers/create-devices-nodes    usr/lib/megactl
+debian/wrappers/megactl                 usr/sbin
+debian/wrappers/megasasctl              usr/sbin
+debian/wrappers/megatrace               usr/sbin
