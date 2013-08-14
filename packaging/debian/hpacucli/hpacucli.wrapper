@@ -1,0 +1,6 @@
+#!/bin/sh
+#
+# This file is public domain.
+
+export LD_LIBRARY_PATH=/usr/lib/hpacucli:$LD_LIBRARY_PATH
+/usr/lib/hpacucli/hpacucli.real $@

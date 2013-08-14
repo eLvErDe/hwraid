@@ -1,0 +1,11 @@
+hpacucli (9.20.9.0-1) unstable; urgency=low
+
+  Sources have been repacked from the following upstream packages:
+
+    a569ddb584d2133bf44f06992d746f51  hpacucli-9.20-9.0.i386.rpm
+    c0d6f57fe3cf1fa6342fb0097e3ae100  hpacucli-9.20-9.0.x86_64.rpm
+
+  Both have been turned into tarballs using alien and then uncompressed to
+  i386 and amd64 sub-directories.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Mon, 20 Aug 2012 19:58:55 +0200

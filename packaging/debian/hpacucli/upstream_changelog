@@ -1,0 +1,336 @@
+Version: 9.10.22.0  (4 Jun 2012)
+  Enhancements
+    - Added support for the following controllers: 
+      * HP Dynamic Smart Array B120i
+      * HP Dynamic Smart Array B320i
+      * HP Smart Array P822
+    - Now officially supporting and providing native X64 versions in addition
+      to existing 32 bit versions
+    - Added new features requiring a valid SAAP 2.0 (Smart Array Advanced Pack) license key:
+      * Replace Array:
+        Allows the transfer of contents of an array to an existing empty
+        array or a new array. All logical drives from the source array will
+        be transferred. The original array will be deleted and its data
+        drives  will be freed as unassigned drives. The drive types at source
+        and destination arrays can be different. This allows moving data from
+        SATA to SAS, or SAS to SATA.  However, the drive types comprising the
+        array must still be of the same type.
+      * Heal Array:
+        Allows the replacement of failed or degraded physical drives in an
+        array with healthy physical drives. The original array and logical
+        drive numbering will be unaffected after the replacement. The
+        replacement physical drives must be of the same interface type (such
+        as SAS, SATA and etc.) as the original drives. The operation will be
+        available only if enough unassigned physical drives of the correct
+        size are available.
+ 
+Version: 9.0.24.0  (27 Mar 2012)
+  Enhancements
+    - Added support for the following controllers:
+      * HP Smart Array P222
+      * HP Smart Array P420
+      * HP Smart Array P421
+      * HP Smart Array P220i
+      * HP Smart Array P420i
+    - Added support for the following features/devices:
+      * Smart Array Advanced Pack 2.0 (SAAP 2.0):
+        SAAP 2.0 provides full SAAP 1.0 feature functionality with the
+        following additions:
+          - RAID 1/10 Advanced Data Mirroring (ADM)
+          - Moving and Deleting of Individual Logical Volumes
+          - Move operation now supports SATA to SAS, SAS to SATA
+          - Predictive Spare Activation
+          - > 128 physical drives
+          - SmartSSD Wear Gauge
+          - Updated Cache Ratio settings
+          - Additional Strip Sizes - 512, 1024 on supported controllers and
+            configurations
+          - Device Temperatures - Controllers, Capacitors, Cache Modules, and
+            Hard Drives
+          - Overall Performance improvements
+          - 3 TB physical drives
+
+Version: 8.75-12.0  (22 Jun 2011)
+  Enhancements
+    - *** New ***
+      Starting with versions 8.75.12.0, an Offline version of ACU is
+      available from http://www.hp.com/ that allows users to boot directly
+      into the configuration and maintenance utilities prior to any Host OS
+      loading or being installed.
+      .
+      This new deliverable of ACU is available for download through normal
+      software methods (such as searching by Server model, OS, or device) or
+      by searching for 'HP ProLiant Offline Array Configuration Utility'
+    - SmartSSD Wear Gauge
+      This feature is accessible through the ssdinfo command in ACUCLI
+      Example code:
+        <target> show ssdinfo [detail|summary]
+        Provides a summary for solid state drives for the specified controller(s)
+        The target can be any valid controller/device
+        controller slot=1 show sddinfo
+        controller all show ssdinfo
+        controller all show ssdinfo detail
+        controller all show ssdinfo summary
+    - Greater than 2.2 TB Hard Drives
+
+Version: 8.70-8.0  (11 Mar 2011)
+  Enhancements
+    - Improved speed of Diagnostic report generation
+    - Supported serial logs included in the zip file of the Diagnositc
+      reports, when applicable
+    - New options available during creation of logical drive size
+    - Now showing current and max temperatures for physical drives
+    - Support for failed array controllers.  The "ctrl all show" command will
+      list any locked up controllers along with valid controllers. For failed
+      controllers, a message will display explaining its state along with a
+      lockup code, if applicable
+    - Support for "-h" and "-help" commandline option
+    - HPACUSCRIPTING updates:
+      * Will not display array accelerator info in capture files for
+        controllers which do not have cache or the cache is not configurable.
+        Attempting to set the array accelerator on these controllers will
+        result in a warning message (not an error)
+      * Support for logical drive command "Size=MAXMBR". This option creates
+        the largest possible volume in an array with the maximum size
+        constrained by the limits of the 32bit MBR
+      * New keyword, SIZEBLOCKS. Input scripts can now specify size as before
+        using SIZE (size in MB) or SIZEBLOCKS (size in 512 byte blocks) but
+        not both
+      * Now displays the disk interface type in the comment section for physical
+        disks.
+
+Version: 8.61-1.0  (8 Feb 2011)
+  Fixes
+    - In version 8.60-8.0 of HPACUCLI, using the "show or detail commands" on
+      any target that includes physical drives can cause the application to
+      exit if one or more of the included physical drives are in a failed
+      state.
+      This release, 8.61-1.0, corrects this problem and allows the command to
+      complete successfully.
+
+Version: 8.60-8.0  (10 Sep 2010)
+  Enhancements
+    - Overall Performance improvements
+      * HPACUCLI as well as in HPACUSCRIPTING 
+    - Surface Scan Analysis enhancements
+      * Disable
+      * High
+      * Idle
+
+Version: 8.50-6.0  (28 May 2010)
+  Enhancements
+    - Overall Performance improvements
+    - Physical drives in a SMART state are allowed to be used at user's
+      discretion
+    - Diagnostic Report additions:
+      * Parity group information for RAID 50 and RAID 60 logical drives
+      * Information for SEP devices and Expanders
+      * Updated Storage Enclosure names
+    - Applicable only with the appropriate SAAP License Key installed:
+      * The Move Array operation now allows the user to move an array to
+        physical drives that are smaller than the original physical drives,
+        provided that all the data in the existing logical drives will fit
+        into the new array
+          * The new drive set must have the same number of physical drives as
+            the existing drive set
+    - Added SEP devices and Expanders to "ctrl slot=X show config" and "ctrl
+      slot=X show config detail" commands
+    - Added an "OS Status" for logical drives to indicate if it is "locked"
+      by the OS
+    - Added display of Hardware Revision info for SAS Expander boards
+      * "<target> enclosure all show detail" should be used in order to see
+        the field displayed
+    - Added support for being able to run ACUCLI in non-interactive mode for
+      read-only commands (show) even if ACU is running. For example:
+        # hpacucli ctrl all show
+        # hpacucli ctrl slot=1 pd all show status
+    - Added "exitonerror" feature which allows the application to exit upon
+      encountering any error during execution of a command. This feature is
+      useful for scripts invoking ACUCLI and the feature will allow scripts
+      to know that an error has occurred.
+        * The setting can also be invoked from the console as an application switch
+          Example:  "hpacucli -exitonerror < myscript.txt"
+        * set [exitonerror=enable|disable]
+          Allows a script to decide whether an error encountered during execution
+        * show exitonerror
+          Displays the current exitonerror setting 
+     - Added enclosure show support
+       * enclosure [ all | port:box | serialnumber=xxxx ] show [ detail |
+         status]
+         Outputs the storage enclosure information The target can be any
+         valid storage enclosure
+         Examples:
+           * controller slot=5 enclosure all show
+           * controller slot=5 enclosure 4E:1 show detail
+           * controller slot=5 enclosure serialnumber=UAB123456 show status
+    - Added support for the 'show' command to display devices in a logical or
+      physical format similar to the support in ACU (GUI) 
+      * set [view=logical|physical]
+        - Allows the user to select whether certain show commands display the
+          output using a logical or physical view
+        - Logical view displays devices using their association with arrays
+        - Physical view displays the devices such as physical drives
+          according to their relationship with their storage enclosures
+        - The default value is logical view
+      * show view
+        - Displays the current view setting.
+      * Examples:
+        set view=physical
+        show view
+    - Added the capability to run multiple commands in command line mode
+      (non-interactive)
+      * The semicolon (";") is used as a delimiter between commands
+      * For example:
+        On LINUX, the semicolon must be escaped or in quotes
+        hpacucli "ctrl slot=1 show; ctrl slot=1 modify
+        drivewritecache=enable; ctrl slot=1 show"
+    - HPACUSCRIPTING Additions:
+      * Now shows an expanded usage message when invalid command line
+        arguments are provided
+      * Added feature to allow RAID=RAID1 for >2 disk mirrors. This 
+        allows backwards compatibility with "old" cpqacuxe scripting. Capture
+        will still output correct RAID level
+      * Added AUTO as a valid option for QUEUEDEPTH
+      * Overall Performance improvements
+      * Added Controller=FIRST support. Controllers are now sorted in capture
+        files in slot ascending order
+      * Added additional controller information to errors and warnings to
+        better identify where problems occur in an input file
+
+Version: 8.40-4.0  (25 Feb 2010)
+  Enhancements
+    - Support for Smart Array P812
+ 
+Version: 8.35-7.0  (28 Sep 2009)
+  Enhancements
+    - Changes for HPACUCLI 8.35.X.X:
+      * Now supports command line history and tab completion
+ 
+Version: 8.30-5.0  (14 Sep 2009)
+  Enhancements
+    - Changes for HPACUCLI 8.30.X.X:
+      * Enclosure View
+ 
+Version: 8.28-13.0  (6 May 2009)
+  Enhancements
+    - Changes for HPACUCLI 8.28.X.X:
+      * Command Line Diagnostics (ADUCLI) is now integrated with HPACUCLI
+      * Scripting for captures and inputs is now intergrated with HPACUCLI
+        This support was previously delivered with ACU
+        The scripting command has changed from cpqacuxe to hpacuscripting
+
+Version: 8.25.5  (19 Feb 2009)
+  Enhancements
+    - Added Support for the following Controllers:
+      * Smart Array P212
+      * Smart Array P212 ZMR
+      * Smart Array P410
+      * Smart Array P410 ZMR
+      * Smart Array P410i
+      * Smart Array P410i ZMR
+      * Smart Array P411
+      * Smart Array P411 ZMR
+      * Smart Array B110i SATA RAID
+   - Additionally, added support for Advanced Pack
+
+Version: 8.20.18  (23 Jan 2009)
+  Enhancements
+    - Added Support for the following Controllers:
+      * Smart Array P212
+      * Smart Array P212 ZMR
+      * Smart Array P410
+      * Smart Array P410 ZMR
+      * Smart Array P411
+      * Smart Array P411 ZMR
+    - Additionally, added support for Smart Array Advanced Pack
+
+Version: 8.10.2  (6 Jun 2008)
+  Fixes
+    - Fixed an issue related to an incorrect Background Parity Initialization
+      status being displayed for RAID 5 and RAID 6 Logical Drives
+
+Version: 8.0.14  (26 Feb 2008)
+  Enhancements
+    - Added Dual Domain Support for the HP Smart Array P800 Controller
+    - Added 512K Stripe Size for RAID 5 (only on the following controllers
+      with minimum FW 5.00):
+        * Smart Array E500
+        * Smart Array P400/400i
+        * Smart Array P800
+
+Version: 7.85.18  (24 Jul 2007)
+  Enhancements
+    - Enabled drive write cache for all SAS controllers
+
+Version: 7.80.6  (27 Apr 2007)
+  Enhancements
+    - Support SATA NCQ status.
+
+Version: 7.73.1  (26 Mar 2007)
+  Fixes
+    - The ACU CLI utility was modified to display a message informing
+      customers that a firmware update is required if firmware version 2.04
+      is detected on a Smart Array P400, P400i, or P800 controller.
+  Enhancements
+    - Added support for the Smart Array E500 controller.
+
+Version: 7.70.12  (14 Dec 2006)
+  Enhancements
+    - Changed default RAID5 stripe size to 64K for MSA1000/1500
+    - Added new stripe-sizes (128KB and 256KB) for the P400, P600 and P800
+      controllers to allow migration of volumes from MSA20 to SAS
+      controllers.
+
+Version: 7.60.18  (25 Sep 2006)
+  Enhancements
+    - CLI now has two new show command parameters -> show [config] [detail].
+      See help for usage.
+
+Version: 7.50.18  (13 Apr 2006)
+  Enhancements
+    - Added support for the following:
+      * Smart Array P400 Controller
+      * Smart Array P400i Controller
+      * Smart Array E200 Controller
+      * Smart Array E200i Controller
+    - Added support for over 2 TB on controllers that support it.
+    - Array accelerator options are disabled on controllers with zero memory.
+    - When using create, add drives, add spares, and remove spares, the user
+      can now specify drive ranges. Instead of "1:1,1:2,1:3,1:4" the user can
+      type "1:1-1:4".
+    - CLI now supports targeting a controller via the chassis serial number.
+      See help for additional usage information.
+
+Version: 7.40.7  (9 Sep 2005)
+  Enhancements
+    - Updated so RAID ADG is now referred to as RAID 6 (ADG).
+
+Version: 7.31.1  (24 Jun 2005)
+  Fixes
+    - Fixes a problem where specifying an array using the “drives” parameter
+      on the create logical drive operation could incorrectly result in
+      deletion of that array if the create operation fails.
+
+Version: 7.30.9  (4 May 2005)
+  Enhancements
+    - Added support for the following:
+      * Smart Array P600 controller.
+    - Active-Active on redundant controllers that support it.
+
+Version: 7.21.17  (28 Feb 2005)
+  Enhancements
+    - Added support for Red Hat Enterprise Linux 4.
+
+Version: 7.20.16  (14 Feb 2005)
+  Fixes
+    - Resolved issue where data in cache was found during reboot.
+  Enhancements
+    - Added support for the standbycontroller=disable command.
+
+Version: 7.17.1  (11 Dec 2004)
+  Fixes
+    - Corrected ACU CLI caches status messages to better correspond with ACU.
+
+Version: 7.15.19  (2 Sep 2004)
+  Enhancements
+    - Initial release.

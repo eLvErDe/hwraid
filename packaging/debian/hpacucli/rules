@@ -1,0 +1,62 @@
+#!/usr/bin/make -f
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+DESTDIR = $(CURDIR)/debian/hpacucli
+DEB_BUILD_ARCH  ?= $(shell dpkg-architecture -qDEB_BUILD_ARCH)
+
+build: build-arch build-indep
+build-arch:
+build-indep:
+
+clean:
+	dh_testdir
+	dh_testroot
+	dh_clean
+
+install:
+	dh_testdir
+	dh_testroot
+	dh_clean -k
+	dh_installdirs
+ifeq ($(DEB_BUILD_ARCH),i386)
+	install -m 644 $(CURDIR)/i386/opt/compaq/hpacucli/bld/lib* \
+		$(DESTDIR)/usr/lib/hpacucli
+	install -D -m 755 $(CURDIR)/i386/opt/compaq/hpacucli/bld/.hpacucli \
+		$(DESTDIR)/usr/lib/hpacucli/hpacucli.real
+	install -D -m 755 $(CURDIR)/i386/opt/compaq/hpacucli/bld/.hpacuscripting \
+		$(DESTDIR)/usr/lib/hpacucli/hpacuscripting.real
+endif
+ifeq ($(DEB_BUILD_ARCH),amd64)
+	install -m 644 $(CURDIR)/amd64/opt/compaq/hpacucli/bld/lib* \
+		$(DESTDIR)/usr/lib/hpacucli
+	install -D -m 755 $(CURDIR)/amd64/opt/compaq/hpacucli/bld/.hpacucli \
+		$(DESTDIR)/usr/lib/hpacucli/hpacucli.real
+	install -D -m 755 $(CURDIR)/amd64/opt/compaq/hpacucli/bld/.hpacuscripting \
+		$(DESTDIR)/usr/lib/hpacucli/hpacuscripting.real
+endif
+	install -D -m 755 $(CURDIR)/debian/hpacucli.wrapper \
+		$(DESTDIR)/usr/sbin/hpacucli
+	install -D -m 755 $(CURDIR)/debian/hpacuscripting.wrapper \
+		$(DESTDIR)/usr/sbin/hpacuscripting
+
+binary-indep: build install
+binary-arch: build install
+	dh_testdir
+	dh_testroot
+	dh_installchangelogs debian/upstream_changelog
+	dh_installdocs
+	dh_installman
+	dh_link
+	dh_strip
+	dh_compress
+	dh_fixperms
+	dh_installdeb
+	dh_shlibdeps -l$(DESTDIR)/usr/lib/hpacucli/
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary: binary-indep binary-arch
+.PHONY: build clean binary-indep binary-arch binary install

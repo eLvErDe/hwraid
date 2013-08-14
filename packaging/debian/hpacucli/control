@@ -1,0 +1,13 @@
+Source: hpacucli
+Section: non-free/admin
+Priority: optional
+Maintainer: Adam Cécile (Le_Vert) <gandalf@le-vert.net>
+Build-Depends: debhelper (>= 5), sharutils
+Standards-Version: 3.9.3
+
+Package: hpacucli
+Architecture: i386 amd64
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: HP command line SmartArray configuration utility
+ This is the proprietary command line utility from HP to manage HP/Compaq
+ SmartArray hardware RAID HBAs mostly found in Proliant servers.
