@@ -134,7 +134,7 @@ for controller in controllerlist:
         cmd = binarypath+' info '+controller+' '+disk[0]+' status'
         status = getOutput(cmd)[0].split(' = ')[1].strip()
 	if not status == 'OK':
-            bad = Truei
+            bad = True
             nagiosbaddisk=nagiosbaddisk+1
         else:
             nagiosgooddisk=nagiosgooddisk+1
