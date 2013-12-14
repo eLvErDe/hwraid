@@ -36,7 +36,7 @@ def getOutput(cmd):
 def returnDiskList(output):
     lines = []
     for line in output:
-        if re.match(r'^[a-z][0-9]+[a-z][0-9]+[a-z][0-9]+\s.*$',line.strip()):
+        if re.match(r'^[a-z][0-9]+[a-z][0-9\*]+[a-z][0-9]+\s.*$',line.strip()):
             list = line.split()
             # Let's hack... Some disk may report smart error after status
             # Get theses errors, join them into one list item and place it
