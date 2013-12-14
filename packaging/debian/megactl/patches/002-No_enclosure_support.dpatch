@@ -1,0 +1,75 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## 002-No_enclosure_support by Pat Suwalski <pat@suwalski.net>
+##
+## DP: The root of the problem is that a lot of the logic behind building
+## DP: the enclosure map and printing the disk list compares directly the 
+## DP: adapter channel list with the physical disk enclosure number, like so:
+## DP:
+## DP:   if (device->device[k].enclosure == a->channel[j])
+## DP:
+## DP: The problem is that one is a uint16_t and the other is a uint8_t.
+## DP: When an enclosure is not present, the value comes back as all-ones.
+## DP: So, the code was trying in numerous places to compare 0xffff with
+## DP: 0xff. Adjusting the struct so both members are uint16_t fixes this.
+## DP:
+## DP: The patch also changes the output when no enclosure is present to
+## DP: put an asterisk as the enclosure ID in the output.
+## DP: The output on the same machine now looks like this:
+## DP:
+## DP:   a0       PERC 5/i Integrated      encl:1 ldrv:2  batt:good
+## DP:   a0d0        19GiB RAID 5   1x4  DEGRADED
+## DP:   a0d1      5567GiB RAID 5   1x4  DEGRADED
+## DP:   a0e*s0     1863GiB  a0d0+ online   errs: media:0  other:28
+## DP:   a0e*s1     1863GiB  a0d0+ rebuild  errs: media:0  other:26
+## DP:   a0e*s2     1863GiB  a0d0+ online   errs: media:0  other:28
+## DP:   a0e*s3     1863GiB  a0d0+ online   errs: media:0  other:28
+
+@DPATCH@
+Index: adapter.c
+===================================================================
+--- a/src/adapter.c	(revision 6)
++++ b/src/adapter.c	(working copy)
+@@ -192,7 +192,10 @@
+ 	d->channel = info->enclosure;
+ 	d->id = info->slot;
+ 
+-	snprintf (d->name, sizeof (d->name), "%se%us%u", a->name, d->channel, d->id);
++	if (d->channel == DISK_NOENC)
++	    snprintf (d->name, sizeof (d->name), "%se*s%u", a->name, d->id);
++	else
++	    snprintf (d->name, sizeof (d->name), "%se%us%u", a->name, d->channel, d->id);
+ 
+ 	d->inquiry = info->inquiry.inq;
+ 	strncpy (d->vendor, d->inquiry.vendor_info, sizeof (d->vendor) - 1);
+@@ -691,6 +694,7 @@
+ 	for (j = 0; j < a->num_channels; ++j)
+ 	    if (device->device[k].enclosure == a->channel[j])
+ 		break;
++
+ 	if (j < a->num_channels)
+ 	    continue;
+ 
+Index: mega.h
+===================================================================
+--- a/src/mega.h	(revision 6)
++++ b/src/mega.h	(working copy)
+@@ -114,7 +114,10 @@
+ #define	SCSI_SELFTEST_FOREGROUND_SHORT	0x05
+ #define	SCSI_SELFTEST_FOREGROUND_LONG	0x06
+ 
++/* Drives without enclosure report this as the enclosure ID */
++#define DISK_NOENC 0xffff
+ 
++
+ /* megaraid2 header file gets this wrong. */
+ typedef struct {
+ 	uint8_t		max_commands;
+@@ -545,7 +548,7 @@
+     uint16_t			dram_size;		/* size of DRAM in MB */
+     uint16_t			rebuild_rate;		/* rebuild rate as percentage */
+     uint16_t			num_channels;		/* number of channels or enclosures */
+-    uint8_t			*channel;		/* channel/enclosure map */
++    uint16_t			*channel;		/* channel/enclosure map */
+     uint16_t			num_physicals;
+     struct physical_drive_info	*physical;
+     struct physical_drive_info	**physical_list;	/* ordered list of physical devices */

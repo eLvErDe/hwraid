@@ -1,3 +1,10 @@
+megactl (0.4.1+svn20090725.r6-2) unstable; urgency=medium
+
+  * Integrate patch by Pat Suwalski <pat@suwalski.net> to handle devices
+    without enclosure.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Sat, 14 Dec 2013 14:36:22 +0100
+
 megactl (0.4.1+svn20090725.r6-1) unstable; urgency=low
 
   * New upstream release (based on sv trunk snapshot):

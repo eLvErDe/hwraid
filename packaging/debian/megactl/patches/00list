@@ -1,2 +1,3 @@
 000-No_absolute_pathes_in_examples.dpatch
 001-Drop_obsolete_asm_user.h.dpatch
+002-No_enclosure_support.dpatch
