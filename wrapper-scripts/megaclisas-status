@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: megaclisas-status,v 1.7 2013/04/04 16:42:14 root Exp $
+# $Id: megaclisas-status,v 1.8 2014/01/16 17:59:00 root Exp $
 
 import os
 import re
@@ -36,6 +36,16 @@ def returnControllerNumber(output):
 def returnControllerModel(output):
     for line in output:
         if re.match(r'^Product Name.*$',line.strip()):
+	    return line.split(':')[1].strip()
+
+def returnMemorySize(output):
+    for line in output:
+        if re.match(r'^Memory Size.*$',line.strip()):
+	    return line.split(':')[1].strip()
+
+def returnFirmwareVersion(output):
+    for line in output:
+        if re.match(r'^FW Package Build.*$',line.strip()):
 	    return line.split(':')[1].strip()
 
 def returnArrayNumber(output):
@@ -134,7 +144,9 @@ if printcontroller:
         cmd = 'megacli -AdpAllInfo -a'+str(controllerid)+' -NoLog'
         output = getOutput(cmd)
         controllermodel = returnControllerModel(output)
-        print 'c'+str(controllerid)+' | '+controllermodel
+	controllerram = returnMemorySize(output)
+	controllerrev = returnFirmwareVersion(output)
+        print 'c'+str(controllerid)+' | '+controllermodel+' ('+controllerram+') FW: '+controllerrev
         controllerid += 1
     print ''
 
