@@ -109,7 +109,7 @@ for controller in controllerlist:
         id = controller+array[0]
         size = array[6].split('.')[0]+'G'
         status = array[2]
-        if not status == 'OK':
+        if not status in ['OK','VERIFYING']:
             bad = True
             nagiosbadarray=nagiosbadarray+1
         else:
