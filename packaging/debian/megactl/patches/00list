@@ -1,3 +1,5 @@
 000-No_absolute_pathes_in_examples.dpatch
 001-Drop_obsolete_asm_user.h.dpatch
 002-No_enclosure_support.dpatch
+003-Fix_disk_enumeration_loop.dpatch
+004-Fix_build_on_recent_distros.dpatch

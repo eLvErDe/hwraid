@@ -1,0 +1,64 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+## 003-Fix_disk_enumeration_loop.dpatch by Pat Suwalski <pat@suwalski.net>
+##
+## DP: When my controller has a failed disk, megasasctl fails.
+## DP:
+## DP: I have tracked the problem down to a bad assumption, that the various
+## DP: disk enumeration loops would use the number of currently online drives
+## DP: as the basis for the iterator.
+## DP:
+## DP: This number decreases when a disk fails. It is not noticeable in many
+## DP: cases, because on many some controllers pinfo->pd_present_count is
+## DP: one higher than the actual number of disks.
+## DP: However, the same situation would be encountered in a RAID1 system with 
+## DP: two failed disks.
+## DP:
+## DP: The attached one-line patch uses the number of ports 
+## DP: on the controller as the basis.
+
+@DPATCH@
+
+This patch fixes a segfault based on an incorrect assumption that the number
+of physical drives to loop over is the number of currently online drives
+connected to the controller. This change plays it safe and makes it use the
+number of ports on the controller, with a fallback for the worst case
+scenario.
+
+Pat Suwalski <pat@suwalski.net>
+
+diff -ur megactl-code/src/adapter.c megactl-code2/src/adapter.c
+--- a/src/adapter.c	2014-01-20 11:13:48.114598462 -0500
++++ b/src/adapter.c	2014-01-20 14:33:32.950851825 -0500
+@@ -706,7 +706,31 @@
+     }
+     qsort (a->channel, a->num_channels, sizeof (*a->channel), cmpChannel);
+ 
+-    a->num_physicals = pinfo->pd_present_count;
++    /* Some notes:
++       Different meanings on different models.
++       - FC_MAX_PHYSICAL_DEVICES used on older controllers, which is 256
++         disks (overallocation)
++       - pd_disk_present_count is number of working drives, not counting
++         missing drives
++       - pd_present_count is unclear. It is pd_disk_present_count + 1 on some
++         controllers
++       - device_interface.port_count contains number of physical ports on the
++         controller
++
++       pd_present_count was used here, but in some controllers causes segfaults
++       when there is a failed drive, and not enough space is allocated.
++
++       Since there cannot be more devices than there are ports, that is a safe
++       number to set without going overboard.
++    */
++    a->num_physicals = pinfo->device_interface.port_count;
++
++    /* On some controllers, namely the PERC6e, the controller does not know
++       how many ports there are in the enclosure. Fall back to the worst case
++       scenario. */
++    if (a->num_physicals < pinfo->pd_disk_present_count)
++        a->num_physicals = FC_MAX_PHYSICAL_DEVICES;
++
+     if ((a->physical = (struct physical_drive_info *) malloc (a->num_physicals * sizeof (*a->physical))) == NULL)
+ 	return "out of memory (physical drives)";
+     memset (a->physical, 0, a->num_physicals * sizeof (*a->physical));
