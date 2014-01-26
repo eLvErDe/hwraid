@@ -67,6 +67,7 @@ def getArrayList(ctrlnmbr):
       else:
         list.append([arrayid,raidlevel,size,arraystatus,disklist])
         arrayid=arrayid+1
+        disklist=[]
     if re.match('Status of volume.*$',line):
       arraystatus=line.split(':')[1].strip()
     if re.match('RAID level.*$',line):
