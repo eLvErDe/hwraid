@@ -3,7 +3,7 @@ Section: admin
 Priority: optional
 Maintainer: Adam Cécile (Le_Vert) <gandalf@le-vert.net>
 Build-Depends: debhelper (>= 5)
-Standards-Version: 3.9.3
+Standards-Version: 3.9.5
 Homepage: http://www.lsi.com/support/Pages/Download-Results.aspx?keyword=megacli
 
 Package: megacli

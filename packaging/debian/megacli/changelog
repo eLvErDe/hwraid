@@ -1,3 +1,9 @@
+megacli (8.07.14-1) unstable; urgency=medium
+
+  * New upstream release.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Sun, 26 Jan 2014 00:40:52 +0100
+
 megacli (8.04.07-1) unstable; urgency=low
 
   * New upstream release (Closes: #221).
