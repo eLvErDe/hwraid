@@ -3,7 +3,7 @@ Section: admin
 Priority: extra
 Maintainer: Adam Cécile (Le_Vert) <gandalf@le-vert.net>
 Build-Depends: debhelper (>= 5)
-Standards-Version: 3.9.4
+Standards-Version: 3.9.5
 
 Package: sas2ircu-status
 Architecture: all

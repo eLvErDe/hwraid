@@ -1,3 +1,10 @@
+sas2ircu-status (0.6) unstable; urgency=medium
+
+  * Reset disk list after each array processing (Closes: #287).
+  * Write manpage.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Sun, 26 Jan 2014 16:47:08 +0100
+
 sas2ircu-status (0.5) unstable; urgency=low
 
   * Use full sas2ircu path to avoid issues if PATH is not set (Closes: #75).

@@ -24,6 +24,7 @@ binary-indep: install
 	dh_testroot
 	dh_installchangelogs 
 	dh_installdocs
+	dh_installman
 	dh_install
 	# Must be run after afacli-makedev
 	dh_installinit --name sas2ircu-statusd \
