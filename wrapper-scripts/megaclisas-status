@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: megaclisas-status,v 1.8 2014/01/16 17:59:00 root Exp $
+# $Id: megaclisas-status,v 1.9 2014/01/26 21:26:53 root Exp $
 
 import os
 import re
@@ -96,6 +96,7 @@ def returnDiskInfo(output,controllerid):
     olddiskid = False
     enclid = False
     slotid = False
+    lsidid = 'Unknown'
     table = []
     state = 'Offline'
     model = 'Unknown'
@@ -112,6 +113,8 @@ def returnDiskInfo(output,controllerid):
                model = 'Unknown'
         if re.match(r'Enclosure Device ID: .*$',line.strip()):
             enclid = line.split(':')[1].strip()
+        if re.match(r'^Device Id: .*$',line.strip()):
+            lsidid = line.split(':')[1].strip()
         if re.match(r'Slot Number: .*$',line.strip()):
             slotid = line.split(':')[1].strip()
         if re.match(r'Firmware state: .*$',line.strip()):
@@ -126,7 +129,7 @@ def returnDiskInfo(output,controllerid):
             temp = re.sub('\(.*\)', '', temp)
 	    if model != 'Unknown':
 		#### print str(arrayid)+' '+str(diskid)+' '+str(olddiskid)
-		table.append([str(arrayid), str(diskid), state, model, speed, temp, enclid, slotid])
+		table.append([str(arrayid), str(diskid), state, model, speed, temp, enclid, slotid, lsidid])
     return table
 
 cmd = 'megacli -adpCount -NoLog'
@@ -185,7 +188,7 @@ while controllerid < controllernumber:
     output = getOutput(cmd)
     arraydisk = returnDiskInfo(output,controllerid)
     for array in arraydisk:
-       print 'c'+str(controllerid)+'u'+array[0]+'p'+array[1]+' | '+array[3]+' | '+array[2]+' | '+array[4]+' | '+array[5]+'| ID: \'['+array[6]+':'+array[7]+']\''
+       print 'c'+str(controllerid)+'u'+array[0]+'p'+array[1]+' | '+array[3]+' | '+array[2]+' | '+array[4]+' | '+array[5]+'| ID: \'['+array[6]+':'+array[7]+']\' | LSI ID: '+array[8]
     controllerid += 1
 
 if bad:
