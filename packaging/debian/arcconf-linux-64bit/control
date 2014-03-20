@@ -8,7 +8,7 @@ Standards-Version: 3.9.3
 
 Package: arcconf
 Architecture: amd64
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${misc:Depends}
 Description: Adaptec ARCCONF command line tool
  .
  Compatible Products:
