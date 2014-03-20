@@ -1,0 +1,58 @@
+#!/usr/bin/make -f
+
+# Quilt patch system
+include /usr/share/quilt/quilt.make
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+# Example:
+# debian/rules repack FILE=../repack/arcconf_v1_5_20942.zip
+repack:
+	BASE_NAME=linux_x64 &&\
+	ABS_FILE=`readlink -f $(FILE)` &&\
+	TMP_DIR=`mktemp -d` &&\
+	cd $$TMP_DIR && unzip $$ABS_FILE
+	#mv $$TMP_DIR/$$BASE_NAME/cmdline/arcconf $(CURDIR)/
+
+build: build-arch build-indep patch
+build-arch:
+build-indep:
+
+clean: unpatch
+	dh_testdir
+	dh_testroot
+	dh_clean
+
+install:
+	dh_testdir
+	dh_testroot
+	dh_clean -k
+	dh_installdirs
+	wget http://download.adaptec.com/raid/storage_manager/arcconf_v1_5_20942.zip
+	unzip arcconf_v1_5_20942.zip
+	install -D -m 755 linux_x64/cmdline/arcconf $(CURDIR)/cmdline/arcconf
+	dh_install
+
+binary-indep: build install
+binary-arch: build install
+	dh_testdir
+	dh_testroot
+	dh_installchangelogs
+	dh_installdocs
+	dh_installinit -Nadaptec-universal-storage-snmpd
+	# Priority 21, so it will start after snmpd
+	dh_installinit -padaptec-universal-storage-snmpd -- defaults 21
+	dh_link
+	dh_compress
+	dh_fixperms
+	dh_makeshlibs
+	dh_strip
+	dh_installdeb
+	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary: binary-arch binary-indep
+.PHONY: build clean binary-indep binary-arch binary install
