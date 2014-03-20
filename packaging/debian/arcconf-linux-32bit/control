@@ -1,4 +1,4 @@
-Source: arcconf-64bit
+Source: arcconf-32bit
 Section: admin
 Priority: optional
 Maintainer: Adam Cécile (Le_Vert) <gandalf@le-vert.net>
@@ -7,7 +7,7 @@ Homepage: http://www.adaptec.com/en-US/support/raid/sas_raid/SAS-5805Z/
 Standards-Version: 3.9.3
 
 Package: arcconf
-Architecture: amd64
+Architecture: i386
 Depends: ${misc:Depends}
 Description: Adaptec ARCCONF command line tool
  .
