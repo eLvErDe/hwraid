@@ -55,12 +55,13 @@ def returnControllerModel(output):
 		if re.match(r'^Product Name.*$',line.strip()):
 			return line.split(':')[1].strip()
 
-def returnArrayNumber(output):
-	i = 0
+def returnArrayList(output):
+	vds = []
 	for line in output:
-		if re.match(r'^Number of Virtual (Disk|Drive).*$',line.strip()):
-			i = line.strip().split(':')[1].strip()
-	return i
+		vd = re.match(r'^Virtual Drive: \d+ \(Target Id: (\d+)\)$', line.strip())
+		if vd:
+			vds.append(int(vd.group(1)))
+	return vds
 
 def returnArrayInfo(output,controllerid,arrayid):
 	id = 'c'+str(controllerid)+'u'+str(arrayid)
@@ -155,10 +156,10 @@ if not nagiosmode:
 
 while controllerid < controllernumber:
 	arrayid = 0
-	cmd = binarypath+' -LdGetNum -a'+str(controllerid)+' -NoLog'
+	cmd = binarypath+' -LDInfo -LALL -a'+str(controllerid)+' -NoLog'
 	output = getOutput(cmd)
-	arraynumber = returnArrayNumber(output)
-	while arrayid < int(arraynumber):
+	arrayList = returnArrayList(output)
+	for arrayid in arrayList:
 		cmd = binarypath+' -LDInfo -l'+str(arrayid)+' -a'+str(controllerid)+' -NoLog'
 		output = getOutput(cmd)
 		arrayinfo = returnArrayInfo(output,controllerid,arrayid)
@@ -169,7 +170,6 @@ while controllerid < controllernumber:
 			nagiosbadarray=nagiosbadarray+1
 		else:
 			nagiosgoodarray=nagiosgoodarray+1
-		arrayid += 1
 	controllerid += 1
 if not nagiosmode:
 	print ''
