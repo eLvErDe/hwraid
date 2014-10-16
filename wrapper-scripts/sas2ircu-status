@@ -4,7 +4,7 @@ import os
 import re
 import sys
 
-binarypath = "/usr/sbin/sas2ircu"
+binarypath = "/sbin/sas2ircu"
 
 if len(sys.argv) > 2:
   print 'Usage: sas2ircu-status [--nagios]'
@@ -42,12 +42,18 @@ def getCtrlList():
   for line in res:
     if re.match('^[0-9]+.*$',line):
       ctrlnmbr,ctrlname=int(line.split()[0]),line.split()[1]
-      # Check if it's a RAID controller
+      # Check if it's a RAID controller and a volume exists
       cmd=binarypath+' '+str(ctrlnmbr)+' DISPLAY'
       res=getOutput(cmd)
+      raid=False
+      validarray=False
       for line in res:
         if re.match('^RAID Support\s+:\s+Yes$',line):
-          list.append([ctrlnmbr,ctrlname])
+          raid=True
+        if re.match('^IR volume [0-9]+.*$',line):
+          validarray=True
+      if raid and validarray:
+        list.append([ctrlnmbr,ctrlname])
   # ie: [['0', 'SAS2008']]
   return list
 
