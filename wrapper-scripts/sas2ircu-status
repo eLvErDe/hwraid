@@ -4,7 +4,7 @@ import os
 import re
 import sys
 
-binarypath = "/sbin/sas2ircu"
+binarypath = "/usr/sbin/sas2ircu"
 
 if len(sys.argv) > 2:
   print 'Usage: sas2ircu-status [--nagios]'
