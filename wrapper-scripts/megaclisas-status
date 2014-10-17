@@ -105,25 +105,25 @@ def returnArrayInfo(output,controllerid,arrayid):
 
 	return [id,type,size,state,inprogress]
 
-def returnDiskInfo(output,controllerid):
-	arrayid = False
-	diskid = False
+def returnDiskInfo(output):
+	enclid = False
+	slotnr = False
 	table = []
 	state = 'undef'
 	model = 'undef'
 	for line in output:
-		if re.match(r'^Virtual (Disk|Drive): [0-9]+.*$',line.strip()):
-			arrayid = line.split('(')[0].split(':')[1].strip()
+		if re.match(r'^Enclosure Device ID: [0-9]+$',line.strip()):
+			enclid = line.split('(')[0].split(':')[1].strip()
 		if re.match(r'Firmware state: .*$',line.strip()):
 			state = line.split(':')[1].strip()
 		if re.match(r'Inquiry Data: .*$',line.strip()):
 			model = line.split(':')[1].strip()
 			model = re.sub(' +', ' ', model)
-		if re.match(r'PD: [0-9]+ Information.*$',line.strip()):
-			diskid = line.split()[1].strip()
+		if re.match(r'Slot Number: [0-9]+$',line.strip()):
+			slotnr = line.split()[2].strip()
 
-		if arrayid != False and state != 'undef' and model != 'undef' and diskid != False:
-			table.append([str(arrayid), str(diskid), state, model])
+		if state != 'undef' and model != 'undef':
+			table.append([str(enclid), str(slotnr), state, model])
 			state = 'undef'
 			model = 'undef'
 
@@ -181,19 +181,17 @@ if not nagiosmode:
 controllerid = 0
 while controllerid < controllernumber:
 	arrayid = 0
-	cmd = binarypath+' -LDInfo -lall -a'+str(controllerid)+' -NoLog'
+	cmd = binarypath+' -PdList -a'+str(controllerid)+' -NoLog'
 	output = getOutput(cmd)
-	cmd = binarypath+' -LdPdInfo -a'+str(controllerid)+' -NoLog'
-	output = getOutput(cmd)
-	arraydisk = returnDiskInfo(output,controllerid)
+	arraydisk = returnDiskInfo(output)
 	for array in arraydisk:
-		if not array[2] == 'Online' and not array[2] == 'Online, Spun Up':
+		if not array[2] == 'Online' and not array[2] == 'Online, Spun Up' and not array[2] == 'Hotspare, Spun down' and not array[2] == 'Hotspare, Spun down':
 			bad=True
 			nagiosbaddisk=nagiosbaddisk+1
 		else:
 			nagiosgooddisk=nagiosgooddisk+1
 		if not nagiosmode:
-			print 'c'+str(controllerid)+'u'+array[0]+'p'+array[1]+' | '+array[3]+' | '+array[2]
+			print 'c'+str(controllerid)+'e'+array[0]+'s'+array[1]+' | '+array[3]+' | '+array[2]
 	controllerid += 1
 
 if nagiosmode:
