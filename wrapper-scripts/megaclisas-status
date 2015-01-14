@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: megaclisas-status,v 1.9 2014/01/26 21:26:53 root Exp $
+# $Id: megaclisas-status,v 1.10 2015/01/14 18:12:22 root Exp $
 
 import os
 import re
@@ -141,7 +141,7 @@ bad = False
 # List available controller
 if printcontroller:
     print '-- Controller information --'
-    print '-- ID | Model'
+    print '-- ID\t| Model'
     controllerid = 0
     while controllerid < controllernumber:
         cmd = 'megacli -AdpAllInfo -a'+str(controllerid)+' -NoLog'
@@ -149,14 +149,14 @@ if printcontroller:
         controllermodel = returnControllerModel(output)
 	controllerram = returnMemorySize(output)
 	controllerrev = returnFirmwareVersion(output)
-        print 'c'+str(controllerid)+' | '+controllermodel+' ('+controllerram+') FW: '+controllerrev
+        print 'c'+str(controllerid)+'\t| '+controllermodel+' ('+controllerram+') FW: '+controllerrev
         controllerid += 1
     print ''
 
 if printarray:
     controllerid = 0
-    print '-- Arrays informations --'
-    print '-- ID | Type | Size | Status | InProgress'
+    print '-- Arrays information --'
+    print '-- ID\t| Type | Size | Status | InProgress'
     while controllerid < controllernumber:
         arrayid = 0
 	cmd = 'megacli -LDInfo -lall -a'+str(controllerid)+' -NoLog'
@@ -166,15 +166,15 @@ if printarray:
             cmd = 'megacli -LDInfo -l'+str(arrayid)+' -a'+str(controllerid)+' -NoLog'
 	    output = getOutput(cmd)
             arrayinfo = returnArrayInfo(output,controllerid,arrayid)
-	    print arrayinfo[0]+' | '+arrayinfo[1]+' | '+arrayinfo[2]+' | '+arrayinfo[3]+' | '+arrayinfo[4]
+	    print arrayinfo[0]+'\t| '+arrayinfo[1]+' | '+arrayinfo[2]+' | '+arrayinfo[3]+' | '+arrayinfo[4]
             if not arrayinfo[3] == 'Optimal':
                 bad = True
 	    arrayid += 1
         controllerid += 1
     print ''
 
-print '-- Disks informations'
-print '-- ID | Model | Status | Speed | Temperature'
+print '-- Disks information --'
+print '-- ID\t| Model | Status | Speed | Temperature | Slot ID | LSI Device ID '
 
 controllerid = 0
 while controllerid < controllernumber:
@@ -188,7 +188,7 @@ while controllerid < controllernumber:
     output = getOutput(cmd)
     arraydisk = returnDiskInfo(output,controllerid)
     for array in arraydisk:
-       print 'c'+str(controllerid)+'u'+array[0]+'p'+array[1]+' | '+array[3]+' | '+array[2]+' | '+array[4]+' | '+array[5]+'| ID: \'['+array[6]+':'+array[7]+']\' | LSI ID: '+array[8]
+       print 'c'+str(controllerid)+'u'+array[0]+'p'+array[1]+'\t| '+array[3]+' | '+array[2]+' | '+array[4]+' | '+array[5]+' | ID: \'['+array[6]+':'+array[7]+']\' | '+array[8]
     controllerid += 1
 
 if bad:
