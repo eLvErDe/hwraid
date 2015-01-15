@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: megaclisas-status,v 1.13 2015/01/14 20:33:23 root Exp $
+# $Id: megaclisas-status,v 1.14 2015/01/14 20:40:09 root Exp $
 
 import os
 import re
@@ -13,6 +13,9 @@ if len(sys.argv) > 2:
 printarray = True
 printcontroller = True
 totaldrivenumber = 0
+totalunconfdrivenumber = 0
+
+#### pdb.set_trace()
 
 if len(sys.argv) > 1:
 	if sys.argv[1] == '-d':
@@ -20,7 +23,7 @@ if len(sys.argv) > 1:
 		printcontroller = False
 	else:
 		print 'Usage: megaraid-status [-d]'
-	sys.exit(1)
+		sys.exit(1)
 
 # Get command output
 def getOutput(cmd):
@@ -42,13 +45,12 @@ def returnTotalDriveNumber(output):
 			return int(line.split(':')[1].strip())
 
 def returnUnconfDriveNumber(output):
-	configdrives = 0
+	confdrives = 0
 	unconfdrives = 0
 	for line in output:
 		if re.match(r'.*Number of PDs:.*$',line.strip()):
-			configdrives += int(line.split(':')[2].strip())
-	#### pdb.set_trace()
-	unconfdrives = totaldrivenumber - configdrives
+			confdrives += int(line.split(':')[2].strip())
+	unconfdrives = totaldrivenumber - confdrives
 	return int(unconfdrives)
 
 def returnControllerModel(output):
@@ -248,6 +250,7 @@ if printarray:
 		controllerid += 1
 	print ''
 
+
 controllerid = 0
 while controllerid < controllernumber:
 	cmd = 'megacli -PDGetNum -a'+str(controllerid)+' -NoLog'
@@ -275,7 +278,6 @@ if totaldrivenumber:
 		controllerid += 1
 	print ''
 
-totalunconfdrivenumber = 0
 controllerid = 0
 while controllerid < controllernumber:
 	cmd = 'megacli -LdPdInfo -a'+str(controllerid)+' -NoLog'
