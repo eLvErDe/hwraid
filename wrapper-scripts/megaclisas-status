@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: megaclisas-status,v 1.12 2015/01/14 20:22:48 root Exp $
+# $Id: megaclisas-status,v 1.13 2015/01/14 20:33:23 root Exp $
 
 import os
 import re
@@ -45,167 +45,167 @@ def returnUnconfDriveNumber(output):
 	configdrives = 0
 	unconfdrives = 0
 	for line in output:
-	        if re.match(r'.*Number of PDs:.*$',line.strip()):
+		if re.match(r'.*Number of PDs:.*$',line.strip()):
 			configdrives += int(line.split(':')[2].strip())
 	#### pdb.set_trace()
 	unconfdrives = totaldrivenumber - configdrives
 	return int(unconfdrives)
 
 def returnControllerModel(output):
-    for line in output:
-        if re.match(r'^Product Name.*$',line.strip()):
-	    return line.split(':')[1].strip()
+	for line in output:
+		if re.match(r'^Product Name.*$',line.strip()):
+			return line.split(':')[1].strip()
 
 def returnMemorySize(output):
-    for line in output:
-        if re.match(r'^Memory Size.*$',line.strip()):
-	    return line.split(':')[1].strip()
+	for line in output:
+		if re.match(r'^Memory Size.*$',line.strip()):
+			return line.split(':')[1].strip()
 
 def returnFirmwareVersion(output):
-    for line in output:
-        if re.match(r'^FW Package Build.*$',line.strip()):
-	    return line.split(':')[1].strip()
+	for line in output:
+		if re.match(r'^FW Package Build.*$',line.strip()):
+			return line.split(':')[1].strip()
 
 def returnArrayNumber(output):
-    i = 0
-    for line in output:
-	if re.match(r'^Virtual Drive:.*$',line.strip()):
-            i += 1
-    return i
+	i = 0
+	for line in output:
+		if re.match(r'^Virtual Drive:.*$',line.strip()):
+			i += 1
+	return i
 
 def returnArrayInfo(output,controllerid,arrayid):
-    id = 'c'+str(controllerid)+'u'+str(arrayid)
-    operationlinennumber = False
-    linenumber = 0
-    type = ''
-    size = ''
-    state = ''
-    for line in output:
-        if re.match(r'^RAID Level.*?:.*$',line.strip()):
-            type = 'RAID-'+line.strip().split(':')[1].split(',')[0].split('-')[1].strip()
-            # type = 'RAID'+line.strip().split(':')[1]
-        if re.match(r'^Size.*?:.*$',line.strip()):
-            # Size reported in MB
-            if re.match(r'^.*MB$',line.strip().split(':')[1]):
-                size = line.strip().split(':')[1].strip('MB').strip()
-                size = str(int(round((float(size) / 1000))))+'G'
-            # Size reported in TB
-            elif re.match(r'^.*TB$',line.strip().split(':')[1]):
-                size = line.strip().split(':')[1].strip('TB').strip()
-                size = str(int(round((float(size) * 1000))))+'G'
-            # Size reported in GB (default)
-            else:
-                size = line.strip().split(':')[1].strip('GB').strip()
-                size = str(int(round((float(size)))))+'G'
-        if re.match(r'^State.*?:.*$',line.strip()):
-            state = line.strip().split(':')[1].strip()
-        if re.match(r'^Ongoing Progresses.*?:.*$',line.strip()):
-	    operationlinennumber = linenumber
-        linenumber += 1
-        if operationlinennumber:
-            inprogress = output[operationlinennumber+1]
-        else:
-            inprogress = 'None'
-    return [id,type,size,state,inprogress]
+	id = 'c'+str(controllerid)+'u'+str(arrayid)
+	operationlinennumber = False
+	linenumber = 0
+	type = ''
+	size = ''
+	state = ''
+	for line in output:
+		if re.match(r'^RAID Level.*?:.*$',line.strip()):
+			type = 'RAID-'+line.strip().split(':')[1].split(',')[0].split('-')[1].strip()
+			# type = 'RAID'+line.strip().split(':')[1]
+		if re.match(r'^Size.*?:.*$',line.strip()):
+			# Size reported in MB
+			if re.match(r'^.*MB$',line.strip().split(':')[1]):
+				size = line.strip().split(':')[1].strip('MB').strip()
+				size = str(int(round((float(size) / 1000))))+'G'
+			# Size reported in TB
+			elif re.match(r'^.*TB$',line.strip().split(':')[1]):
+				size = line.strip().split(':')[1].strip('TB').strip()
+				size = str(int(round((float(size) * 1000))))+'G'
+			# Size reported in GB (default)
+			else:
+				size = line.strip().split(':')[1].strip('GB').strip()
+				size = str(int(round((float(size)))))+'G'
+		if re.match(r'^State.*?:.*$',line.strip()):
+			state = line.strip().split(':')[1].strip()
+		if re.match(r'^Ongoing Progresses.*?:.*$',line.strip()):
+			operationlinennumber = linenumber
+		linenumber += 1
+		if operationlinennumber:
+			inprogress = output[operationlinennumber+1]
+		else:
+			inprogress = 'None'
+	return [id,type,size,state,inprogress]
 
 def returnDiskInfo(output,controllerid):
-    arrayid = False
-    diskid = False
-    oldenclid = False
-    enclid = False
-    slotid = False
-    lsidid = 'Unknown'
-    table = []
-    state = 'Offline'
-    model = 'Unknown'
-    speed = 'Unknown'
-    temp = 'Unk0C'
-    for line in output:
-        if re.match(r'Enclosure Device ID: .*$',line.strip()):
-	    # We match here early in the analysis so reset the vars if this is a new disk we're reading..
-	    oldenclid = enclid
-            enclid = line.split(':')[1].strip()
-	    if oldenclid != False:
-		state = 'Offline'
-		model = 'Unknown'
-		speed = 'Unknown'
-		temp = 'Unk0C'
-		slotid = False
-		lsidid = 'Unknown'
-        if re.match(r'^Virtual Drive: [0-9]+.*$',line.strip()):
-            arrayid = line.split('(')[0].split(':')[1].strip()
-        if re.match(r'PD: [0-9]+ Information.*$',line.strip()):
-            diskid = line.split()[1].strip()
-        if re.match(r'^Device Id: .*$',line.strip()):
-            lsidid = line.split(':')[1].strip()
-        if re.match(r'Slot Number: .*$',line.strip()):
-            slotid = line.split(':')[1].strip()
-        if re.match(r'Firmware state: .*$',line.strip()):
-            state = line.split(':')[1].strip()
-        if re.match(r'Inquiry Data: .*$',line.strip()):
-            model = line.split(':')[1].strip()
-	    model = re.sub(' +', ' ', model)
-        if re.match(r'Device Speed: .*$',line.strip()):
-            speed = line.split(':')[1].strip()
-        if re.match(r'Drive Temperature :.*$',line.strip()):
-	    # Drive temp is amongst the last few lines matched, decide here if we add information to the table..
-            temp = line.split(':')[1].strip()
-            temp = re.sub('\(.*\)', '', temp)
-	    if model != 'Unknown':
-		#### print str(arrayid)+' '+str(diskid)+' '+str(olddiskid)
-		table.append([str(arrayid), str(diskid), state, model, speed, temp, enclid, slotid, lsidid])
-    return table
+	arrayid = False
+	diskid = False
+	oldenclid = False
+	enclid = False
+	slotid = False
+	lsidid = 'Unknown'
+	table = []
+	state = 'Offline'
+	model = 'Unknown'
+	speed = 'Unknown'
+	temp = 'Unk0C'
+	for line in output:
+		if re.match(r'Enclosure Device ID: .*$',line.strip()):
+			# We match here early in the analysis so reset the vars if this is a new disk we're reading..
+			oldenclid = enclid
+			enclid = line.split(':')[1].strip()
+			if oldenclid != False:
+				state = 'Offline'
+				model = 'Unknown'
+				speed = 'Unknown'
+				temp = 'Unk0C'
+				slotid = False
+				lsidid = 'Unknown'
+		if re.match(r'^Virtual Drive: [0-9]+.*$',line.strip()):
+			arrayid = line.split('(')[0].split(':')[1].strip()
+		if re.match(r'PD: [0-9]+ Information.*$',line.strip()):
+			diskid = line.split()[1].strip()
+		if re.match(r'^Device Id: .*$',line.strip()):
+			lsidid = line.split(':')[1].strip()
+		if re.match(r'Slot Number: .*$',line.strip()):
+			slotid = line.split(':')[1].strip()
+		if re.match(r'Firmware state: .*$',line.strip()):
+			state = line.split(':')[1].strip()
+		if re.match(r'Inquiry Data: .*$',line.strip()):
+			model = line.split(':')[1].strip()
+		model = re.sub(' +', ' ', model)
+		if re.match(r'Device Speed: .*$',line.strip()):
+			speed = line.split(':')[1].strip()
+		if re.match(r'Drive Temperature :.*$',line.strip()):
+		# Drive temp is amongst the last few lines matched, decide here if we add information to the table..
+			temp = line.split(':')[1].strip()
+			temp = re.sub('\(.*\)', '', temp)
+			if model != 'Unknown':
+				#### print str(arrayid)+' '+str(diskid)+' '+str(olddiskid)
+				table.append([str(arrayid), str(diskid), state, model, speed, temp, enclid, slotid, lsidid])
+	return table
 
 
 def returnUnconfDiskInfo(output,controllerid):
-    arrayid = False
-    diskid = False
-    olddiskid = False
-    enclid = False
-    slotid = False
-    lsidid = 'Unknown'
-    table = []
-    state = 'Offline'
-    model = 'Unknown'
-    speed = 'Unknown'
-    temp = 'Unk0C'
-    for line in output:
-        if re.match(r'Enclosure Device ID: .*$',line.strip()):
-	    # We match here early in the analysis so reset the vars if this is a new disk we're reading..
-	    oldenclid = enclid
-            enclid = line.split(':')[1].strip()
-	    if oldenclid != False:
-		arrayid = False
-		state = 'Offline'
-		model = 'Unknown'
-		speed = 'Unknown'
-		temp = 'Unk0C'
-		slotid = False
-		lsidid = 'Unknown'
+	arrayid = False
+	diskid = False
+	olddiskid = False
+	enclid = False
+	slotid = False
+	lsidid = 'Unknown'
+	table = []
+	state = 'Offline'
+	model = 'Unknown'
+	speed = 'Unknown'
+	temp = 'Unk0C'
+	for line in output:
+		if re.match(r'Enclosure Device ID: .*$',line.strip()):
+		# We match here early in the analysis so reset the vars if this is a new disk we're reading..
+			oldenclid = enclid
+			enclid = line.split(':')[1].strip()
+			if oldenclid != False:
+				arrayid = False
+				state = 'Offline'
+				model = 'Unknown'
+				speed = 'Unknown'
+				temp = 'Unk0C'
+				slotid = False
+				lsidid = 'Unknown'
 
-        if re.match(r'^Drive.s position: DiskGroup: [0-9]+,.*$',line.strip()):
-            arrayid = line.split(',')[1].split(':')[1].strip()
-        if re.match(r'^Device Id: [0-9]+.*$',line.strip()):
-            diskid = line.split(':')[1].strip()
-        if re.match(r'^Device Id: .*$',line.strip()):
-            lsidid = line.split(':')[1].strip()
-        if re.match(r'Slot Number: .*$',line.strip()):
-            slotid = line.split(':')[1].strip()
-        if re.match(r'Firmware state: .*$',line.strip()):
-            state = line.split(':')[1].strip()
-        if re.match(r'Inquiry Data: .*$',line.strip()):
-            model = line.split(':')[1].strip()
-	    model = re.sub(' +', ' ', model)
-        if re.match(r'Device Speed: .*$',line.strip()):
-            speed = line.split(':')[1].strip()
-        if re.match(r'Drive Temperature :.*$',line.strip()):
-	    # Drive temp is amongst the last few lines matched, decide here if we add information to the table..
-            temp = line.split(':')[1].strip()
-            temp = re.sub('\(.*\)', '', temp)
-	    if arrayid == False:
-		### print str(arrayid)+' '+str(diskid)+' '+str(olddiskid)
-		table.append([state, model, speed, temp, enclid, slotid, lsidid])
-    return table
+		if re.match(r'^Drive.s position: DiskGroup: [0-9]+,.*$',line.strip()):
+			arrayid = line.split(',')[1].split(':')[1].strip()
+		if re.match(r'^Device Id: [0-9]+.*$',line.strip()):
+			diskid = line.split(':')[1].strip()
+		if re.match(r'^Device Id: .*$',line.strip()):
+			lsidid = line.split(':')[1].strip()
+		if re.match(r'Slot Number: .*$',line.strip()):
+			slotid = line.split(':')[1].strip()
+		if re.match(r'Firmware state: .*$',line.strip()):
+			state = line.split(':')[1].strip()
+		if re.match(r'Inquiry Data: .*$',line.strip()):
+			model = line.split(':')[1].strip()
+		model = re.sub(' +', ' ', model)
+		if re.match(r'Device Speed: .*$',line.strip()):
+			speed = line.split(':')[1].strip()
+		if re.match(r'Drive Temperature :.*$',line.strip()):
+		# Drive temp is amongst the last few lines matched, decide here if we add information to the table..
+			temp = line.split(':')[1].strip()
+			temp = re.sub('\(.*\)', '', temp)
+			if arrayid == False:
+				### print str(arrayid)+' '+str(diskid)+' '+str(olddiskid)
+				table.append([state, model, speed, temp, enclid, slotid, lsidid])
+	return table
 
 cmd = 'megacli -adpCount -NoLog'
 output = getOutput(cmd)
@@ -215,38 +215,38 @@ bad = False
 
 # List available controller
 if printcontroller:
-    print '-- Controller information --'
-    print '-- ID\t| Model'
-    controllerid = 0
-    while controllerid < controllernumber:
-        cmd = 'megacli -AdpAllInfo -a'+str(controllerid)+' -NoLog'
-        output = getOutput(cmd)
-        controllermodel = returnControllerModel(output)
-	controllerram = returnMemorySize(output)
-	controllerrev = returnFirmwareVersion(output)
-        print 'c'+str(controllerid)+'\t| '+controllermodel+' ('+controllerram+') FW: '+controllerrev
-        controllerid += 1
-    print ''
+	print '-- Controller information --'
+	print '-- ID\t| Model'
+	controllerid = 0
+	while controllerid < controllernumber:
+		cmd = 'megacli -AdpAllInfo -a'+str(controllerid)+' -NoLog'
+		output = getOutput(cmd)
+		controllermodel = returnControllerModel(output)
+		controllerram = returnMemorySize(output)
+		controllerrev = returnFirmwareVersion(output)
+		print 'c'+str(controllerid)+'\t| '+controllermodel+' ('+controllerram+') FW: '+controllerrev
+		controllerid += 1
+	print ''
 
 if printarray:
-    controllerid = 0
-    print '-- Arrays information --'
-    print '-- ID\t| Type | Size | Status | InProgress'
-    while controllerid < controllernumber:
-        arrayid = 0
-	cmd = 'megacli -LDInfo -lall -a'+str(controllerid)+' -NoLog'
-	output = getOutput(cmd)
-	arraynumber = returnArrayNumber(output)
-        while arrayid < arraynumber:
-            cmd = 'megacli -LDInfo -l'+str(arrayid)+' -a'+str(controllerid)+' -NoLog'
-	    output = getOutput(cmd)
-            arrayinfo = returnArrayInfo(output,controllerid,arrayid)
-	    print arrayinfo[0]+'\t| '+arrayinfo[1]+' | '+arrayinfo[2]+' | '+arrayinfo[3]+' | '+arrayinfo[4]
-            if not arrayinfo[3] == 'Optimal':
-                bad = True
-	    arrayid += 1
-        controllerid += 1
-    print ''
+	controllerid = 0
+	print '-- Arrays information --'
+	print '-- ID\t| Type | Size | Status | InProgress'
+	while controllerid < controllernumber:
+		arrayid = 0
+		cmd = 'megacli -LDInfo -lall -a'+str(controllerid)+' -NoLog'
+		output = getOutput(cmd)
+		arraynumber = returnArrayNumber(output)
+		while arrayid < arraynumber:
+			cmd = 'megacli -LDInfo -l'+str(arrayid)+' -a'+str(controllerid)+' -NoLog'
+			output = getOutput(cmd)
+			arrayinfo = returnArrayInfo(output,controllerid,arrayid)
+			print arrayinfo[0]+'\t| '+arrayinfo[1]+' | '+arrayinfo[2]+' | '+arrayinfo[3]+' | '+arrayinfo[4]
+			if not arrayinfo[3] == 'Optimal':
+				bad = True
+			arrayid += 1
+		controllerid += 1
+	print ''
 
 controllerid = 0
 while controllerid < controllernumber:
@@ -283,7 +283,7 @@ while controllerid < controllernumber:
 	totalunconfdrivenumber += returnUnconfDriveNumber(output)
 	controllerid += 1
 
-if ( totalunconfdrivenumber > 0):
+if totalunconfdrivenumber:
 	print '-- Unconfigured Disks information --'
 	print '-- ID\t| Model | Status | Speed | Temperature | Slot ID | LSI Device ID '
 
@@ -299,7 +299,7 @@ if ( totalunconfdrivenumber > 0):
 		output = getOutput(cmd)
 		arraydisk = returnUnconfDiskInfo(output,controllerid)
 		for array in arraydisk:
-			print 'c'+str(controllerid)+'\t| '+array[1]+' | '+array[0]+' | '+array[2]+' | '+array[3]+' | ID: \'['+array[4]+':'+array[5]+']\' | '+array[6]
+			print 'c'+str(controllerid)+'uXpY\t| '+array[1]+' | '+array[0]+' | '+array[2]+' | '+array[3]+' | ID: \'['+array[4]+':'+array[5]+']\' | '+array[6]
 		controllerid += 1
 	print ''
 
