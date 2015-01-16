@@ -1,14 +1,33 @@
 #!/usr/bin/python
-# $Id: megaclisas-status,v 1.14 2015/01/14 20:40:09 root Exp $
+# $Id: megaclisas-status,v 1.15 2015/01/15 20:30:53 root Exp $
 
 import os
 import re
 import sys
 import pdb
 
+megaclipath = "/opt/MegaRAID/MegaCli/MegaCli64"
+
+# Adding a quick check to see if we're root, because on most cards I've tried this on
+# We need root access to query
+if __name__ == '__main__':
+	if os.getenv('USER') != 'root':
+		print 'You can only run this script as root or with sudo, sucks I know. Blame the RAID card'
+		sys.exit(5)
+
+# Check command line arguments to enable nagios or not
 if len(sys.argv) > 2:
 	print 'Usage: megaraid-status [-d]'
 	sys.exit(1)
+
+# Check binary exists (and +x), if not print an error message
+# or return UNKNOWN nagios error code
+if os.path.exists(megaclipath) and os.access(megaclipath, os.X_OK):
+	pass
+else:
+	print 'Cannot find ' + megaclipath + '. Please install it.'
+	sys.exit(3)
+
 
 printarray = True
 printcontroller = True
@@ -209,7 +228,7 @@ def returnUnconfDiskInfo(output,controllerid):
 				table.append([state, model, speed, temp, enclid, slotid, lsidid])
 	return table
 
-cmd = 'megacli -adpCount -NoLog'
+cmd = '%s -adpCount -NoLog' % (megaclipath)
 output = getOutput(cmd)
 controllernumber = returnControllerNumber(output)
 
@@ -221,7 +240,7 @@ if printcontroller:
 	print '-- ID\t| Model'
 	controllerid = 0
 	while controllerid < controllernumber:
-		cmd = 'megacli -AdpAllInfo -a'+str(controllerid)+' -NoLog'
+		cmd = '%s -AdpAllInfo -a%d -NoLog' % (megaclipath, controllerid)
 		output = getOutput(cmd)
 		controllermodel = returnControllerModel(output)
 		controllerram = returnMemorySize(output)
@@ -236,11 +255,11 @@ if printarray:
 	print '-- ID\t| Type | Size | Status | InProgress'
 	while controllerid < controllernumber:
 		arrayid = 0
-		cmd = 'megacli -LDInfo -lall -a'+str(controllerid)+' -NoLog'
+		cmd = '%s -LDInfo -lall -a%d -NoLog' % (megaclipath, controllerid)
 		output = getOutput(cmd)
 		arraynumber = returnArrayNumber(output)
 		while arrayid < arraynumber:
-			cmd = 'megacli -LDInfo -l'+str(arrayid)+' -a'+str(controllerid)+' -NoLog'
+			cmd = '%s -LDInfo -l%d -a%d -NoLog' % (megaclipath, arrayid, controllerid)
 			output = getOutput(cmd)
 			arrayinfo = returnArrayInfo(output,controllerid,arrayid)
 			print arrayinfo[0]+'\t| '+arrayinfo[1]+' | '+arrayinfo[2]+' | '+arrayinfo[3]+' | '+arrayinfo[4]
@@ -253,7 +272,7 @@ if printarray:
 
 controllerid = 0
 while controllerid < controllernumber:
-	cmd = 'megacli -PDGetNum -a'+str(controllerid)+' -NoLog'
+	cmd = '%s -PDGetNum -a%d -NoLog' % (megaclipath, controllerid)
 	output = getOutput(cmd)
 	totaldrivenumber += returnTotalDriveNumber(output)
 	controllerid += 1
@@ -265,12 +284,12 @@ if totaldrivenumber:
 	controllerid = 0
 	while controllerid < controllernumber:
 		arrayid = 0
-		cmd = 'megacli -LDInfo -lall -a'+str(controllerid)+' -NoLog'
+		cmd = '%s -LDInfo -lall -a%d -NoLog' % (megaclipath, controllerid)
 		output = getOutput(cmd)
 		arraynumber = returnArrayNumber(output)
 		#### BUG: -LdPdInfo shows all PD on the adapter, not just for said LD..
 		#### while arrayid <= arraynumber:
-		cmd = 'megacli -LdPdInfo -a'+str(controllerid)+' -NoLog'
+		cmd = '%s -LdPdInfo -a%d -NoLog' % (megaclipath, controllerid)
 		output = getOutput(cmd)
 		arraydisk = returnDiskInfo(output,controllerid)
 		for array in arraydisk:
@@ -280,7 +299,7 @@ if totaldrivenumber:
 
 controllerid = 0
 while controllerid < controllernumber:
-	cmd = 'megacli -LdPdInfo -a'+str(controllerid)+' -NoLog'
+	cmd = '%s -LdPdInfo -a%d -NoLog' % (megaclipath, controllerid)
 	output = getOutput(cmd)
 	totalunconfdrivenumber += returnUnconfDriveNumber(output)
 	controllerid += 1
@@ -292,12 +311,12 @@ if totalunconfdrivenumber:
 	controllerid = 0
 	while controllerid < controllernumber:
 		arrayid = 0
-		cmd = 'megacli -LDInfo -lall -a'+str(controllerid)+' -NoLog'
+		cmd = '%s -LDInfo -lall -a%d -NoLog' % (megaclipath, controllerid)
 		output = getOutput(cmd)
 		arraynumber = returnArrayNumber(output)
 		#### BUG: -LdPdInfo shows all PD on the adapter, not just for said LD..
 		#### while arrayid <= arraynumber:
-		cmd = 'megacli -PDList -a'+str(controllerid)+' -NoLog'
+		cmd = '%s -PDList -a%d -NoLog' % (megaclipath, controllerid)
 		output = getOutput(cmd)
 		arraydisk = returnUnconfDiskInfo(output,controllerid)
 		for array in arraydisk:
