@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: megaclisas-status,v 1.19 2015/03/27 03:06:04 root Exp $
+# $Id: megaclisas-status,v 1.20 2015/03/27 03:12:09 root Exp $
 
 import os
 import re
@@ -383,7 +383,7 @@ if totaldrivenumber:
 			# Header
 			if ( i == 0 ):
 				print drvfmt % (
-				"-- ID", "Type", "Model", "Size", "Status", "Speed", "Temp", "Slot ID", "LSI Device ID")
+				"-- ID", "Type", "Drive Model", "Size", "Status", "Speed", "Temp", "Slot ID", "LSI Device ID")
 			# Drive information
 			print drvfmt % (
 				str('c'+str(controllerid)+'u'+array[0]+'p'+array[1]),		# c0p0
@@ -434,7 +434,7 @@ if totalunconfdrivenumber:
 			# Header
 			if ( i == 0 ):
 				print drvfmt % (
-				"-- ID", "Type", "Model", "Size", "Status", "Speed", "Temp", "Slot ID", "LSI Device ID")
+				"-- ID", "Type", "Drive Model", "Size", "Status", "Speed", "Temp", "Slot ID", "LSI Device ID")
 			# Drive information
 			print drvfmt % (
 				str('c'+str(controllerid)+'uXpY\t| '+array[0]),			# cXpY
