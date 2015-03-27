@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: megaclisas-status,v 1.21 2015/03/27 03:21:08 root Exp $
+# $Id: megaclisas-status,v 1.22 2015/03/27 13:27:18 root Exp $
 
 import os
 import re
@@ -423,10 +423,10 @@ if totalunconfdrivenumber:
 		mlen = 0
 		flen = 0
 		for array in arraydisk:
-			if( len(array[3]) >= mlen):
-				mlen = len(array[3])
-			if( len(array[5]) >= flen):
-				flen = len(array[5])
+			if( len(array[1]) >= mlen):
+				mlen = len(array[1])
+			if( len(array[3]) >= flen):
+				flen = len(array[3])
 		# Adjust print format with widths computed above
 		drvfmt = "%-8s | %-4s | %-"+str(mlen)+"s | %-8s | %-"+str(flen)+"s | %-8s | %-4s | %-8s | %-8s"
 		i = 0
@@ -437,13 +437,15 @@ if totalunconfdrivenumber:
 				"-- ID", "Type", "Drive Model", "Size", "Status", "Speed", "Temp", "Slot ID", "LSI Device ID")
 			# Drive information
 			print drvfmt % (
-				str('c'+str(controllerid)+'uXpY\t| '+array[0]),			# cXpY
-				array[1],							# HDD/SDD
-				array[2],							# Model Information (Variable len)
-				array[3],							# Size
-				array[4],							# Status (Variable len)
-				str('['+array[5]+':'+array[6]+']'),				# Slot ID
-				array[7])							# LSI ID
+				str('c'+str(controllerid)+'uXpY'),				# cXpY
+				array[0],							# HDD/SDD
+				array[1],							# Model Information (Variable len)
+				array[2],							# Size
+				array[3],							# Status (Variable len)
+				array[4],							# Speed
+				array[5],							# Temp
+				str('['+array[6]+':'+array[7]+']'),				# Slot ID
+				array[8])							# LSI ID
 			i = i + 1
 		controllerid += 1
 	print ''
