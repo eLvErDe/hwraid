@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: megaclisas-status,v 1.16 2015/03/26 22:16:49 root Exp $
+# $Id: megaclisas-status,v 1.17 2015/03/27 01:44:53 root Exp $
 
 import os
 import re
@@ -7,7 +7,8 @@ import sys
 import pdb
 
 # Sane defaults
-tabwdth=4
+tabwdth = 4
+
 #megaclipath = "/opt/MegaRAID/MegaCli/MegaCli64"
 
 def which(program):
@@ -203,11 +204,11 @@ def returnDiskInfo(output,controllerid):
 		if re.match(r'Inquiry Data: .*$',line.strip()):
 			model = line.split(':')[1].strip()
 			model = re.sub(' +', ' ', model)
+			# Sub code
 			manuf = re.sub(' .*', '', model)
 			dtype = re.sub(manuf+' ', '', model)
 			dtype = re.sub(' .*', '', dtype)
 			hwserial = re.sub('.*'+dtype+' *', '', model)
-			model = re.sub(' +', ' ', model)
 		if re.match(r'^Media Type: .*$',line.strip()):
 			mtype = line.split(':')[1].strip()
 			if mtype == 'Hard Disk Device':
@@ -225,7 +226,7 @@ def returnDiskInfo(output,controllerid):
 			temp = re.sub(' \(.*\)', '', temp)
 			if model != 'Unknown':
 				#### print str(arrayid)+' '+str(diskid)+' '+str(olddiskid)
-				table.append([str(arrayid), str(diskid), mtype, manuf, dtype, dsize, hwserial, fstate , speed, temp, enclid, slotid, lsidid])
+				table.append([str(arrayid), str(diskid), mtype, model, dsize, fstate , speed, temp, enclid, slotid, lsidid])
 	return table
 
 
@@ -279,7 +280,6 @@ def returnUnconfDiskInfo(output,controllerid):
 			dtype = re.sub(manuf+' ', '', model)
 			dtype = re.sub(' .*', '', dtype)
 			hwserial = re.sub('.*'+dtype+' *', '', model)
-			model = re.sub(' +', ' ', model)
 		if re.match(r'^Media Type: .*$',line.strip()):
 			mtype = line.split(':')[1].strip()
 			if mtype == 'Hard Disk Device':
@@ -298,7 +298,7 @@ def returnUnconfDiskInfo(output,controllerid):
 			if arrayid == False:
 				if subfstate == 'Unconfigured':
 					### print str(arrayid)+' '+str(diskid)+' '+str(olddiskid)+' '+str(state)
-					table.append([ mtype, manuf, dtype, dsize, hwserial, fstate, speed, temp, enclid, slotid, lsidid])
+					table.append([ mtype, model, dsize, fstate, speed, temp, enclid, slotid, lsidid])
 	return table
 
 cmd = '%s -adpCount -NoLog' % (megaclipath)
@@ -356,7 +356,7 @@ while controllerid < controllernumber:
 
 if totaldrivenumber:
 	print '-- Disks information --'
-	print '-- ID\t| Type\t| Mfg.\t\t| Drive Type\t| Size\t\t| H/W Serial\t| Status\t\t| Speed\t\t| Temp\t| Slot ID\t| LSI Device ID '.expandtabs(tabwdth)
+	print '-- ID\t| Type\t| Model\t\t\t\t\t| Size\t\t| Status\t\t| Speed\t\t| Temp\t| Slot ID\t| LSI Device ID '.expandtabs(tabwdth)
 
 	controllerid = 0
 	while controllerid < controllernumber:
@@ -375,11 +375,9 @@ if totaldrivenumber:
 				+array[3]+'\t| '
 				+array[4]+'\t| '
 				+array[5]+'\t| '
-				+array[6]+'\t| '
-				+array[7]+'\t| '
-				+array[8]+'\t| ['
-				+array[9]+':'+array[10]+']\t| '
-				+array[11]).expandtabs(tabwdth)
+				+array[6]+'\t| ['
+				+array[7]+':'+array[8]+']\t| '
+				+array[9]).expandtabs(tabwdth)
 		controllerid += 1
 	print ''
 
@@ -392,7 +390,8 @@ while controllerid < controllernumber:
 
 if totalunconfdrivenumber:
 	print '-- Unconfigured Disks information --'
-	print '-- ID\t| Type\t| Mfg.\t\t| Drive Type\t| Size\t\t| H/W Serial\t| Status\t\t| Speed\t\t| Temp\t| Slot ID\t| LSI Device ID '.expandtabs(tabwdth)
+	print '-- ID\t| Type\t| Model\t\t\t\t\t| Size\t\t| Status\t\t| Speed\t\t| Temp\t| Slot ID\t| LSI Device ID '.expandtabs(tabwdth)
+	## print '-- ID\t| Type\t| Mfg.\t\t| Drive Type\t| Size\t\t| H/W Serial\t| Status\t\t| Speed\t\t| Temp\t| Slot ID\t| LSI Device ID '.expandtabs(tabwdth)
 
 	controllerid = 0
 	while controllerid < controllernumber:
@@ -410,11 +409,9 @@ if totalunconfdrivenumber:
 				+array[1]+'\t| '
 				+array[2]+'\t| '
 				+array[3]+'\t| '
-				+array[4]+'\t| '
-				+array[5]+'\t| '
-				+array[6]+'\t| ['
-				+array[7]+':'+array[8]+']\t| '
-				+array[9]+'').expandtabs(tabwdth)
+				+array[4]+'\t| ['
+				+array[5]+':'+array[6]+']\t| '
+				+array[7]+'').expandtabs(tabwdth)
 		controllerid += 1
 	print ''
 
