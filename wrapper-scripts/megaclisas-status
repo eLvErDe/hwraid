@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: megaclisas-status,v 1.18 2015/03/27 02:52:24 root Exp $
+# $Id: megaclisas-status,v 1.19 2015/03/27 03:06:04 root Exp $
 
 import os
 import re
@@ -8,7 +8,6 @@ import pdb
 
 # Sane defaults
 tabwdth = 4
-drvfmt = "%-8s | %-8s | %-20s | %-8s | %-20s | %-8s | %-8s | %-8s | %-8s"
 
 #megaclipath = "/opt/MegaRAID/MegaCli/MegaCli64"
 
@@ -370,6 +369,15 @@ if totaldrivenumber:
 		cmd = '%s -LdPdInfo -a%d -NoLog' % (megaclipath, controllerid)
 		output = getOutput(cmd)
 		arraydisk = returnDiskInfo(output,controllerid)
+		mlen = 0
+		flen = 0
+		for array in arraydisk:
+			if( len(array[3]) >= mlen):
+				mlen = len(array[3])
+			if( len(array[5]) >= flen):
+				flen = len(array[5])
+		# Adjust print format with widths computed above
+		drvfmt = "%-8s | %-4s | %-"+str(mlen)+"s | %-8s | %-"+str(flen)+"s | %-8s | %-4s | %-8s | %-8s"
 		i = 0
 		for array in arraydisk:
 			# Header
@@ -378,15 +386,15 @@ if totaldrivenumber:
 				"-- ID", "Type", "Model", "Size", "Status", "Speed", "Temp", "Slot ID", "LSI Device ID")
 			# Drive information
 			print drvfmt % (
-				str('c'+str(controllerid)+'u'+array[0]+'p'+array[1]),
-				array[2],
-				array[3],
-				array[4],
-				array[5],
-				array[6],
-				array[7],
-				str('['+array[8]+':'+array[9]+']'),
-				array[10])
+				str('c'+str(controllerid)+'u'+array[0]+'p'+array[1]),		# c0p0
+				array[2],							# HDD/SDD
+				array[3],							# Model Information (Variable len)
+				array[4],							# Size
+				array[5],							# Status (Variable len)
+				array[6],							# Speed
+				array[7],							# Temp
+				str('['+array[8]+':'+array[9]+']'),				# Slot ID
+				array[10])							# LSI ID
 			i = i + 1
 		controllerid += 1
 	print ''
@@ -412,6 +420,15 @@ if totalunconfdrivenumber:
 		cmd = '%s -PDList -a%d -NoLog' % (megaclipath, controllerid)
 		output = getOutput(cmd)
 		arraydisk = returnUnconfDiskInfo(output,controllerid)
+		mlen = 0
+		flen = 0
+		for array in arraydisk:
+			if( len(array[3]) >= mlen):
+				mlen = len(array[3])
+			if( len(array[5]) >= flen):
+				flen = len(array[5])
+		# Adjust print format with widths computed above
+		drvfmt = "%-8s | %-4s | %-"+str(mlen)+"s | %-8s | %-"+str(flen)+"s | %-8s | %-4s | %-8s | %-8s"
 		i = 0
 		for array in arraydisk:
 			# Header
@@ -420,13 +437,13 @@ if totalunconfdrivenumber:
 				"-- ID", "Type", "Model", "Size", "Status", "Speed", "Temp", "Slot ID", "LSI Device ID")
 			# Drive information
 			print drvfmt % (
-				str('c'+str(controllerid)+'uXpY\t| '+array[0]),
-				array[1],
-				array[2],
-				array[3],
-				array[4],
-				str('['+array[5]+':'+array[6]+']'),
-				array[7])
+				str('c'+str(controllerid)+'uXpY\t| '+array[0]),			# cXpY
+				array[1],							# HDD/SDD
+				array[2],							# Model Information (Variable len)
+				array[3],							# Size
+				array[4],							# Status (Variable len)
+				str('['+array[5]+':'+array[6]+']'),				# Slot ID
+				array[7])							# LSI ID
 			i = i + 1
 		controllerid += 1
 	print ''
