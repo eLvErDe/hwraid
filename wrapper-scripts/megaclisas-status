@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: megaclisas-status,v 1.25 2015/03/28 02:25:53 root Exp $
+# $Id: megaclisas-status,v 1.26 2015/03/28 02:26:41 root Exp $
 
 import os
 import re
@@ -9,6 +9,10 @@ import pdb
 #megaclipath = "/opt/MegaRAID/MegaCli/MegaCli64"
 
 # Sane defaults
+printarray = True
+printcontroller = True
+totaldrivenumber = 0
+totalunconfdrivenumber = 0
 tabwdth = 4
 
 def is_exe(fpath):
@@ -61,11 +65,6 @@ else:
 	print 'Cannot find ' + megaclipath + '. Please install it.'
 	sys.exit(3)
 
-
-printarray = True
-printcontroller = True
-totaldrivenumber = 0
-totalunconfdrivenumber = 0
 
 #### pdb.set_trace()
 
