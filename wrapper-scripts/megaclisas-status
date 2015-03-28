@@ -1,15 +1,15 @@
 #!/usr/bin/python
-# $Id: megaclisas-status,v 1.24 2015/03/28 00:16:45 root Exp $
+# $Id: megaclisas-status,v 1.25 2015/03/28 02:25:53 root Exp $
 
 import os
 import re
 import sys
 import pdb
 
+#megaclipath = "/opt/MegaRAID/MegaCli/MegaCli64"
+
 # Sane defaults
 tabwdth = 4
-
-#megaclipath = "/opt/MegaRAID/MegaCli/MegaCli64"
 
 def is_exe(fpath):
 	return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
@@ -135,6 +135,7 @@ def returnArrayInfo(output,controllerid,arrayid):
 	size = ''
 	state = ''
 	strpsz = ''
+	properties = ''
 	for line in output:
 		if re.match(r'^RAID Level.*?:.*$',line.strip()):
 			type = 'RAID-'+line.strip().split(':')[1].split(',')[0].split('-')[1].strip()
@@ -156,6 +157,16 @@ def returnArrayInfo(output,controllerid,arrayid):
 			state = line.strip().split(':')[1].strip()
 		if re.match(r'^Strip Size.*?:.*$',line.strip()):
 			strpsz = line.strip().split(':')[1].strip()
+		if re.match(r'^Current Cache Policy.*?:.*$',line.strip()):
+			props = line.strip().split(':')[1].strip()
+			if re.search('WriteBack', props):
+				properties += 'WB'
+			if re.match('WriteThrough', props):
+				properties += 'WT'
+			if re.search('ReadAdaptive', props):
+				properties += ',RA'
+			if re.match('ReadAheadNone', props):
+				properties += ',NoRA'
 		if re.match(r'^Ongoing Progresses.*?:.*$',line.strip()):
 			operationlinennumber = linenumber
 		linenumber += 1
@@ -163,7 +174,7 @@ def returnArrayInfo(output,controllerid,arrayid):
 			inprogress = output[operationlinennumber+1]
 		else:
 			inprogress = 'None'
-	return [id,type,size,strpsz,state,inprogress]
+	return [id,type,size,strpsz,properties,state,inprogress]
 
 def returnDiskInfo(output,controllerid):
 	arrayid = False
@@ -335,10 +346,11 @@ if printcontroller:
 
 if printarray:
 	controllerid = 0
+
 	print '-- Array information --'
 
-	ldfmt = "%-5s | %-6s | %-7s | %-6s | %-8s | %-12s "
-	print ldfmt % ("-- ID", "Type", "Size", "Strpsz", "Status", "InProgress" )
+	ldfmt = str('%-5s | %-6s | %7s | %7s | %7s | %8s | %-12s ')
+	print ldfmt % ("-- ID", "Type", "Size", "Strpsz", "Flags", "Status", "InProgress" )
 	while controllerid < controllernumber:
 		arrayid = 0
 		cmd = '%s -LDInfo -lall -a%d -NoLog' % (megaclipath, controllerid)
@@ -354,8 +366,9 @@ if printarray:
 				arrayinfo[2],
 				arrayinfo[3],
 				arrayinfo[4],
-				arrayinfo[5])
-			if not arrayinfo[4] == 'Optimal':
+				arrayinfo[5],
+				arrayinfo[6])
+			if not arrayinfo[5] == 'Optimal':
 				bad = True
 			arrayid += 1
 		controllerid += 1
