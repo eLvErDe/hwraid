@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: megaclisas-status,v 1.26 2015/03/28 02:26:41 root Exp $
+# $Id: megaclisas-status,v 1.27 2015/03/28 03:00:34 root Exp $
 
 import os
 import re
@@ -75,6 +75,13 @@ if len(sys.argv) > 1:
 	else:
 		print 'Usage: megaraid-status [-d]'
 		sys.exit(1)
+
+def returnWdthFromArrayCol(glarray,idx):
+	maxwdth = 0
+	for glrow in glarray:
+		if ( len(glrow[idx]) > maxwdth):
+			maxwdth = len(glrow[idx])
+	return maxwdth
 
 # Get command output
 def getOutput(cmd):
@@ -348,17 +355,31 @@ if printarray:
 
 	print '-- Array information --'
 
-	ldfmt = str('%-5s | %-6s | %7s | %7s | %7s | %8s | %-12s ')
-	print ldfmt % ("-- ID", "Type", "Size", "Strpsz", "Flags", "Status", "InProgress" )
+	i = 0
 	while controllerid < controllernumber:
 		arrayid = 0
 		cmd = '%s -LDInfo -lall -a%d -NoLog' % (megaclipath, controllerid)
 		output = getOutput(cmd)
 		arraynumber = returnArrayNumber(output)
+		mlen = 0
+
 		while arrayid < arraynumber:
 			cmd = '%s -LDInfo -l%d -a%d -NoLog' % (megaclipath, arrayid, controllerid)
 			output = getOutput(cmd)
 			arrayinfo = returnArrayInfo(output,controllerid,arrayid)
+			if ( len(arrayinfo[4]) > mlen):
+				mlen = len(arrayinfo[4])
+			arrayid += 1
+		arrayid = 0
+
+		while arrayid < arraynumber:
+			cmd = '%s -LDInfo -l%d -a%d -NoLog' % (megaclipath, arrayid, controllerid)
+			output = getOutput(cmd)
+			arrayinfo = returnArrayInfo(output,controllerid,arrayid)
+			ldfmt = str('%-5s | %-6s | %7s | %7s | %'+str(mlen)+'s | %8s | %-12s ')
+			# Header
+			if ( i == 0 ):
+				print ldfmt % ("-- ID", "Type", "Size", "Strpsz", "Flags", "Status", "InProgress" )
 			print ldfmt % (
 				arrayinfo[0],
 				arrayinfo[1],
@@ -370,6 +391,7 @@ if printarray:
 			if not arrayinfo[5] == 'Optimal':
 				bad = True
 			arrayid += 1
+			i += 1
 		controllerid += 1
 	print ''
 
@@ -396,14 +418,10 @@ if totaldrivenumber:
 		cmd = '%s -LdPdInfo -a%d -NoLog' % (megaclipath, controllerid)
 		output = getOutput(cmd)
 		arraydisk = returnDiskInfo(output,controllerid)
-		mlen = 0
-		flen = 0
-		for array in arraydisk:
-			if( len(array[3]) >= mlen):
-				mlen = len(array[3])
-			if( len(array[5]) >= flen):
-				flen = len(array[5])
-		# Adjust print format with widths computed above
+		mlen = returnWdthFromArrayCol(arraydisk,3)
+		flen = returnWdthFromArrayCol(arraydisk,5)
+
+		# Adjust print format with width computed above
 		drvfmt = "%-7s | %-4s | %-"+str(mlen)+"s | %-8s | %-"+str(flen)+"s | %-8s | %-4s | %-8s | %-8s"
 		i = 0
 		for array in arraydisk:
@@ -447,13 +465,9 @@ if totalunconfdrivenumber:
 		cmd = '%s -PDList -a%d -NoLog' % (megaclipath, controllerid)
 		output = getOutput(cmd)
 		arraydisk = returnUnconfDiskInfo(output,controllerid)
-		mlen = 0
-		flen = 0
-		for array in arraydisk:
-			if( len(array[1]) >= mlen):
-				mlen = len(array[1])
-			if( len(array[3]) >= flen):
-				flen = len(array[3])
+		mlen = returnWdthFromArrayCol(arraydisk,1)
+		flen = returnWdthFromArrayCol(arraydisk,3)
+
 		# Adjust print format with widths computed above
 		drvfmt = "%-7s | %-4s | %-"+str(mlen)+"s | %-8s | %-"+str(flen)+"s | %-8s | %-4s | %-8s | %-8s"
 		i = 0
