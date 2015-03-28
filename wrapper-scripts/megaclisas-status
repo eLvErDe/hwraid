@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: megaclisas-status,v 1.23 2015/03/28 00:11:19 root Exp $
+# $Id: megaclisas-status,v 1.24 2015/03/28 00:16:45 root Exp $
 
 import os
 import re
@@ -314,7 +314,9 @@ bad = False
 if printcontroller:
 	if controllernumber:
 		print '-- Controller information --'
-		print '-- ID\t| Model'
+
+		hbafmt = "%-5s | %s "
+		print hbafmt % ("-- ID","Model")
 		controllerid = 0
 		while controllerid < controllernumber:
 			cmd = '%s -AdpAllInfo -a%d -NoLog' % (megaclipath, controllerid)
@@ -322,7 +324,9 @@ if printcontroller:
 			controllermodel = returnControllerModel(output)
 			controllerram = returnMemorySize(output)
 			controllerrev = returnFirmwareVersion(output)
-			print 'c'+str(controllerid)+'\t| '+controllermodel+' ('+controllerram+') FW: '+controllerrev
+			print hbafmt % (
+				'c'+str(controllerid),
+				str(controllermodel+' ('+controllerram+') FW: '+controllerrev))
 			controllerid += 1
 		print ''
 	else:
@@ -388,7 +392,7 @@ if totaldrivenumber:
 			if( len(array[5]) >= flen):
 				flen = len(array[5])
 		# Adjust print format with widths computed above
-		drvfmt = "%-8s | %-4s | %-"+str(mlen)+"s | %-8s | %-"+str(flen)+"s | %-8s | %-4s | %-8s | %-8s"
+		drvfmt = "%-7s | %-4s | %-"+str(mlen)+"s | %-8s | %-"+str(flen)+"s | %-8s | %-4s | %-8s | %-8s"
 		i = 0
 		for array in arraydisk:
 			# Header
@@ -439,7 +443,7 @@ if totalunconfdrivenumber:
 			if( len(array[3]) >= flen):
 				flen = len(array[3])
 		# Adjust print format with widths computed above
-		drvfmt = "%-8s | %-4s | %-"+str(mlen)+"s | %-8s | %-"+str(flen)+"s | %-8s | %-4s | %-8s | %-8s"
+		drvfmt = "%-7s | %-4s | %-"+str(mlen)+"s | %-8s | %-"+str(flen)+"s | %-8s | %-4s | %-8s | %-8s"
 		i = 0
 		for array in arraydisk:
 			# Header
