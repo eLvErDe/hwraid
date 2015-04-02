@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: megaclisas-status,v 1.28 2015/04/01 21:39:31 root Exp $
+# $Id: megaclisas-status,v 1.29 2015/04/01 22:10:47 root Exp $
 
 import os
 import re
@@ -125,6 +125,15 @@ def returnFirmwareVersion(output):
 	for line in output:
 		if re.match(r'^FW Package Build.*$',line.strip()):
 			return line.split(':')[1].strip()
+
+def returnROCTemp(output):
+	ROCtemp = 0
+	tmpstr = ''
+	for line in output:
+		if re.match(r'^ROC temperature :.*$',line.strip()):
+			tmpstr = line.split(':')[1].strip()
+			ROCtemp = re.sub(' +.*$', '', tmpstr)
+			return ROCtemp
 
 def returnArrayNumber(output):
 	i = 0
@@ -341,18 +350,29 @@ if printcontroller:
 	if controllernumber:
 		print '-- Controller information --'
 
-		hbafmt = "%-5s | %s "
-		print hbafmt % ("-- ID","Model")
+		i = 0
 		controllerid = 0
+		mlen = 0
 		while controllerid < controllernumber:
 			cmd = '%s -AdpAllInfo -a%d -NoLog' % (megaclipath, controllerid)
 			output = getOutput(cmd)
 			controllermodel = returnControllerModel(output)
 			controllerram = returnMemorySize(output)
 			controllerrev = returnFirmwareVersion(output)
+			controllertemp = returnROCTemp(output)
+			if ( len(controllermodel) > mlen):
+				mlen = len(controllermodel)
+
+			hbafmt = str('%-5s | %-'+str(mlen)+'s | %-6s | %-4s | %-12s ')
+			# Header
+			if ( i == 0 ):
+				print hbafmt % ("-- ID","H/W Model","RAM","Temp","Firmware")
 			print hbafmt % (
 				'c'+str(controllerid),
-				str(controllermodel+' ('+controllerram+') FW: '+controllerrev))
+				controllermodel,
+				str(controllerram),
+				str(controllertemp+'C'),
+				str('FW: '+controllerrev))
 			controllerid += 1
 		print ''
 	else:
