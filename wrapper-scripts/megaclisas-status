@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: megaclisas-status,v 1.27 2015/03/28 03:00:34 root Exp $
+# $Id: megaclisas-status,v 1.28 2015/04/01 21:39:31 root Exp $
 
 import os
 import re
@@ -141,6 +141,7 @@ def returnArrayInfo(output,controllerid,arrayid):
 	size = ''
 	state = ''
 	strpsz = ''
+	dskcache = ''
 	properties = ''
 	for line in output:
 		if re.match(r'^RAID Level.*?:.*$',line.strip()):
@@ -170,9 +171,17 @@ def returnArrayInfo(output,controllerid,arrayid):
 			if re.match('WriteThrough', props):
 				properties += 'WT'
 			if re.search('ReadAdaptive', props):
+				properties += ',Adapt'
+			if re.search('ReadAhead', props):
 				properties += ',RA'
 			if re.match('ReadAheadNone', props):
 				properties += ',NoRA'
+		if re.match(r'^Disk Cache Policy.*?:.*$',line.strip()):
+			props = line.strip().split(':')[1].strip()
+			if re.search('Disabled', props):
+				dskcache = 'Disabled'
+			if re.search('Enabled', props):
+				dskcache = 'Enabled'
 		if re.match(r'^Ongoing Progresses.*?:.*$',line.strip()):
 			operationlinennumber = linenumber
 		linenumber += 1
@@ -180,7 +189,7 @@ def returnArrayInfo(output,controllerid,arrayid):
 			inprogress = output[operationlinennumber+1]
 		else:
 			inprogress = 'None'
-	return [id,type,size,strpsz,properties,state,inprogress]
+	return [id,type,size,strpsz,properties,dskcache,state,inprogress]
 
 def returnDiskInfo(output,controllerid):
 	arrayid = False
@@ -376,10 +385,10 @@ if printarray:
 			cmd = '%s -LDInfo -l%d -a%d -NoLog' % (megaclipath, arrayid, controllerid)
 			output = getOutput(cmd)
 			arrayinfo = returnArrayInfo(output,controllerid,arrayid)
-			ldfmt = str('%-5s | %-6s | %7s | %7s | %'+str(mlen)+'s | %8s | %-12s ')
+			ldfmt = str('%-5s | %-6s | %7s | %7s | %'+str(mlen)+'s | %8s | %-7s | %-12s ')
 			# Header
 			if ( i == 0 ):
-				print ldfmt % ("-- ID", "Type", "Size", "Strpsz", "Flags", "Status", "InProgress" )
+				print ldfmt % ("-- ID", "Type", "Size", "Strpsz", "Flags", "DskCache", "Status", "InProgress" )
 			print ldfmt % (
 				arrayinfo[0],
 				arrayinfo[1],
@@ -387,8 +396,9 @@ if printarray:
 				arrayinfo[3],
 				arrayinfo[4],
 				arrayinfo[5],
-				arrayinfo[6])
-			if not arrayinfo[5] == 'Optimal':
+				arrayinfo[6],
+				arrayinfo[7])
+			if not arrayinfo[6] == 'Optimal':
 				bad = True
 			arrayid += 1
 			i += 1
