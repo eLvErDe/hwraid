@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: megaclisas-status,v 1.29 2015/04/01 22:10:47 root Exp $
+# $Id: megaclisas-status,v 1.30 2015/04/08 16:32:54 root Exp $
 
 import os
 import re
@@ -127,13 +127,16 @@ def returnFirmwareVersion(output):
 			return line.split(':')[1].strip()
 
 def returnROCTemp(output):
-	ROCtemp = 0
+	ROCtemp = ''
 	tmpstr = ''
 	for line in output:
 		if re.match(r'^ROC temperature :.*$',line.strip()):
 			tmpstr = line.split(':')[1].strip()
 			ROCtemp = re.sub(' +.*$', '', tmpstr)
-			return ROCtemp
+	if ( ROCtemp != '' ):
+		return str(str(ROCtemp)+'AC')
+	else:
+		return str('N/A')
 
 def returnArrayNumber(output):
 	i = 0
@@ -141,6 +144,18 @@ def returnArrayNumber(output):
 		if re.match(r'^Virtual Drive:.*$',line.strip()):
 			i += 1
 	return i
+
+def returnHBAInfo(table,output,controllerid):
+	controllermodel = 'Unknown'
+	controllerram = 'Unknown'
+	controllerrev = 'Unknown'
+	controllertemp = ''
+	controllermodel = returnControllerModel(output)
+	controllerram = returnMemorySize(output)
+	controllerrev = returnFirmwareVersion(output)
+	controllertemp = returnROCTemp(output)
+	if controllermodel != 'Unknown':
+		table.append([ 'c'+str(controllerid), controllermodel, controllerram, str(controllertemp), str('FW: '+controllerrev) ])
 
 def returnArrayInfo(output,controllerid,arrayid):
 	id = 'c'+str(controllerid)+'u'+str(arrayid)
@@ -353,27 +368,27 @@ if printcontroller:
 		i = 0
 		controllerid = 0
 		mlen = 0
+		hbainfo = []
 		while controllerid < controllernumber:
 			cmd = '%s -AdpAllInfo -a%d -NoLog' % (megaclipath, controllerid)
 			output = getOutput(cmd)
-			controllermodel = returnControllerModel(output)
-			controllerram = returnMemorySize(output)
-			controllerrev = returnFirmwareVersion(output)
-			controllertemp = returnROCTemp(output)
-			if ( len(controllermodel) > mlen):
-				mlen = len(controllermodel)
+			returnHBAInfo(hbainfo, output,controllerid)
+			controllerid += 1
+		mlen = returnWdthFromArrayCol(hbainfo,1)
 
+		controllerid = 0
+		for hba in hbainfo:
 			hbafmt = str('%-5s | %-'+str(mlen)+'s | %-6s | %-4s | %-12s ')
 			# Header
 			if ( i == 0 ):
 				print hbafmt % ("-- ID","H/W Model","RAM","Temp","Firmware")
 			print hbafmt % (
-				'c'+str(controllerid),
-				controllermodel,
-				str(controllerram),
-				str(controllertemp+'C'),
-				str('FW: '+controllerrev))
-			controllerid += 1
+				hba[0],
+				hba[1],
+				hba[2],
+				hba[3],
+				hba[4])
+			i += 1
 		print ''
 	else:
 		print "No MegaRAID or PERC adapter detected on your system!"
