@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: megaclisas-status,v 1.30 2015/04/08 16:32:54 root Exp $
+# $Id: megaclisas-status,v 1.31 2015/04/08 16:40:47 root Exp $
 
 import os
 import re
@@ -134,7 +134,7 @@ def returnROCTemp(output):
 			tmpstr = line.split(':')[1].strip()
 			ROCtemp = re.sub(' +.*$', '', tmpstr)
 	if ( ROCtemp != '' ):
-		return str(str(ROCtemp)+'AC')
+		return str(str(ROCtemp)+'C')
 	else:
 		return str('N/A')
 
