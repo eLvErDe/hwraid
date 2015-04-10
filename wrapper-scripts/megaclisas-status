@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: megaclisas-status,v 1.31 2015/04/08 16:40:47 root Exp $
+# $Id: megaclisas-status,v 1.32 2015/04/10 19:46:13 root Exp $
 
 import os
 import re
@@ -14,6 +14,7 @@ printcontroller = True
 totaldrivenumber = 0
 totalunconfdrivenumber = 0
 tabwdth = 4
+LDTable = [[]]
 
 def is_exe(fpath):
 	return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
@@ -49,7 +50,8 @@ else:
 # We need root access to query
 if __name__ == '__main__':
 	if os.getenv('USER') != 'root':
-		print 'You can only run this script as root or with sudo, sucks I know. Blame the RAID card'
+		print '# This script requires Administrator privs! e.g :\r'
+		print 'sudo '+str(sys.argv[0])+'\r'
 		sys.exit(5)
 
 # Check command line arguments to enable nagios or not
@@ -161,16 +163,17 @@ def returnArrayInfo(output,controllerid,arrayid):
 	id = 'c'+str(controllerid)+'u'+str(arrayid)
 	operationlinennumber = False
 	linenumber = 0
-	type = ''
+	raidtype = ''
 	size = ''
 	state = ''
 	strpsz = ''
-	dskcache = ''
+	dskcache = 'N/A'
 	properties = ''
+	spandepth = 0
 	for line in output:
 		if re.match(r'^RAID Level.*?:.*$',line.strip()):
-			type = 'RAID-'+line.strip().split(':')[1].split(',')[0].split('-')[1].strip()
-			# type = 'RAID'+line.strip().split(':')[1]
+			# Extract the primary raid type, decide on X0 RAID level later when we hit Span Depth
+			raidtype = 'RAID-'+line.strip().split(':')[1].split(',')[0].split('-')[1].strip()
 		if re.match(r'^Size.*?:.*$',line.strip()):
 			# Size reported in MB
 			if re.match(r'^.*MB$',line.strip().split(':')[1]):
@@ -184,26 +187,33 @@ def returnArrayInfo(output,controllerid,arrayid):
 			else:
 				size = line.strip().split(':')[1].strip('GB').strip()
 				size = str(int(round((float(size)))))+'G'
+		if re.match(r'^Span Depth.*?:.*$',line.strip()):
+			# If Span Depth is greater than 1 chances are we have a RAID 10, 50 or 60
+			spandepth = line.strip().split(':')[1].strip()
+			if ( int(spandepth) == 2 ):
+				raidtype = str(raidtype+'0')
 		if re.match(r'^State.*?:.*$',line.strip()):
 			state = line.strip().split(':')[1].strip()
 		if re.match(r'^Strip Size.*?:.*$',line.strip()):
 			strpsz = line.strip().split(':')[1].strip()
 		if re.match(r'^Current Cache Policy.*?:.*$',line.strip()):
 			props = line.strip().split(':')[1].strip()
-			if re.search('WriteBack', props):
-				properties += 'WB'
-			if re.match('WriteThrough', props):
-				properties += 'WT'
 			if re.search('ReadAdaptive', props):
-				properties += ',Adapt'
+				properties += 'Adaptive'
 			if re.search('ReadAhead', props):
-				properties += ',RA'
+				properties += 'RA'
 			if re.match('ReadAheadNone', props):
-				properties += ',NoRA'
+				properties += 'NORA'
+			if re.search('WriteBack', props):
+				properties += ',WB'
+			if re.match('WriteThrough', props):
+				properties += ',WT'
 		if re.match(r'^Disk Cache Policy.*?:.*$',line.strip()):
 			props = line.strip().split(':')[1].strip()
 			if re.search('Disabled', props):
 				dskcache = 'Disabled'
+			if re.search('Disk.s Default', props):
+				dskcache = 'Default'
 			if re.search('Enabled', props):
 				dskcache = 'Enabled'
 		if re.match(r'^Ongoing Progresses.*?:.*$',line.strip()):
@@ -213,7 +223,7 @@ def returnArrayInfo(output,controllerid,arrayid):
 			inprogress = output[operationlinennumber+1]
 		else:
 			inprogress = 'None'
-	return [id,type,size,strpsz,properties,dskcache,state,inprogress]
+	return [id,raidtype,size,strpsz,properties,dskcache,state,inprogress]
 
 def returnDiskInfo(output,controllerid):
 	arrayid = False
@@ -406,21 +416,38 @@ if printarray:
 		output = getOutput(cmd)
 		arraynumber = returnArrayNumber(output)
 		mlen = 0
+		rlen = 0
+		# We need to explore each HBA to look for gaps in LD's
+		ldid = 0 ; ldcount = 0
+		while ldcount < arraynumber:
+			cmd = '%s -LDInfo -l%d -a%d -NoLog' % (megaclipath, ldid, controllerid)
+			output = getOutput(cmd)
+			for line in output:
+				if re.match(r'^Adapter.*Virtual Drive .* Does not Exist',line.strip()):
+					ldid += 1
+				if re.match(r'^Virtual Drive:',line.strip()):
+					LDTable[controllerid].append ( ldid )
+					ldcount += 1
+					ldid += 1
 
 		while arrayid < arraynumber:
-			cmd = '%s -LDInfo -l%d -a%d -NoLog' % (megaclipath, arrayid, controllerid)
+			ldid = LDTable[controllerid][arrayid]
+			cmd = '%s -LDInfo -l%d -a%d -NoLog' % (megaclipath, ldid, controllerid)
 			output = getOutput(cmd)
-			arrayinfo = returnArrayInfo(output,controllerid,arrayid)
+			arrayinfo = returnArrayInfo(output, controllerid, ldid)
 			if ( len(arrayinfo[4]) > mlen):
 				mlen = len(arrayinfo[4])
+			if ( len(arrayinfo[1]) > rlen):
+				rlen = len(arrayinfo[1])
 			arrayid += 1
 		arrayid = 0
 
 		while arrayid < arraynumber:
-			cmd = '%s -LDInfo -l%d -a%d -NoLog' % (megaclipath, arrayid, controllerid)
+			ldid = LDTable[controllerid][arrayid]
+			cmd = '%s -LDInfo -l%d -a%d -NoLog' % (megaclipath, ldid, controllerid)
 			output = getOutput(cmd)
-			arrayinfo = returnArrayInfo(output,controllerid,arrayid)
-			ldfmt = str('%-5s | %-6s | %7s | %7s | %'+str(mlen)+'s | %8s | %-7s | %-12s ')
+			arrayinfo = returnArrayInfo(output,controllerid, LDTable[controllerid][arrayid])
+			ldfmt = str('%-5s | %-'+str(rlen)+'s | %7s | %7s | %'+str(mlen)+'s | %8s | %-7s | %-12s ')
 			# Header
 			if ( i == 0 ):
 				print ldfmt % ("-- ID", "Type", "Size", "Strpsz", "Flags", "DskCache", "Status", "InProgress" )
