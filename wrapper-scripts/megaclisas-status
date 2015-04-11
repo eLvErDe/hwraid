@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: megaclisas-status,v 1.34 2015/04/11 17:36:45 root Exp $
+# $Id: megaclisas-status,v 1.35 2015/04/11 17:39:02 root Exp $
 
 import os
 import re
@@ -201,7 +201,7 @@ def returnArrayInfo(output,controllerid,arrayid):
 		if re.match(r'^Current Cache Policy.*?:.*$',line.strip()):
 			props = line.strip().split(':')[1].strip()
 			if re.search('ReadAdaptive', props):
-				properties += 'Adaptive'
+				properties += 'ADRA'
 			if re.search('ReadAhead', props):
 				properties += 'RA'
 			if re.match('ReadAheadNone', props):
