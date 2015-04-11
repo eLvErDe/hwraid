@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: megaclisas-status,v 1.32 2015/04/10 19:46:13 root Exp $
+# $Id: megaclisas-status,v 1.33 2015/04/11 17:29:38 root Exp $
 
 import os
 import re
@@ -14,7 +14,9 @@ printcontroller = True
 totaldrivenumber = 0
 totalunconfdrivenumber = 0
 tabwdth = 4
-LDTable = [[]]
+# LDTable = [[]]
+# Hardcode a max of 6 HBA for now
+LDTable = [ [], [], [], [], [], [] ]
 
 def is_exe(fpath):
 	return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
@@ -426,7 +428,7 @@ if printarray:
 				if re.match(r'^Adapter.*Virtual Drive .* Does not Exist',line.strip()):
 					ldid += 1
 				if re.match(r'^Virtual Drive:',line.strip()):
-					LDTable[controllerid].append ( ldid )
+					LDTable[controllerid].append (ldid )
 					ldcount += 1
 					ldid += 1
 
@@ -479,6 +481,9 @@ if totaldrivenumber:
 	print '-- Disk information --'
 #	print '-- ID\t| Type\t| Model\t\t\t\t\t| Size\t\t| Status\t\t| Speed\t\t| Temp\t| Slot ID\t| LSI Device ID '.expandtabs(tabwdth)
 
+	i = 0
+	mlen = 0
+	flen = 0
 	controllerid = 0
 	while controllerid < controllernumber:
 		arrayid = 0
@@ -490,12 +495,26 @@ if totaldrivenumber:
 		cmd = '%s -LdPdInfo -a%d -NoLog' % (megaclipath, controllerid)
 		output = getOutput(cmd)
 		arraydisk = returnDiskInfo(output,controllerid)
-		mlen = returnWdthFromArrayCol(arraydisk,3)
-		flen = returnWdthFromArrayCol(arraydisk,5)
+		if ( returnWdthFromArrayCol(arraydisk,3) > mlen):
+			mlen = returnWdthFromArrayCol(arraydisk,3)
+		if ( returnWdthFromArrayCol(arraydisk,5) > flen):
+			flen = returnWdthFromArrayCol(arraydisk,5)
+		controllerid += 1
+
+	controllerid = 0
+	while controllerid < controllernumber:
+		arrayid = 0
+		cmd = '%s -LDInfo -lall -a%d -NoLog' % (megaclipath, controllerid)
+		output = getOutput(cmd)
+		arraynumber = returnArrayNumber(output)
+		#### BUG: -LdPdInfo shows all PD on the adapter, not just for said LD..
+		#### while arrayid <= arraynumber:
+		cmd = '%s -LdPdInfo -a%d -NoLog' % (megaclipath, controllerid)
+		output = getOutput(cmd)
+		arraydisk = returnDiskInfo(output,controllerid)
 
 		# Adjust print format with width computed above
 		drvfmt = "%-7s | %-4s | %-"+str(mlen)+"s | %-8s | %-"+str(flen)+"s | %-8s | %-4s | %-8s | %-8s"
-		i = 0
 		for array in arraydisk:
 			# Header
 			if ( i == 0 ):
