@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: megaclisas-status,v 1.33 2015/04/11 17:29:38 root Exp $
+# $Id: megaclisas-status,v 1.34 2015/04/11 17:36:45 root Exp $
 
 import os
 import re
@@ -407,18 +407,17 @@ if printcontroller:
 		exit(1)
 
 if printarray:
-	controllerid = 0
-
 	print '-- Array information --'
 
+	controllerid = 0
 	i = 0
+	mlen = 0
+	rlen = 0
 	while controllerid < controllernumber:
 		arrayid = 0
 		cmd = '%s -LDInfo -lall -a%d -NoLog' % (megaclipath, controllerid)
 		output = getOutput(cmd)
 		arraynumber = returnArrayNumber(output)
-		mlen = 0
-		rlen = 0
 		# We need to explore each HBA to look for gaps in LD's
 		ldid = 0 ; ldcount = 0
 		while ldcount < arraynumber:
@@ -442,13 +441,19 @@ if printarray:
 			if ( len(arrayinfo[1]) > rlen):
 				rlen = len(arrayinfo[1])
 			arrayid += 1
-		arrayid = 0
+		controllerid += 1
 
+	controllerid = 0
+	while controllerid < controllernumber:
+		arrayid = 0
+		cmd = '%s -LDInfo -lall -a%d -NoLog' % (megaclipath, controllerid)
+		output = getOutput(cmd)
+		arraynumber = returnArrayNumber(output)
 		while arrayid < arraynumber:
 			ldid = LDTable[controllerid][arrayid]
 			cmd = '%s -LDInfo -l%d -a%d -NoLog' % (megaclipath, ldid, controllerid)
 			output = getOutput(cmd)
-			arrayinfo = returnArrayInfo(output,controllerid, LDTable[controllerid][arrayid])
+			arrayinfo = returnArrayInfo(output,controllerid, ldid)
 			ldfmt = str('%-5s | %-'+str(rlen)+'s | %7s | %7s | %'+str(mlen)+'s | %8s | %-7s | %-12s ')
 			# Header
 			if ( i == 0 ):
