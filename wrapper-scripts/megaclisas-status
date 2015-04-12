@@ -1,5 +1,9 @@
 #!/usr/bin/python
-# $Id: megaclisas-status,v 1.38 2015/04/11 23:49:36 root Exp $
+# $Id: megaclisas-status,v 1.39 2015/04/12 13:25:54 root Exp $
+#
+# Written by  Adam Cecile <gandalf@NOSPAM.le-vert.net>
+# Modified vy Vincent S. Cojot <vincent@NOSPAM.cojot.name>
+#
 
 import os
 import re
