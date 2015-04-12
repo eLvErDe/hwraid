@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: megaclisas-status,v 1.36 2015/04/11 21:54:28 root Exp $
+# $Id: megaclisas-status,v 1.37 2015/04/11 23:46:42 root Exp $
 
 import os
 import re
@@ -16,6 +16,7 @@ totalunconfdrivenumber = 0
 tabwdth = 4
 # Hardcode a max of 16 HBA for now. LDTable must be initiazlied to accept populating list of LD's into each ctlr's list.
 LDTable = [ [] * 16 for i in range(16) ]
+Outputs = {}
 
 def is_exe(fpath):
 	return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
@@ -88,11 +89,17 @@ def returnWdthFromArrayCol(glarray,idx):
 
 # Get command output
 def getOutput(cmd):
-	output = os.popen(cmd)
 	lines = []
-	for line in output:
-		if not re.match(r'^$',line.strip()):
-			lines.append(line.strip())
+	if ( Outputs.has_key(cmd) ):
+		#### print "\t\t(II) Got Cached value: "+str(cmd)
+		lines = Outputs[cmd]
+	else:
+		#### print "\t\t(II) Not a Cached value: "+str(cmd)
+		output = os.popen(cmd)
+		for line in output:
+			if not re.match(r'^$',line.strip()):
+				lines.append(line.strip())
+		Outputs[cmd] = lines
 	return lines
  
 def returnControllerNumber(output):
