@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: megaclisas-status,v 1.37 2015/04/11 23:46:42 root Exp $
+# $Id: megaclisas-status,v 1.38 2015/04/11 23:49:36 root Exp $
 
 import os
 import re
@@ -14,8 +14,12 @@ printcontroller = True
 totaldrivenumber = 0
 totalunconfdrivenumber = 0
 tabwdth = 4
+
+# LDTable is a list of lists of LD's grouped by controller.
 # Hardcode a max of 16 HBA for now. LDTable must be initiazlied to accept populating list of LD's into each ctlr's list.
 LDTable = [ [] * 16 for i in range(16) ]
+
+# Outputs is a 'dict' of all MegaCLI outputs so we can re-use them during loops..
 Outputs = {}
 
 def is_exe(fpath):
