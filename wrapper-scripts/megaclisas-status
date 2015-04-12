@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: megaclisas-status,v 1.35 2015/04/11 17:39:02 root Exp $
+# $Id: megaclisas-status,v 1.36 2015/04/11 21:54:28 root Exp $
 
 import os
 import re
@@ -14,9 +14,8 @@ printcontroller = True
 totaldrivenumber = 0
 totalunconfdrivenumber = 0
 tabwdth = 4
-# LDTable = [[]]
-# Hardcode a max of 6 HBA for now
-LDTable = [ [], [], [], [], [], [] ]
+# Hardcode a max of 16 HBA for now. LDTable must be initiazlied to accept populating list of LD's into each ctlr's list.
+LDTable = [ [] * 16 for i in range(16) ]
 
 def is_exe(fpath):
 	return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
@@ -484,7 +483,6 @@ while controllerid < controllernumber:
 
 if totaldrivenumber:
 	print '-- Disk information --'
-#	print '-- ID\t| Type\t| Model\t\t\t\t\t| Size\t\t| Status\t\t| Speed\t\t| Temp\t| Slot ID\t| LSI Device ID '.expandtabs(tabwdth)
 
 	i = 0
 	mlen = 0
