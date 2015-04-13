@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: megaclisas-status,v 1.41 2015/04/13 18:34:21 cojot Exp $
+# $Id: megaclisas-status,v 1.42 2015/04/13 18:50:42 cojot Exp $
 #
 # Written by Adam Cecile <gandalf@NOSPAM.le-vert.net>
 # Modified vy Vincent S. Cojot <vincent@NOSPAM.cojot.name>
@@ -51,8 +51,6 @@ if len(sys.argv) > 2:
 if len(sys.argv) > 1:
 	if sys.argv[1] == '--nagios':
 		nagiosmode = True
-		printarray = False
-		printcontroller = False
 	elif sys.argv[1] == '--debug':
 		debugmode = True
 	else:
@@ -405,7 +403,8 @@ bad = False
 # List available controller
 if printcontroller:
 	if controllernumber:
-		print '-- Controller information --'
+		if not nagiosmode:
+			print '-- Controller information --'
 
 		i = 0
 		controllerid = 0
@@ -423,21 +422,25 @@ if printcontroller:
 			hbafmt = str('%-5s | %-'+str(mlen)+'s | %-6s | %-4s | %-12s ')
 			# Header
 			if ( i == 0 ):
-				print hbafmt % ("-- ID","H/W Model","RAM","Temp","Firmware")
-			print hbafmt % (
-				hba[0],
-				hba[1],
-				hba[2],
-				hba[3],
-				hba[4])
+				if not nagiosmode:
+					print hbafmt % ("-- ID","H/W Model","RAM","Temp","Firmware")
+			if not nagiosmode:
+				print hbafmt % (
+					hba[0],
+					hba[1],
+					hba[2],
+					hba[3],
+					hba[4])
 			i += 1
-		print ''
+		if not nagiosmode:
+			print ''
 	else:
 		print "No MegaRAID or PERC adapter detected on your system!"
 		exit(1)
 
 if printarray:
-	print '-- Array information --'
+	if not nagiosmode:
+		print '-- Array information --'
 
 	controllerid = 0
 	i = 0
@@ -487,23 +490,25 @@ if printarray:
 			ldfmt = str('%-5s | %-'+str(rlen)+'s | %7s | %7s | %'+str(mlen)+'s | %8s | %-7s | %-12s ')
 			# Header
 			if ( i == 0 ):
-				print ldfmt % ("-- ID", "Type", "Size", "Strpsz", "Flags", "DskCache", "Status", "InProgress" )
-			print ldfmt % (
-				arrayinfo[0],
-				arrayinfo[1],
-				arrayinfo[2],
-				arrayinfo[3],
-				arrayinfo[4],
-				arrayinfo[5],
-				arrayinfo[6],
-				arrayinfo[7])
+				if not nagiosmode:
+					print ldfmt % ("-- ID", "Type", "Size", "Strpsz", "Flags", "DskCache", "Status", "InProgress" )
+			if not nagiosmode:
+				print ldfmt % (
+					arrayinfo[0],
+					arrayinfo[1],
+					arrayinfo[2],
+					arrayinfo[3],
+					arrayinfo[4],
+					arrayinfo[5],
+					arrayinfo[6],
+					arrayinfo[7])
 			if not arrayinfo[6] == 'Optimal':
 				bad = True
 			arrayid += 1
 			i += 1
 		controllerid += 1
-	print ''
-
+	if not nagiosmode:
+		print ''
 
 controllerid = 0
 while controllerid < controllernumber:
@@ -513,7 +518,8 @@ while controllerid < controllernumber:
 	controllerid += 1
 
 if totaldrivenumber:
-	print '-- Disk information --'
+	if not nagiosmode:
+		print '-- Disk information --'
 
 	i = 0
 	mlen = 0
@@ -552,22 +558,25 @@ if totaldrivenumber:
 		for array in arraydisk:
 			# Header
 			if ( i == 0 ):
-				print drvfmt % (
-				"-- ID", "Type", "Drive Model", "Size", "Status", "Speed", "Temp", "Slot ID", "LSI Device ID")
+				if not nagiosmode:
+					print drvfmt % (
+					"-- ID", "Type", "Drive Model", "Size", "Status", "Speed", "Temp", "Slot ID", "LSI Device ID")
 			# Drive information
-			print drvfmt % (
-				str('c'+str(controllerid)+'u'+array[0]+'p'+array[1]),		# c0p0
-				array[2],							# HDD/SDD
-				array[3],							# Model Information (Variable len)
-				array[4],							# Size
-				array[5],							# Status (Variable len)
-				array[6],							# Speed
-				array[7],							# Temp
-				str('['+array[8]+':'+array[9]+']'),				# Slot ID
-				array[10])							# LSI ID
+			if not nagiosmode:
+				print drvfmt % (
+					str('c'+str(controllerid)+'u'+array[0]+'p'+array[1]),		# c0p0
+					array[2],							# HDD/SDD
+					array[3],							# Model Information (Variable len)
+					array[4],							# Size
+					array[5],							# Status (Variable len)
+					array[6],							# Speed
+					array[7],							# Temp
+					str('['+array[8]+':'+array[9]+']'),				# Slot ID
+					array[10])							# LSI ID
 			i = i + 1
 		controllerid += 1
-	print ''
+	if not nagiosmode:
+		print ''
 
 controllerid = 0
 while controllerid < controllernumber:
@@ -577,7 +586,8 @@ while controllerid < controllernumber:
 	controllerid += 1
 
 if totalunconfdrivenumber:
-	print '-- Unconfigured Disk information --'
+	if not nagiosmode:
+		print '-- Unconfigured Disk information --'
 
 	controllerid = 0
 	while controllerid < controllernumber:
@@ -599,22 +609,25 @@ if totalunconfdrivenumber:
 		for array in arraydisk:
 			# Header
 			if ( i == 0 ):
-				print drvfmt % (
-				"-- ID", "Type", "Drive Model", "Size", "Status", "Speed", "Temp", "Slot ID", "LSI Device ID")
+				if not nagiosmode:
+					print drvfmt % (
+					"-- ID", "Type", "Drive Model", "Size", "Status", "Speed", "Temp", "Slot ID", "LSI Device ID")
 			# Drive information
-			print drvfmt % (
-				str('c'+str(controllerid)+'uXpY'),				# cXpY
-				array[0],							# HDD/SDD
-				array[1],							# Model Information (Variable len)
-				array[2],							# Size
-				array[3],							# Status (Variable len)
-				array[4],							# Speed
-				array[5],							# Temp
-				str('['+array[6]+':'+array[7]+']'),				# Slot ID
-				array[8])							# LSI ID
+			if not nagiosmode:
+				print drvfmt % (
+					str('c'+str(controllerid)+'uXpY'),				# cXpY
+					array[0],							# HDD/SDD
+					array[1],							# Model Information (Variable len)
+					array[2],							# Size
+					array[3],							# Status (Variable len)
+					array[4],							# Speed
+					array[5],							# Temp
+					str('['+array[6]+':'+array[7]+']'),				# Slot ID
+					array[8])							# LSI ID
 			i = i + 1
 		controllerid += 1
-	print ''
+	if not nagiosmode:
+		print ''
 
 if bad:
 	print '\nThere is at least one disk/array in a NOT OPTIMAL state.'
