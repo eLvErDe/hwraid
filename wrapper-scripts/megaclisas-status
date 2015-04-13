@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: megaclisas-status,v 1.40 2015/04/13 18:07:21 cojot Exp $
+# $Id: megaclisas-status,v 1.41 2015/04/13 18:34:21 cojot Exp $
 #
 # Written by Adam Cecile <gandalf@NOSPAM.le-vert.net>
 # Modified vy Vincent S. Cojot <vincent@NOSPAM.cojot.name>
@@ -59,6 +59,9 @@ if len(sys.argv) > 1:
 		print_usage()
 		sys.exit(1)
 # Functions
+def dbgprint(msg):
+	sys.stderr.write ( str('# DEBUG : '+msg+'\n'))
+
 def is_exe(fpath):
 	return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
 
@@ -73,11 +76,11 @@ def which(program):
 		os.environ["PATH"] += os.pathsep + '/opt/MegaRAID/MegaCli'
 		os.environ["PATH"] += os.pathsep + '/ms/dist/hwmgmt/bin'
 		for path in os.environ["PATH"].split(os.pathsep):
-			if (debugmode): print ('# Looking in PATH :'+str(path)+'\r')
+			if (debugmode): dbgprint ('Looking in PATH '+str(path))
 			path = path.strip('"')
 			exe_file = os.path.join(path, program)
 			if is_exe(exe_file):
-				if (debugmode): print ('# Found '+program+' at :'+exe_file+'\r')
+				if (debugmode): dbgprint ('Found "'+program+'" at '+exe_file)
 				return exe_file
 	return None
 
@@ -112,10 +115,10 @@ def returnWdthFromArrayCol(glarray,idx):
 def getOutput(cmd):
 	lines = []
 	if ( Outputs.has_key(cmd) ):
-		#### print "\t\t(II) Got Cached value: "+str(cmd)
+		if (debugmode): dbgprint ("Got Cached value: "+str(cmd))
 		lines = Outputs[cmd]
 	else:
-		#### print "\t\t(II) Not a Cached value: "+str(cmd)
+		if (debugmode): dbgprint ("Not a Cached value: "+str(cmd))
 		output = os.popen(cmd)
 		for line in output:
 			if not re.match(r'^$',line.strip()):
