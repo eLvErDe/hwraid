@@ -1,7 +1,7 @@
 #!/usr/bin/python
-# $Id: megaclisas-status,v 1.39 2015/04/12 13:25:54 root Exp $
+# $Id: megaclisas-status,v 1.40 2015/04/13 18:07:21 cojot Exp $
 #
-# Written by  Adam Cecile <gandalf@NOSPAM.le-vert.net>
+# Written by Adam Cecile <gandalf@NOSPAM.le-vert.net>
 # Modified vy Vincent S. Cojot <vincent@NOSPAM.cojot.name>
 #
 
@@ -10,22 +10,55 @@ import re
 import sys
 import pdb
 
-#megaclipath = "/opt/MegaRAID/MegaCli/MegaCli64"
+def_megaclipath = "/opt/MegaRAID/MegaCli/MegaCli64"
+
+# Non-Nagios Mode defaults
+nagiosmode = False
+nagiosoutput=''
+nagiosgoodarray = 0
+nagiosbadarray = 0
+nagiosgooddisk = 0
+nagiosbaddisk = 0
 
 # Sane defaults
 printarray = True
 printcontroller = True
+debugmode = False
 totaldrivenumber = 0
 totalunconfdrivenumber = 0
-tabwdth = 4
 
-# LDTable is a list of lists of LD's grouped by controller.
 # Hardcode a max of 16 HBA for now. LDTable must be initiazlied to accept populating list of LD's into each ctlr's list.
 LDTable = [ [] * 16 for i in range(16) ]
-
 # Outputs is a 'dict' of all MegaCLI outputs so we can re-use them during loops..
 Outputs = {}
 
+# Startup
+def print_usage():
+	print 'Usage: megaraid-status [--nagios|--debug]'
+
+# We need root access to query
+if __name__ == '__main__':
+	if os.getenv('USER') != 'root':
+		print '# This script requires Administrator privs! e.g :\r'
+		print 'sudo '+str(sys.argv[0])+'\r'
+		sys.exit(5)
+
+# Check command line arguments to enable nagios or not
+if len(sys.argv) > 2:
+	print_usage()
+	sys.exit(1)
+
+if len(sys.argv) > 1:
+	if sys.argv[1] == '--nagios':
+		nagiosmode = True
+		printarray = False
+		printcontroller = False
+	elif sys.argv[1] == '--debug':
+		debugmode = True
+	else:
+		print_usage()
+		sys.exit(1)
+# Functions
 def is_exe(fpath):
 	return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
 
@@ -36,57 +69,37 @@ def which(program):
 		if is_exe(program):
 			return program
 	else:
+		# Add some defaults
+		os.environ["PATH"] += os.pathsep + '/opt/MegaRAID/MegaCli'
+		os.environ["PATH"] += os.pathsep + '/ms/dist/hwmgmt/bin'
 		for path in os.environ["PATH"].split(os.pathsep):
+			if (debugmode): print ('# Looking in PATH :'+str(path)+'\r')
 			path = path.strip('"')
 			exe_file = os.path.join(path, program)
 			if is_exe(exe_file):
+				if (debugmode): print ('# Found '+program+' at :'+exe_file+'\r')
 				return exe_file
 	return None
 
 # Find MegaCli
-if which("MegaCli64") == None:
-	if which("MegaCli") == None:
-		if is_exe("/opt/MegaRAID/MegaCli/MegaCli64"):
-			megaclipath = "/opt/MegaRAID/MegaCli/MegaCli64"
-		else:
-			if is_exe("/opt/MegaRAID/MegaCli/MegaCli"):
-				megaclipath = "/opt/MegaRAID/MegaCli/MegaCli"
-	else:
-		megaclipath = str(which("MegaCli"))
-else:
-	megaclipath = str(which("MegaCli64"))
-
-# Adding a quick check to see if we're root, because on most cards I've tried this on
-# We need root access to query
-if __name__ == '__main__':
-	if os.getenv('USER') != 'root':
-		print '# This script requires Administrator privs! e.g :\r'
-		print 'sudo '+str(sys.argv[0])+'\r'
-		sys.exit(5)
-
-# Check command line arguments to enable nagios or not
-if len(sys.argv) > 2:
-	print 'Usage: megaraid-status [-d]'
-	sys.exit(1)
+megaclipath = which("MegaCli64")
+if (megaclipath == None):
+	megaclipath = which("MegaCli")
+	if (megaclipath == None):
+		megaclipath = "MegaCli_is_missing"
 
 # Check binary exists (and +x), if not print an error message
-# or return UNKNOWN nagios error code
 if os.path.exists(megaclipath) and os.access(megaclipath, os.X_OK):
 	pass
 else:
-	print 'Cannot find ' + megaclipath + '. Please install it.'
+	if nagiosmode:
+		print 'UNKNOWN - Cannot find '+megaclipath
+	else:
+		print 'Cannot find ' + megaclipath + '. Please install it.'
 	sys.exit(3)
 
 
 #### pdb.set_trace()
-
-if len(sys.argv) > 1:
-	if sys.argv[1] == '-d':
-		printarray = False
-		printcontroller = False
-	else:
-		print 'Usage: megaraid-status [-d]'
-		sys.exit(1)
 
 def returnWdthFromArrayCol(glarray,idx):
 	maxwdth = 0
