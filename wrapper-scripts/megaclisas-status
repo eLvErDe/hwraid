@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: megaclisas-status,v 1.42 2015/04/13 18:50:42 cojot Exp $
+# $Id: megaclisas-status,v 1.43 2015/04/13 19:22:05 cojot Exp $
 #
 # Written by Adam Cecile <gandalf@NOSPAM.le-vert.net>
 # Modified vy Vincent S. Cojot <vincent@NOSPAM.cojot.name>
@@ -58,7 +58,8 @@ if len(sys.argv) > 1:
 		sys.exit(1)
 # Functions
 def dbgprint(msg):
-	sys.stderr.write ( str('# DEBUG : '+msg+'\n'))
+	if (debugmode):
+		sys.stderr.write ( str('# DEBUG : '+msg+'\n'))
 
 def is_exe(fpath):
 	return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
@@ -74,11 +75,11 @@ def which(program):
 		os.environ["PATH"] += os.pathsep + '/opt/MegaRAID/MegaCli'
 		os.environ["PATH"] += os.pathsep + '/ms/dist/hwmgmt/bin'
 		for path in os.environ["PATH"].split(os.pathsep):
-			if (debugmode): dbgprint ('Looking in PATH '+str(path))
+			dbgprint ('Looking in PATH '+str(path))
 			path = path.strip('"')
 			exe_file = os.path.join(path, program)
 			if is_exe(exe_file):
-				if (debugmode): dbgprint ('Found "'+program+'" at '+exe_file)
+				dbgprint ('Found "'+program+'" at '+exe_file)
 				return exe_file
 	return None
 
@@ -113,10 +114,10 @@ def returnWdthFromArrayCol(glarray,idx):
 def getOutput(cmd):
 	lines = []
 	if ( Outputs.has_key(cmd) ):
-		if (debugmode): dbgprint ("Got Cached value: "+str(cmd))
+		dbgprint ("Got Cached value: "+str(cmd))
 		lines = Outputs[cmd]
 	else:
-		if (debugmode): dbgprint ("Not a Cached value: "+str(cmd))
+		dbgprint ("Not a Cached value: "+str(cmd))
 		output = os.popen(cmd)
 		for line in output:
 			if not re.match(r'^$',line.strip()):
@@ -502,8 +503,12 @@ if printarray:
 					arrayinfo[5],
 					arrayinfo[6],
 					arrayinfo[7])
+			dbgprint("Array state : "+arrayinfo[6])
 			if not arrayinfo[6] == 'Optimal':
 				bad = True
+				nagiosbadarray=nagiosbadarray+1
+			else:
+				nagiosgoodarray=nagiosgoodarray+1
 			arrayid += 1
 			i += 1
 		controllerid += 1
@@ -535,6 +540,14 @@ if totaldrivenumber:
 		cmd = '%s -LdPdInfo -a%d -NoLog' % (megaclipath, controllerid)
 		output = getOutput(cmd)
 		arraydisk = returnDiskInfo(output,controllerid)
+		for array in arraydisk:
+			dbgprint('Disk c'+str(controllerid)+'u'+array[0]+'p'+array[1] + ' status : ' + array[5])
+			if not array[5] == 'Online' and not array[5] == 'Online, Spun Up':
+				bad = True
+				nagiosbaddisk=nagiosbaddisk+1
+			else:
+				nagiosgooddisk=nagiosgooddisk+1
+
 		if ( returnWdthFromArrayCol(arraydisk,3) > mlen):
 			mlen = returnWdthFromArrayCol(arraydisk,3)
 		if ( returnWdthFromArrayCol(arraydisk,5) > flen):
@@ -600,6 +613,14 @@ if totalunconfdrivenumber:
 		cmd = '%s -PDList -a%d -NoLog' % (megaclipath, controllerid)
 		output = getOutput(cmd)
 		arraydisk = returnUnconfDiskInfo(output,controllerid)
+		for array in arraydisk:
+			dbgprint('Disk c'+str(controllerid)+'uXpY status : ' + array[3])
+			if not array[3] == 'Online' and not array[3] == 'Unconfigured(good), Spun Up':
+				bad = True
+				nagiosbaddisk=nagiosbaddisk+1
+			else:
+				nagiosgooddisk=nagiosgooddisk+1
+
 		mlen = returnWdthFromArrayCol(arraydisk,1)
 		flen = returnWdthFromArrayCol(arraydisk,3)
 
@@ -629,6 +650,13 @@ if totalunconfdrivenumber:
 	if not nagiosmode:
 		print ''
 
-if bad:
-	print '\nThere is at least one disk/array in a NOT OPTIMAL state.'
-	sys.exit(1)
+if nagiosmode:
+	if bad:
+		print 'RAID ERROR - Arrays: OK:'+str(nagiosgoodarray)+' Bad:'+str(nagiosbadarray)+' - Disks: OK:'+str(nagiosgooddisk)+' Bad:'+str(nagiosbaddisk)
+		sys.exit(2)
+	else:
+		print 'RAID OK - Arrays: OK:'+str(nagiosgoodarray)+' Bad:'+str(nagiosbadarray)+' - Disks: OK:'+str(nagiosgooddisk)+' Bad:'+str(nagiosbaddisk)
+else:
+	if bad:
+		print '\nThere is at least one disk/array in a NOT OPTIMAL state.'
+		sys.exit(1)
