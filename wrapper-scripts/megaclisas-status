@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: megaclisas-status,v 1.48 2015/04/17 14:08:43 root Exp $
+# $Id: megaclisas-status,v 1.49 2015/04/17 15:49:32 root Exp $
 #
 # Written by Adam Cecile <gandalf@NOSPAM.le-vert.net>
 # Modified vy Vincent S. Cojot <vincent@NOSPAM.cojot.name>
@@ -74,6 +74,7 @@ def which(program):
 		# Add some defaults
 		os.environ["PATH"] += os.pathsep + '/opt/MegaRAID/MegaCli'
 		os.environ["PATH"] += os.pathsep + '/ms/dist/hwmgmt/bin'
+		os.environ["PATH"] += os.pathsep + os.path.dirname(os.path.realpath(sys.argv[0]))
 		for path in os.environ["PATH"].split(os.pathsep):
 			dbgprint ('Looking in PATH '+str(path))
 			path = path.strip('"')
@@ -216,24 +217,29 @@ def returnArrayInfo(output,controllerid,arrayid):
 	linenumber = 0
 	targetid = ''
 	raidtype = ''
+	raidlvl = ''
 	size = ''
 	state = ''
 	strpsz = ''
 	dskcache = 'N/A'
 	properties = ''
 	spandepth = 0
+	diskperspan = 0
 	for line in output:
 		if re.match(r'^Virtual Drive:.*(Target Id: [0-9]+).*$',line.strip()):
 			# Extract the SCSI Target ID
 			targetid = line.strip().split(':')[2].split(')')[0].strip()
 		if re.match(r'^RAID Level.*?:.*$',line.strip()):
 			# Extract the primary raid type, decide on X0 RAID level later when we hit Span Depth
-			raidtype = 'RAID-'+line.strip().split(':')[1].split(',')[0].split('-')[1].strip()
+			raidlvl = int(line.strip().split(':')[1].split(',')[0].split('-')[1].strip())
 		if re.match(r'^Size.*?:.*$',line.strip()):
 			# Size reported in MB
 			if re.match(r'^.*MB$',line.strip().split(':')[1]):
 				size = line.strip().split(':')[1].strip('MB').strip()
-				size = str(int(round((float(size) / 1000))))+'G'
+				if ( float(size) > 1000):
+					size = str(int(round((float(size) / 1000))))+'G'
+				else:
+					size = str(int(round(float(size))))+'M'
 			# Size reported in TB
 			elif re.match(r'^.*TB$',line.strip().split(':')[1]):
 				size = line.strip().split(':')[1].strip('TB').strip()
@@ -245,12 +251,12 @@ def returnArrayInfo(output,controllerid,arrayid):
 		if re.match(r'^Span Depth.*?:.*$',line.strip()):
 			# If Span Depth is greater than 1 chances are we have a RAID 10, 50 or 60
 			spandepth = line.strip().split(':')[1].strip()
-			if ( int(spandepth) == 2 ):
-				raidtype = str(raidtype+'0')
 		if re.match(r'^State.*?:.*$',line.strip()):
 			state = line.strip().split(':')[1].strip()
 		if re.match(r'^Strip Size.*?:.*$',line.strip()):
 			strpsz = line.strip().split(':')[1].strip()
+		if re.match(r'^Number Of Drives.*:.*$',line.strip()):
+			diskperspan = int(line.strip().split(':')[1].strip())
 		if re.match(r'^Current Cache Policy.*?:.*$',line.strip()):
 			props = line.strip().split(':')[1].strip()
 			if re.search('ReadAdaptive', props):
@@ -278,6 +284,25 @@ def returnArrayInfo(output,controllerid,arrayid):
 			inprogress = output[operationlinennumber+1]
 		else:
 			inprogress = 'None'
+	# Compute the RAID level
+	if (int(spandepth) >= 2):
+		if (raidlvl == 1):
+			raidtype = str('RAID-01')
+		else:
+			raidtype = str('RAID-' + str(raidlvl) + '0')
+	else:
+		if(raidlvl == 1):
+			if(diskperspan > 2):
+				raidtype = str('RAID-10')
+			else:
+				raidtype = str('RAID-' + str(raidlvl))
+		else:
+			raidtype = str('RAID-' + str(raidlvl))
+
+	dbgprint('RAID Level: ' + str(raidlvl)
+		+ ' Span Depth: ' + str(spandepth)
+		+ ' Disk Per Span: ' + str(diskperspan)
+		+ ' Raid Type: ' + str(raidtype))
 	return [id,raidtype,size,strpsz,properties,dskcache,state,targetid,inprogress]
 
 def returnDiskInfo(output,controllerid):
