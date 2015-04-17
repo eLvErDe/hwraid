@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: megaclisas-status,v 1.45 2015/04/17 02:40:54 root Exp $
+# $Id: megaclisas-status,v 1.46 2015/04/17 02:56:38 root Exp $
 #
 # Written by Adam Cecile <gandalf@NOSPAM.le-vert.net>
 # Modified vy Vincent S. Cojot <vincent@NOSPAM.cojot.name>
@@ -466,7 +466,8 @@ if printarray:
 
 	controllerid = 0
 	pcipath = ''
-	i = 0
+	diskpath = ''
+	i = 0 ; j = 0
 	mlen = 0
 	rlen = 0
 	while controllerid < controllernumber:
@@ -516,6 +517,12 @@ if printarray:
 			cmd = '%s -LDInfo -l%d -a%d -NoLog' % (megaclipath, ldid, controllerid)
 			output = getOutput(cmd)
 			arrayinfo = returnArrayInfo(output,controllerid, ldid)
+
+			diskprefix = str('/dev/disk/by-path/pci-' + pcipath + '-scsi-0:')
+			for j in range (8):
+				diskpath = diskprefix + str(j) + ':' + str(arrayinfo[7]) + ':0'
+				if os.path.exists(diskpath):
+					arrayinfo[7] = os.path.realpath(diskpath)
 
 			ldfmt = str('%-5s | %-'+str(rlen)+'s | %7s | %7s | %'+str(mlen)+'s | %8s | %-7s | %-8s | %-12s ')
 			# Header
