@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: megaclisas-status,v 1.44 2015/04/17 01:59:31 root Exp $
+# $Id: megaclisas-status,v 1.45 2015/04/17 02:40:54 root Exp $
 #
 # Written by Adam Cecile <gandalf@NOSPAM.le-vert.net>
 # Modified vy Vincent S. Cojot <vincent@NOSPAM.cojot.name>
@@ -190,8 +190,9 @@ def returnPCIInfo(output):
 		if re.match(r'^Device Number.*:.*$',line.strip()):
 			devid = str(line.strip().split(':')[1].strip()).zfill(2)
 		if re.match(r'^Function Number.*:.*$',line.strip()):
-			functionid = str(line.strip().split(':')[1].strip()).zfill(2)
+			functionid = str(line.strip().split(':')[1].strip()).zfill(1)
 	pcipath = str(busprefix + ':' + busid + ':' + devid + '.' + functionid)
+	dbgprint("Array PCI path : "+pcipath)
 	return str(pcipath)
 
 def returnHBAInfo(table,output,controllerid):
@@ -210,6 +211,7 @@ def returnArrayInfo(output,controllerid,arrayid):
 	id = 'c'+str(controllerid)+'u'+str(arrayid)
 	operationlinennumber = False
 	linenumber = 0
+	targetid = ''
 	raidtype = ''
 	size = ''
 	state = ''
@@ -218,6 +220,9 @@ def returnArrayInfo(output,controllerid,arrayid):
 	properties = ''
 	spandepth = 0
 	for line in output:
+		if re.match(r'^Virtual Drive:.*(Target Id: [0-9]+).*$',line.strip()):
+			# Extract the SCSI Target ID
+			targetid = line.strip().split(':')[2].split(')')[0].strip()
 		if re.match(r'^RAID Level.*?:.*$',line.strip()):
 			# Extract the primary raid type, decide on X0 RAID level later when we hit Span Depth
 			raidtype = 'RAID-'+line.strip().split(':')[1].split(',')[0].split('-')[1].strip()
@@ -270,7 +275,7 @@ def returnArrayInfo(output,controllerid,arrayid):
 			inprogress = output[operationlinennumber+1]
 		else:
 			inprogress = 'None'
-	return [id,raidtype,size,strpsz,properties,dskcache,state,inprogress]
+	return [id,raidtype,size,strpsz,properties,dskcache,state,targetid,inprogress]
 
 def returnDiskInfo(output,controllerid):
 	arrayid = False
@@ -466,9 +471,6 @@ if printarray:
 	rlen = 0
 	while controllerid < controllernumber:
 		arrayid = 0
-		cmd = '%s -AdpGetPciInfo -a%d -NoLog' % (megaclipath, controllerid)
-		output = getOutput(cmd)
-		pcipath = returnPCIInfo(output)
 
 		cmd = '%s -LDInfo -lall -a%d -NoLog' % (megaclipath, controllerid)
 		output = getOutput(cmd)
@@ -482,7 +484,7 @@ if printarray:
 				if re.match(r'^Adapter.*Virtual Drive .* Does not Exist',line.strip()):
 					ldid += 1
 				if re.match(r'^Virtual Drive:',line.strip()):
-					LDTable[controllerid].append (ldid )
+					LDTable[controllerid].append ( ldid )
 					ldcount += 1
 					ldid += 1
 
@@ -501,6 +503,11 @@ if printarray:
 	controllerid = 0
 	while controllerid < controllernumber:
 		arrayid = 0
+
+		cmd = '%s -AdpGetPciInfo -a%d -NoLog' % (megaclipath, controllerid)
+		output = getOutput(cmd)
+		pcipath = returnPCIInfo(output)
+
 		cmd = '%s -LDInfo -lall -a%d -NoLog' % (megaclipath, controllerid)
 		output = getOutput(cmd)
 		arraynumber = returnArrayNumber(output)
@@ -509,11 +516,12 @@ if printarray:
 			cmd = '%s -LDInfo -l%d -a%d -NoLog' % (megaclipath, ldid, controllerid)
 			output = getOutput(cmd)
 			arrayinfo = returnArrayInfo(output,controllerid, ldid)
-			ldfmt = str('%-5s | %-'+str(rlen)+'s | %7s | %7s | %'+str(mlen)+'s | %8s | %-7s | %-12s ')
+
+			ldfmt = str('%-5s | %-'+str(rlen)+'s | %7s | %7s | %'+str(mlen)+'s | %8s | %-7s | %-8s | %-12s ')
 			# Header
 			if ( i == 0 ):
 				if not nagiosmode:
-					print ldfmt % ("-- ID", "Type", "Size", "Strpsz", "Flags", "DskCache", "Status", "InProgress" )
+					print ldfmt % ("-- ID", "Type", "Size", "Strpsz", "Flags", "DskCache", "Status", "OS Path", "InProgress" )
 			if not nagiosmode:
 				print ldfmt % (
 					arrayinfo[0],
@@ -523,7 +531,8 @@ if printarray:
 					arrayinfo[4],
 					arrayinfo[5],
 					arrayinfo[6],
-					arrayinfo[7])
+					arrayinfo[7],
+					arrayinfo[8])
 			dbgprint("Array state : "+arrayinfo[6])
 			if not arrayinfo[6] == 'Optimal':
 				bad = True
@@ -578,11 +587,13 @@ if totaldrivenumber:
 	controllerid = 0
 	while controllerid < controllernumber:
 		arrayid = 0
+
 		cmd = '%s -LDInfo -lall -a%d -NoLog' % (megaclipath, controllerid)
 		output = getOutput(cmd)
 		arraynumber = returnArrayNumber(output)
 		#### BUG: -LdPdInfo shows all PD on the adapter, not just for said LD..
 		#### while arrayid <= arraynumber:
+
 		cmd = '%s -LdPdInfo -a%d -NoLog' % (megaclipath, controllerid)
 		output = getOutput(cmd)
 		arraydisk = returnDiskInfo(output,controllerid)
@@ -626,11 +637,13 @@ if totalunconfdrivenumber:
 	controllerid = 0
 	while controllerid < controllernumber:
 		arrayid = 0
+
 		cmd = '%s -LDInfo -lall -a%d -NoLog' % (megaclipath, controllerid)
 		output = getOutput(cmd)
 		arraynumber = returnArrayNumber(output)
 		#### BUG: -LdPdInfo shows all PD on the adapter, not just for said LD..
 		#### while arrayid <= arraynumber:
+
 		cmd = '%s -PDList -a%d -NoLog' % (megaclipath, controllerid)
 		output = getOutput(cmd)
 		arraydisk = returnUnconfDiskInfo(output,controllerid)
