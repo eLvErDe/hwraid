@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: megaclisas-status,v 1.43 2015/04/13 19:22:05 cojot Exp $
+# $Id: megaclisas-status,v 1.44 2015/04/17 01:59:31 root Exp $
 #
 # Written by Adam Cecile <gandalf@NOSPAM.le-vert.net>
 # Modified vy Vincent S. Cojot <vincent@NOSPAM.cojot.name>
@@ -88,7 +88,7 @@ megaclipath = which("MegaCli64")
 if (megaclipath == None):
 	megaclipath = which("MegaCli")
 	if (megaclipath == None):
-		megaclipath = "MegaCli_is_missing"
+		megaclipath = "MegaCli"
 
 # Check binary exists (and +x), if not print an error message
 if os.path.exists(megaclipath) and os.access(megaclipath, os.X_OK):
@@ -97,7 +97,7 @@ else:
 	if nagiosmode:
 		print 'UNKNOWN - Cannot find '+megaclipath
 	else:
-		print 'Cannot find ' + megaclipath + '. Please install it.'
+		print 'Cannot find ' + megaclipath + 'in your PATH. Please install it.'
 	sys.exit(3)
 
 
@@ -177,6 +177,22 @@ def returnArrayNumber(output):
 		if re.match(r'^Virtual Drive:.*$',line.strip()):
 			i += 1
 	return i
+
+def returnPCIInfo(output):
+	busprefix = '0000'
+	busid = ''
+	devid = ''
+	functionid = ''
+	pcipath = ''
+	for line in output:
+		if re.match(r'^Bus Number.*:.*$',line.strip()):
+			busid = str(line.strip().split(':')[1].strip()).zfill(2)
+		if re.match(r'^Device Number.*:.*$',line.strip()):
+			devid = str(line.strip().split(':')[1].strip()).zfill(2)
+		if re.match(r'^Function Number.*:.*$',line.strip()):
+			functionid = str(line.strip().split(':')[1].strip()).zfill(2)
+	pcipath = str(busprefix + ':' + busid + ':' + devid + '.' + functionid)
+	return str(pcipath)
 
 def returnHBAInfo(table,output,controllerid):
 	controllermodel = 'Unknown'
@@ -444,11 +460,16 @@ if printarray:
 		print '-- Array information --'
 
 	controllerid = 0
+	pcipath = ''
 	i = 0
 	mlen = 0
 	rlen = 0
 	while controllerid < controllernumber:
 		arrayid = 0
+		cmd = '%s -AdpGetPciInfo -a%d -NoLog' % (megaclipath, controllerid)
+		output = getOutput(cmd)
+		pcipath = returnPCIInfo(output)
+
 		cmd = '%s -LDInfo -lall -a%d -NoLog' % (megaclipath, controllerid)
 		output = getOutput(cmd)
 		arraynumber = returnArrayNumber(output)
