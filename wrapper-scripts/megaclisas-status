@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: megaclisas-status,v 1.46 2015/04/17 02:56:38 root Exp $
+# $Id: megaclisas-status,v 1.47 2015/04/17 02:58:20 root Exp $
 #
 # Written by Adam Cecile <gandalf@NOSPAM.le-vert.net>
 # Modified vy Vincent S. Cojot <vincent@NOSPAM.cojot.name>
@@ -524,7 +524,7 @@ if printarray:
 				if os.path.exists(diskpath):
 					arrayinfo[7] = os.path.realpath(diskpath)
 
-			ldfmt = str('%-5s | %-'+str(rlen)+'s | %7s | %7s | %'+str(mlen)+'s | %8s | %-7s | %-8s | %-12s ')
+			ldfmt = str('%-5s | %-'+str(rlen)+'s | %7s | %7s | %'+str(mlen)+'s | %8s | %7s | %8s | %-12s ')
 			# Header
 			if ( i == 0 ):
 				if not nagiosmode:
