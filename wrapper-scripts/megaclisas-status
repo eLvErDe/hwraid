@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: megaclisas-status,v 1.49 2015/04/17 15:49:32 root Exp $
+# $Id: megaclisas-status,v 1.50 2015/04/17 19:37:53 root Exp $
 #
 # Written by Adam Cecile <gandalf@NOSPAM.le-vert.net>
 # Modified vy Vincent S. Cojot <vincent@NOSPAM.cojot.name>
@@ -286,10 +286,7 @@ def returnArrayInfo(output,controllerid,arrayid):
 			inprogress = 'None'
 	# Compute the RAID level
 	if (int(spandepth) >= 2):
-		if (raidlvl == 1):
-			raidtype = str('RAID-01')
-		else:
-			raidtype = str('RAID-' + str(raidlvl) + '0')
+		raidtype = str('RAID-' + str(raidlvl) + '0')
 	else:
 		if(raidlvl == 1):
 			if(diskperspan > 2):
