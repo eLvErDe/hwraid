@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: megaclisas-status,v 1.51 2015/04/17 22:06:56 root Exp $
+# $Id: megaclisas-status,v 1.52 2015/04/18 02:49:07 root Exp $
 #
 # Written by Adam Cecile <gandalf@NOSPAM.le-vert.net>
 # Modified vy Vincent S. Cojot <vincent@NOSPAM.cojot.name>
@@ -554,7 +554,7 @@ if printarray:
 			else:
 				arrayinfo[7] = 'N/A'
 
-			ldfmt = str('%-5s | %-'+str(rlen)+'s | %7s | %7s | %'+str(mlen)+'s | %8s | %7s | %8s | %-12s ')
+			ldfmt = str('%-5s | %-'+str(rlen)+'s | %7s | %7s | %'+str(mlen)+'s | %8s | %8s | %8s | %-12s ')
 			# Header
 			if ( i == 0 ):
 				if not nagiosmode:
