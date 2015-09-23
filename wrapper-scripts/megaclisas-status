@@ -1,8 +1,8 @@
 #!/usr/bin/python
-# $Id: megaclisas-status,v 1.52 2015/04/18 02:49:07 root Exp $
+# $Id: megaclisas-status,v 1.53 2015/09/23 19:42:23 raistlin Exp $
 #
 # Written by Adam Cecile <gandalf@NOSPAM.le-vert.net>
-# Modified vy Vincent S. Cojot <vincent@NOSPAM.cojot.name>
+# Modified by Vincent S. Cojot <vincent@NOSPAM.cojot.name>
 #
 
 import os
@@ -27,7 +27,7 @@ debugmode = False
 totaldrivenumber = 0
 totalunconfdrivenumber = 0
 
-# Hardcode a max of 16 HBA for now. LDTable must be initiazlied to accept populating list of LD's into each ctlr's list.
+# Hardcode a max of 16 HBA for now. LDTable must be initialized to accept populating list of LD's into each ctlr's list.
 LDTable = [ [] * 16 for i in range(16) ]
 # Outputs is a 'dict' of all MegaCLI outputs so we can re-use them during loops..
 Outputs = {}
