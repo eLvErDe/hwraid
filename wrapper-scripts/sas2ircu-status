@@ -5,6 +5,9 @@ import re
 import sys
 
 binarypath = "/usr/sbin/sas2ircu"
+if not os.path.isfile(binarypath):
+  print 'sas2ircu is not available in expected location: {}'.format(binarypath)
+  sys.exit(1)
 
 if len(sys.argv) > 2:
   print 'Usage: sas2ircu-status [--nagios]'
@@ -116,19 +119,21 @@ def getDiskList(ctrlnmbr):
   list.append([diskid,diskstatus,diskmodel,diskserial,realid])
   return list
 
-
+ctrls=getCtrlList()
+arraymap={}
 if not nagiosmode:
   print '-- Controller informations --'
   print '-- ID | Model'
-  for ctrl in getCtrlList():
+  for ctrl in ctrls:
     print 'c'+str(ctrl[0])+' | '+ctrl[1]
   print ''
 
 if not nagiosmode:
   print '-- Arrays informations --'
   print '-- ID | Type | Size | Status'
-for ctrl in getCtrlList():
+for ctrl in ctrls:
   for array in getArrayList(ctrl[0]):
+    arraymap[ctrl[0]]=array
     if not array[3] in ['Okay (OKY)', 'Inactive, Okay (OKY)']:
       bad=True
       nagiosbadarray=nagiosbadarray+1
@@ -142,10 +147,10 @@ if not nagiosmode:
 if not nagiosmode:
   print '-- Disks informations'
   print '-- ID | Model | Status'
-for ctrl in getCtrlList():
+for ctrl in ctrls:
   for disk in getDiskList(ctrl[0]):
     # Compare disk enc/slot to array's ones
-    for array in getArrayList(ctrl[0]):
+    for array in [arraymap.get(ctrl[0])]:
       for arraydisk in array[4]: 
         if arraydisk == disk[4]:
           if not disk[1] == 'Optimal (OPT)':
