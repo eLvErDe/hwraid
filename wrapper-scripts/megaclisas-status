@@ -66,6 +66,7 @@ def returnArrayInfo(output,controllerid,arrayid):
 	id = 'c'+str(controllerid)+'u'+str(arrayid)
 	operationlinennumber = False
 	linenumber = 0
+	ldpdcount = 0
 
 	for line in output:
 		if re.match(r'Number Of Drives\s*((per span))?:.*[0-9]+$',line.strip()):
