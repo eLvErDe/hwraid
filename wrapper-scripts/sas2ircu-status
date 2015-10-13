@@ -104,7 +104,7 @@ def getDiskList(ctrlnmbr):
   slotid=''
   realid=['','']
   for line in res:
-    if re.match('^Device is a Hard disk.*$',line) or re.match('^Device is a Enclosure services device.*$',line):
+    if re.match('^Device is a Hard disk.*$',line) or re.match('^Device is a Enclosure services device.*$',line) or re.match('^Device is a unknown device.*$',line):
       if diskid == -1:
         diskid=diskid+1
       else:
