@@ -191,14 +191,14 @@ def returnBBUStatus(output):
 	BBUStatus = ''
 	tmpstr = ''
 	for line in output:
-		if re.match(r'^Battery Replacement required +:.*$',line.strip()):
+		if re.match(r'^ *Battery Replacement required +:.*$',line.strip()):
 			tmpstr = line.split(':')[1].strip()
 			BBUStatus = re.sub(' +.*$', '', tmpstr)
 			break
 	if ( BBUStatus == 'Yes' ):
 		return str('REPL')
 	else:
-		return str(BBUStatus)
+		return str('Good')
 
 def returnArrayNumber(output):
 	i = 0
