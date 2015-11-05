@@ -85,12 +85,14 @@ def which(program):
 	return None
 
 # Find MegaCli
-megaclipath = which("MegaCli64")
-if (megaclipath == None):
-	megaclipath = which("MegaCli")
-	if (megaclipath == None):
-		megaclipath = "MegaCli"
-
+for megabin in "MegaCli64","MegaCli","megacli":
+	dbgprint ('Looking for '+str(megabin)+' in PATH next..')
+	megaclipath = which(megabin)
+	if (megaclipath != None):
+		break
+	else:
+		dbgprint ('Found MegaCLI here: '+str(megaclipath))
+	
 # Check binary exists (and +x), if not print an error message
 if os.path.exists(megaclipath) and os.access(megaclipath, os.X_OK):
 	pass
