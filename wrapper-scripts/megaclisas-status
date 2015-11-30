@@ -62,6 +62,15 @@ def returnArrayNumber(output):
 			i = line.strip().split(':')[1].strip()
 	return i
 
+def returnArrayList(output):
+	arrays = []
+
+	for line in output:
+		m = re.match(r'Virtual Drive:.*Target Id: (\d+)', line.strip())
+		if m:
+			arrays += m.group(1)
+	return arrays
+
 def returnArrayInfo(output,controllerid,arrayid):
 	id = 'c'+str(controllerid)+'u'+str(arrayid)
 	operationlinennumber = False
@@ -154,11 +163,10 @@ if not nagiosmode:
 	print '-- ID | Type | Size | Status | InProgress'
 
 while controllerid < controllernumber:
-	arrayid = 0
-	cmd = binarypath+' -LdGetNum -a'+str(controllerid)+' -NoLog'
+	cmd = binarypath+' -LDInfo -Lall -a'+str(controllerid)+' -NoLog'
 	output = getOutput(cmd)
-	arraynumber = returnArrayNumber(output)
-	while arrayid < int(arraynumber):
+	arrays = returnArrayList(output)
+	for arrayid in arrays:
 		cmd = binarypath+' -LDInfo -l'+str(arrayid)+' -a'+str(controllerid)+' -NoLog'
 		output = getOutput(cmd)
 		arrayinfo = returnArrayInfo(output,controllerid,arrayid)
@@ -169,8 +177,8 @@ while controllerid < controllernumber:
 			nagiosbadarray=nagiosbadarray+1
 		else:
 			nagiosgoodarray=nagiosgoodarray+1
-		arrayid += 1
 	controllerid += 1
+
 if not nagiosmode:
 	print ''
 
