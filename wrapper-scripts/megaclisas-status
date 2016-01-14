@@ -407,7 +407,7 @@ def returnDiskInfo(output,controllerid):
 			temp = re.sub(' \(.*\)', '', temp)
 			if model != 'Unknown':
 				dbgprint('Disk Info: '+str(arrayid)+' '+str(diskid)+' '+str(oldenclid))
-				if ( NestedLDTable[controllerid][int(arrayid)] == True):
+				if (( NestedLDTable[controllerid][int(arrayid)] == True) and (spanid != False)):
 					table.append([str(arrayid)+"s"+spanid, str(diskid), mtype, model, dsize, fstate , speed, temp, enclid, slotid, lsidid])
 				else:
 					table.append([str(arrayid), str(diskid), mtype, model, dsize, fstate , speed, temp, enclid, slotid, lsidid])
