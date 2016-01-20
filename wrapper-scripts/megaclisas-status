@@ -151,9 +151,12 @@ def returnRebuildProgress(output):
 def returnUnconfDriveNumber(output):
 	confdrives = 0
 	unconfdrives = 0
+	totaldrivenumber = 0
 	for line in output:
 		if re.match(r'.*Number of PDs:.*$',line.strip()):
-			confdrives += int(line.split(':')[2].strip())
+			totaldrivenumber += int(line.split(':')[2].strip())
+		if re.match(r'^Firmware state:.*$',line.strip()):
+			confdrives += 1
 	unconfdrives = totaldrivenumber - confdrives
 	return int(unconfdrives)
 
