@@ -139,6 +139,15 @@ def returnTotalDriveNumber(output):
 		if re.match(r'Number of Physical Drives on Adapter.*$',line.strip()):
 			return int(line.split(':')[1].strip())
 
+def returnRebuildProgress(output):
+	percent = 0
+	tmpstr = ''
+	for line in output:
+		if re.match(r'^Rebuild Progress on Device at Enclosure.*, Slot .* Completed ',line.strip()):
+			tmpstr = line.split('Completed')[1].strip()
+			percent = int(tmpstr.split('%')[0].strip())
+	return percent
+
 def returnUnconfDriveNumber(output):
 	confdrives = 0
 	unconfdrives = 0
@@ -349,10 +358,12 @@ def returnDiskInfo(output,controllerid):
 	lsidid = 'Unknown'
 	table = []
 	fstate = 'Offline'
+	substate = 'Unknown'
 	model = 'Unknown'
 	speed = 'Unknown'
 	dsize = 'Unknown'
 	temp = 'Unk0C'
+	percent = 0
 	for line in output:
 		if re.match(r'^Span: [0-9]+ - Number of PDs:',line.strip()):
 			spanid = line.split(':')[1].strip()
@@ -382,6 +393,7 @@ def returnDiskInfo(output,controllerid):
 			slotid = line.split(':')[1].strip()
 		if re.match(r'Firmware state: .*$',line.strip()):
 			fstate = line.split(':')[1].strip()
+			subfstate = re.sub('\(.*', '', fstate)
 		if re.match(r'Inquiry Data: .*$',line.strip()):
 			model = line.split(':')[1].strip()
 			model = re.sub(' +', ' ', model)
@@ -407,10 +419,17 @@ def returnDiskInfo(output,controllerid):
 			temp = re.sub(' \(.*\)', '', temp)
 			if model != 'Unknown':
 				dbgprint('Disk Info: '+str(arrayid)+' '+str(diskid)+' '+str(oldenclid))
+				if subfstate == 'Rebuild':
+					cmd = '%s pdrbld -showprog -physdrv\[%s:%s\] -a%d -NoLog' % (megaclipath, enclid, slotid, controllerid)
+ 					output = getOutput(cmd)
+ 					percent = returnRebuildProgress(output)
+ 					fstate = str('Rebuilding (%d%%)' % (percent))
+
 				if (( NestedLDTable[controllerid][int(arrayid)] == True) and (spanid != False)):
-					table.append([str(arrayid)+"s"+spanid, str(diskid), mtype, model, dsize, fstate , speed, temp, enclid, slotid, lsidid])
+					arrayid = str(arrayid)+"s"+spanid
 				else:
-					table.append([str(arrayid), str(diskid), mtype, model, dsize, fstate , speed, temp, enclid, slotid, lsidid])
+					arrayid = str(arrayid)
+				table.append([arrayid, str(diskid), mtype, model, dsize, fstate , speed, temp, enclid, slotid, lsidid])
 	return table
 
 
@@ -423,6 +442,7 @@ def returnUnconfDiskInfo(output,controllerid):
 	lsidid = 'Unknown'
 	table = []
 	fstate = 'Offline'
+	substate = 'Unknown'
 	model = 'Unknown'
 	speed = 'Unknown'
 	mtype = 'Unknown'
