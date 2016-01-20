@@ -350,6 +350,7 @@ def returnArrayInfo(output,controllerid,arrayid):
 
 def returnDiskInfo(output,controllerid):
 	arrayid = False
+	sarrayid = 'Unknown'
 	diskid = False
 	oldenclid = False
 	enclid = False
@@ -426,10 +427,10 @@ def returnDiskInfo(output,controllerid):
  					fstate = str('Rebuilding (%d%%)' % (percent))
 
 				if (( NestedLDTable[controllerid][int(arrayid)] == True) and (spanid != False)):
-					arrayid = str(arrayid)+"s"+spanid
+					sarrayid = str(arrayid)+"s"+spanid
 				else:
-					arrayid = str(arrayid)
-				table.append([arrayid, str(diskid), mtype, model, dsize, fstate , speed, temp, enclid, slotid, lsidid])
+					sarrayid = str(arrayid)
+				table.append([sarrayid, str(diskid), mtype, model, dsize, fstate , speed, temp, enclid, slotid, lsidid])
 	return table
 
 
