@@ -1,3 +1,9 @@
+megaclisas-status (0.11) unstable; urgency=medium
+
+  * Revert a commit that broke JBOD disks reporting.
+
+ -- Adam Cécile <acecile@le-vert.net>  Wed, 10 Feb 2016 12:32:53 +0100
+
 megaclisas-status (0.10) unstable; urgency=medium
 
   * New version including tones of fixes and improvements by
