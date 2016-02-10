@@ -3,7 +3,7 @@
 DESTDIR = $(CURDIR)/debian/lsiutil
 
 debian/user_guide.pdf:
-	uudecode $@.uu -o $@
+	uudecode -o $@ $@.uu
 
 build: debian/user_guide.pdf
 
