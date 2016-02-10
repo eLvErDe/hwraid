@@ -29,6 +29,7 @@ totalunconfdrivenumber = 0
 
 # Hardcode a max of 16 HBA for now. LDTable must be initialized to accept populating list of LD's into each ctlr's list.
 LDTable = [ [] * 16 for i in range(16) ]
+NestedLDTable = [ [] * 16 for i in range(16) ]
 # Outputs is a 'dict' of all MegaCLI outputs so we can re-use them during loops..
 Outputs = {}
 
@@ -138,12 +139,24 @@ def returnTotalDriveNumber(output):
 		if re.match(r'Number of Physical Drives on Adapter.*$',line.strip()):
 			return int(line.split(':')[1].strip())
 
+def returnRebuildProgress(output):
+	percent = 0
+	tmpstr = ''
+	for line in output:
+		if re.match(r'^Rebuild Progress on Device at Enclosure.*, Slot .* Completed ',line.strip()):
+			tmpstr = line.split('Completed')[1].strip()
+			percent = int(tmpstr.split('%')[0].strip())
+	return percent
+
 def returnUnconfDriveNumber(output):
 	confdrives = 0
 	unconfdrives = 0
+	totaldrivenumber = 0
 	for line in output:
 		if re.match(r'.*Number of PDs:.*$',line.strip()):
-			confdrives += int(line.split(':')[2].strip())
+			totaldrivenumber += int(line.split(':')[2].strip())
+		if re.match(r'^Firmware state:.*$',line.strip()):
+			confdrives += 1
 	unconfdrives = totaldrivenumber - confdrives
 	return int(unconfdrives)
 
@@ -289,7 +302,7 @@ def returnArrayInfo(output,controllerid,arrayid):
 			state = line.strip().split(':')[1].strip()
 		if re.match(r'^Strip Size.*?:.*$',line.strip()):
 			strpsz = line.strip().split(':')[1].strip()
-		if re.match(r'^Number Of Drives.*:.*$',line.strip()):
+		if re.match(r'^Number Of Drives per span.*:.*$',line.strip()):
 			diskperspan = int(line.strip().split(':')[1].strip())
 		if re.match(r'^Current Cache Policy.*?:.*$',line.strip()):
 			props = line.strip().split(':')[1].strip()
@@ -321,10 +334,12 @@ def returnArrayInfo(output,controllerid,arrayid):
 	# Compute the RAID level
 	if (int(spandepth) >= 2):
 		raidtype = str('RAID-' + str(raidlvl) + '0')
+		NestedLDTable[controllerid][arrayid] = True
 	else:
 		if(raidlvl == 1):
 			if(diskperspan > 2):
 				raidtype = str('RAID-10')
+				NestedLDTable[controllerid][arrayid] = True
 			else:
 				raidtype = str('RAID-' + str(raidlvl))
 		else:
@@ -338,18 +353,25 @@ def returnArrayInfo(output,controllerid,arrayid):
 
 def returnDiskInfo(output,controllerid):
 	arrayid = False
+	sarrayid = 'Unknown'
 	diskid = False
 	oldenclid = False
 	enclid = False
+	spanid = False
 	slotid = False
 	lsidid = 'Unknown'
 	table = []
 	fstate = 'Offline'
+	substate = 'Unknown'
 	model = 'Unknown'
 	speed = 'Unknown'
 	dsize = 'Unknown'
 	temp = 'Unk0C'
+	percent = 0
 	for line in output:
+		if re.match(r'^Span: [0-9]+ - Number of PDs:',line.strip()):
+			spanid = line.split(':')[1].strip()
+			spanid = re.sub(' - Number of PDs.*', '', spanid)
 		if re.match(r'Enclosure Device ID: .*$',line.strip()):
 			# We match here early in the analysis so reset the vars if this is a new disk we're reading..
 			oldenclid = enclid
@@ -375,6 +397,7 @@ def returnDiskInfo(output,controllerid):
 			slotid = line.split(':')[1].strip()
 		if re.match(r'Firmware state: .*$',line.strip()):
 			fstate = line.split(':')[1].strip()
+			subfstate = re.sub('\(.*', '', fstate)
 		if re.match(r'Inquiry Data: .*$',line.strip()):
 			model = line.split(':')[1].strip()
 			model = re.sub(' +', ' ', model)
@@ -399,8 +422,18 @@ def returnDiskInfo(output,controllerid):
 			temp = line.split(':')[1].strip()
 			temp = re.sub(' \(.*\)', '', temp)
 			if model != 'Unknown':
-				#### print str(arrayid)+' '+str(diskid)+' '+str(olddiskid)
-				table.append([str(arrayid), str(diskid), mtype, model, dsize, fstate , speed, temp, enclid, slotid, lsidid])
+				dbgprint('Disk Info: '+str(arrayid)+' '+str(diskid)+' '+str(oldenclid))
+				if subfstate == 'Rebuild':
+					cmd = '%s pdrbld -showprog -physdrv\[%s:%s\] -a%d -NoLog' % (megaclipath, enclid, slotid, controllerid)
+ 					output = getOutput(cmd)
+ 					percent = returnRebuildProgress(output)
+ 					fstate = str('Rebuilding (%d%%)' % (percent))
+
+				if (( NestedLDTable[controllerid][int(arrayid)] == True) and (spanid != False)):
+					sarrayid = str(arrayid)+"s"+spanid
+				else:
+					sarrayid = str(arrayid)
+				table.append([sarrayid, str(diskid), mtype, model, dsize, fstate , speed, temp, enclid, slotid, lsidid])
 	return table
 
 
@@ -413,6 +446,7 @@ def returnUnconfDiskInfo(output,controllerid):
 	lsidid = 'Unknown'
 	table = []
 	fstate = 'Offline'
+	substate = 'Unknown'
 	model = 'Unknown'
 	speed = 'Unknown'
 	mtype = 'Unknown'
@@ -548,6 +582,7 @@ if printarray:
 					ldid += 1
 				if re.match(r'^Virtual Drive:',line.strip()):
 					LDTable[controllerid].append ( ldid )
+					NestedLDTable[controllerid].append ( False )
 					ldcount += 1
 					ldid += 1
 
@@ -629,6 +664,7 @@ if totaldrivenumber:
 		print '-- Disk information --'
 
 	i = 0
+	dlen = 0
 	mlen = 0
 	flen = 0
 	controllerid = 0
@@ -644,12 +680,14 @@ if totaldrivenumber:
 		arraydisk = returnDiskInfo(output,controllerid)
 		for array in arraydisk:
 			dbgprint('Disk c'+str(controllerid)+'u'+array[0]+'p'+array[1] + ' status : ' + array[5])
-			if array[5] not in [ 'Online', 'Online, Spun Up' ]:
+			if not array[5] == 'Online' and not array[5] == 'Online, Spun Up':
 				bad = True
 				nagiosbaddisk=nagiosbaddisk+1
 			else:
 				nagiosgooddisk=nagiosgooddisk+1
 
+		if ( returnWdthFromArrayCol(arraydisk,0) > dlen):
+			dlen = returnWdthFromArrayCol(arraydisk,0)
 		if ( returnWdthFromArrayCol(arraydisk,3) > mlen):
 			mlen = returnWdthFromArrayCol(arraydisk,3)
 		if ( returnWdthFromArrayCol(arraydisk,5) > flen):
@@ -671,7 +709,7 @@ if totaldrivenumber:
 		arraydisk = returnDiskInfo(output,controllerid)
 
 		# Adjust print format with width computed above
-		drvfmt = "%-7s | %-4s | %-"+str(mlen)+"s | %-8s | %-"+str(flen)+"s | %-8s | %-4s | %-8s | %-8s"
+		drvfmt = "%-"+str(dlen+5)+"s | %-4s | %-"+str(mlen)+"s | %-8s | %-"+str(flen)+"s | %-8s | %-4s | %-8s | %-8s"
 		for array in arraydisk:
 			# Header
 			if ( i == 0 ):
