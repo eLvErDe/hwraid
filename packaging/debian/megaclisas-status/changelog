@@ -1,3 +1,10 @@
+megaclisas-status (0.10) unstable; urgency=medium
+
+  * New version including tones of fixes and improvements by
+    Vincent S. Cojot, thanks a lot !
+
+ -- Adam Cécile <acecile@le-vert.net>  Wed, 10 Feb 2016 11:05:41 +0100
+
 megaclisas-status (0.9) unstable; urgency=low
 
   * Fix the duplicate disk issue (Closes: #26).
