@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: megaclisas-status,v 1.53 2015/09/23 19:42:23 raistlin Exp $
+# $Id: megaclisas-status,v 1.58 2016/02/11 12:55:49 root Exp root $
 #
 # Written by Adam Cecile <gandalf@NOSPAM.le-vert.net>
 # Modified by Vincent S. Cojot <vincent@NOSPAM.cojot.name>
@@ -25,7 +25,6 @@ printarray = True
 printcontroller = True
 debugmode = False
 totaldrivenumber = 0
-totalunconfdrivenumber = 0
 
 # Hardcode a max of 16 HBA for now. LDTable must be initialized to accept populating list of LD's into each ctlr's list.
 LDTable = [ [] * 16 for i in range(16) ]
@@ -148,14 +147,13 @@ def returnRebuildProgress(output):
 			percent = int(tmpstr.split('%')[0].strip())
 	return percent
 
-def returnUnconfDriveNumber(output):
+def returnConfDriveNumber(output):
+	# Count the configured drives
 	confdrives = 0
-	unconfdrives = 0
 	for line in output:
 		if re.match(r'.*Number of PDs:.*$',line.strip()):
 			confdrives += int(line.split(':')[2].strip())
-	unconfdrives = totaldrivenumber - confdrives
-	return int(unconfdrives)
+	return int(confdrives)
 
 def returnControllerModel(output):
 	for line in output:
@@ -255,7 +253,7 @@ def returnHBAInfo(table,output,controllerid):
 	if controllermodel != 'Unknown':
 		table.append([ 'c'+str(controllerid), controllermodel, controllerram, str(controllertemp), str(controllerbbu), str('FW: '+controllerrev) ])
 
-def returnArrayInfo(output,controllerid,arrayid):
+def returnArrayInfo(output,controllerid,arrayid,arrayindex):
 	id = 'c'+str(controllerid)+'u'+str(arrayid)
 	operationlinennumber = False
 	linenumber = 0
@@ -331,12 +329,12 @@ def returnArrayInfo(output,controllerid,arrayid):
 	# Compute the RAID level
 	if (int(spandepth) >= 2):
 		raidtype = str('RAID-' + str(raidlvl) + '0')
-		NestedLDTable[controllerid][arrayid] = True
+		NestedLDTable[controllerid][arrayindex] = True
 	else:
 		if(raidlvl == 1):
 			if(diskperspan > 2):
 				raidtype = str('RAID-10')
-				NestedLDTable[controllerid][arrayid] = True
+				NestedLDTable[controllerid][arrayindex] = True
 			else:
 				raidtype = str('RAID-' + str(raidlvl))
 		else:
@@ -350,6 +348,7 @@ def returnArrayInfo(output,controllerid,arrayid):
 
 def returnDiskInfo(output,controllerid):
 	arrayid = False
+	arrayindex = -1
 	sarrayid = 'Unknown'
 	diskid = False
 	oldenclid = False
@@ -385,6 +384,7 @@ def returnDiskInfo(output,controllerid):
 			dsize = re.sub(' \[.*\.*$', '', dsize)
 			dsize = re.sub('[0-9][0-9] GB', ' Gb', dsize)
 		if re.match(r'^Virtual Drive: [0-9]+.*$',line.strip()):
+			arrayindex += 1
 			arrayid = line.split('(')[0].split(':')[1].strip()
 		if re.match(r'PD: [0-9]+ Information.*$',line.strip()):
 			diskid = line.split()[1].strip()
@@ -426,7 +426,7 @@ def returnDiskInfo(output,controllerid):
  					percent = returnRebuildProgress(output)
  					fstate = str('Rebuilding (%d%%)' % (percent))
 
-				if (( NestedLDTable[controllerid][int(arrayid)] == True) and (spanid != False)):
+				if (( NestedLDTable[controllerid][int(arrayindex)] == True) and (spanid != False)):
 					sarrayid = str(arrayid)+"s"+spanid
 				else:
 					sarrayid = str(arrayid)
@@ -564,7 +564,7 @@ if printarray:
 	mlen = 0
 	rlen = 0
 	while controllerid < controllernumber:
-		arrayid = 0
+		arrayindex = 0
 
 		cmd = '%s -LDInfo -lall -a%d -NoLog' % (megaclipath, controllerid)
 		output = getOutput(cmd)
@@ -583,21 +583,21 @@ if printarray:
 					ldcount += 1
 					ldid += 1
 
-		while arrayid < arraynumber:
-			ldid = LDTable[controllerid][arrayid]
+		while arrayindex < arraynumber:
+			ldid = LDTable[controllerid][arrayindex]
 			cmd = '%s -LDInfo -l%d -a%d -NoLog' % (megaclipath, ldid, controllerid)
 			output = getOutput(cmd)
-			arrayinfo = returnArrayInfo(output, controllerid, ldid)
+			arrayinfo = returnArrayInfo(output, controllerid, ldid, arrayindex)
 			if ( len(arrayinfo[4]) > mlen):
 				mlen = len(arrayinfo[4])
 			if ( len(arrayinfo[1]) > rlen):
 				rlen = len(arrayinfo[1])
-			arrayid += 1
+			arrayindex += 1
 		controllerid += 1
 
 	controllerid = 0
 	while controllerid < controllernumber:
-		arrayid = 0
+		arrayindex = 0
 
 		cmd = '%s -AdpGetPciInfo -a%d -NoLog' % (megaclipath, controllerid)
 		output = getOutput(cmd)
@@ -606,11 +606,11 @@ if printarray:
 		cmd = '%s -LDInfo -lall -a%d -NoLog' % (megaclipath, controllerid)
 		output = getOutput(cmd)
 		arraynumber = returnArrayNumber(output)
-		while arrayid < arraynumber:
-			ldid = LDTable[controllerid][arrayid]
+		while arrayindex < arraynumber:
+			ldid = LDTable[controllerid][arrayindex]
 			cmd = '%s -LDInfo -l%d -a%d -NoLog' % (megaclipath, ldid, controllerid)
 			output = getOutput(cmd)
-			arrayinfo = returnArrayInfo(output,controllerid, ldid)
+			arrayinfo = returnArrayInfo(output,controllerid, ldid, arrayindex)
 
 			if pcipath:
 				diskprefix = str('/dev/disk/by-path/pci-' + pcipath + '-scsi-0:')
@@ -643,7 +643,7 @@ if printarray:
 				nagiosbadarray=nagiosbadarray+1
 			else:
 				nagiosgoodarray=nagiosgoodarray+1
-			arrayid += 1
+			arrayindex += 1
 			i += 1
 		controllerid += 1
 	if not nagiosmode:
@@ -731,10 +731,19 @@ if totaldrivenumber:
 		print ''
 
 controllerid = 0
+totalconfdrivenumber = 0
+totalunconfdrivenumber = 0
+totaldrivenumber = 0
 while controllerid < controllernumber:
 	cmd = '%s -LdPdInfo -a%d -NoLog' % (megaclipath, controllerid)
 	output = getOutput(cmd)
-	totalunconfdrivenumber += returnUnconfDriveNumber(output)
+	totalconfdrivenumber = returnConfDriveNumber(output)
+
+	cmd = '%s -PDGetNum -a%d -NoLog' % (megaclipath, controllerid)
+	output = getOutput(cmd)
+	totaldrivenumber = returnTotalDriveNumber(output)
+	totalunconfdrivenumber += totaldrivenumber - totalconfdrivenumber
+
 	controllerid += 1
 
 if totalunconfdrivenumber:
@@ -756,7 +765,7 @@ if totalunconfdrivenumber:
 		arraydisk = returnUnconfDiskInfo(output,controllerid)
 		for array in arraydisk:
 			dbgprint('Disk c'+str(controllerid)+'uXpY status : ' + array[3])
-			if array[3] not in [ 'Online', 'Unconfigured(good), Spun Up', 'JBOD' ]:
+			if array[3] not in [ 'Online', 'Unconfigured(good), Spun Up', 'JBOD','Hotspare, Spun Up' ]:
 				bad = True
 				nagiosbaddisk=nagiosbaddisk+1
 			else:
@@ -766,7 +775,7 @@ if totalunconfdrivenumber:
 		flen = returnWdthFromArrayCol(arraydisk,3)
 
 		# Adjust print format with widths computed above
-		drvfmt = "%-7s | %-4s | %-"+str(mlen)+"s | %-8s | %-"+str(flen)+"s | %-8s | %-4s | %-8s | %-8s"
+		drvfmt = "%-7s | %-4s | %-"+str(mlen)+"s | %-8s | %-"+str(flen+2)+"s | %-8s | %-4s | %-8s | %-8s"
 		i = 0
 		for array in arraydisk:
 			# Header
