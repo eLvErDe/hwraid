@@ -1,3 +1,9 @@
+megaraid-status (0.11) unstable; urgency=medium
+
+  * Handle "ready" disk status as a good one.
+
+ -- Adam Cécile <acecile@le-vert.net>  Thu, 11 Feb 2016 08:08:21 +0100
+
 megaraid-status (0.10) unstable; urgency=low
 
   * Update initscript from mpt-status 1.2.0-7 package (Closes: #79).
