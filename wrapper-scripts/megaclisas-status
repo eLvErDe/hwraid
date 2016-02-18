@@ -38,8 +38,9 @@ def print_usage():
 
 # We need root access to query
 if __name__ == '__main__':
-	if os.getenv('LOGNAME') != 'root':
-		print '# This script requires Administrator privs! e.g :\r'
+	myuid = os.geteuid()
+	if myuid != 0:
+		print '# This script requires Administrator privs (Current EUID: '+str(myuid)+'! e.g :\r'
 		print 'sudo '+str(sys.argv[0])+'\r'
 		sys.exit(5)
 
