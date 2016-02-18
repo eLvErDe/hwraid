@@ -1,3 +1,9 @@
+megaclisas-status (0.13) unstable; urgency=medium
+
+  * Fix root privileges detection.
+
+ -- Adam Cécile <gandalf@le-vert.net>  Thu, 18 Feb 2016 11:26:29 +0100
+
 megaclisas-status (0.12) unstable; urgency=medium
 
   * New release including indexes fixes and hotspare handling.
