@@ -139,7 +139,7 @@ if not nagiosmode:
   print '-- ID | Type | Size | Status'
 for ctrl in ctrls:
   arraymap[ctrl[0]]=getArrayList(ctrl[0])
-  for array in getArrayList(ctrl[0]):
+  for array in arraymap[ctrl[0]]:
     if not array[3] in ['Okay (OKY)', 'Inactive, Okay (OKY)']:
       bad=True
       nagiosbadarray=nagiosbadarray+1
