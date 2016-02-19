@@ -328,7 +328,7 @@ def returnArrayInfo(output,controllerid,arrayid,arrayindex):
 		elif re.match(r'^Ongoing Progresses.*?:.*$',line.strip()):
 			operationlinennumber = linenumber
 		elif re.match(r'Cache Cade Type\s*:.*$', line):
-			cachecade_info = "Type : %s" %(get_line_value(line))
+			cachecade_info = "Type : " + line.strip().split(':')[1].strip()
 		elif re.match(r'^Target Id of the Associated LDs\s*:.*$', line):
 			associated=[]
 			for array in line.split(':')[1].strip().split(','):
