@@ -1,3 +1,15 @@
+megaraid-status (0.12) unstable; urgency=medium
+  * Handle "ready" disk status as a good one.
+
+ -- Adam Cécile <acecile@le-vert.net>  Thu, 11 Feb 2016 08:08:21 +0100
+
+megaraid-status (0.11) unstable; urgency=medium
+
+  * Handle disks without enclosure ID (patch by Pat Suwalski
+    <pat@suwalski.net>)
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Sat, 14 Dec 2013 14:47:29 +0100
+
 megaraid-status (0.10) unstable; urgency=low
 
   * Update initscript from mpt-status 1.2.0-7 package (Closes: #79).

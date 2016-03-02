@@ -1,3 +1,9 @@
+sas2ircu-status (0.7) unstable; urgency=medium
+
+  * New release with better disk handling (Closes: GitHub#23).
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Mon, 14 Dec 2015 08:48:12 +0100
+
 sas2ircu-status (0.6) unstable; urgency=medium
 
   * Reset disk list after each array processing (Closes: #287).

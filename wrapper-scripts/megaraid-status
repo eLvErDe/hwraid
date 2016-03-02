@@ -97,7 +97,7 @@ for array in arraylist:
         bad = True
 
 for disk in disklist:
-    if not disk[-1] == 'online' and not disk[-1] == 'hotspare':
+    if disk[-1] not in [ 'online', 'hotspare', 'ready' ]:
         bad = True
 
 if bad:

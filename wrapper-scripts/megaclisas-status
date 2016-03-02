@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: megaclisas-status,v 1.53 2015/09/23 19:42:23 raistlin Exp $
+# $Id: megaclisas-status,v 1.58 2016/02/11 12:55:49 root Exp root $
 #
 # Written by Adam Cecile <gandalf@NOSPAM.le-vert.net>
 # Modified by Vincent S. Cojot <vincent@NOSPAM.cojot.name>
@@ -25,7 +25,6 @@ printarray = True
 printcontroller = True
 debugmode = False
 totaldrivenumber = 0
-totalunconfdrivenumber = 0
 
 # Hardcode a max of 16 HBA for now. LDTable must be initialized to accept populating list of LD's into each ctlr's list.
 LDTable = [ [] * 16 for i in range(16) ]
@@ -39,8 +38,9 @@ def print_usage():
 
 # We need root access to query
 if __name__ == '__main__':
-	if os.getenv('USER') != 'root':
-		print '# This script requires Administrator privs! e.g :\r'
+	myuid = os.geteuid()
+	if myuid != 0:
+		print '# This script requires Administrator privs (Current EUID: '+str(myuid)+'! e.g :\r'
 		print 'sudo '+str(sys.argv[0])+'\r'
 		sys.exit(5)
 
@@ -90,18 +90,21 @@ for megabin in "MegaCli64","MegaCli","megacli":
 	dbgprint ('Looking for '+str(megabin)+' in PATH next..')
 	megaclipath = which(megabin)
 	if (megaclipath != None):
+		dbgprint ('Will use MegaCLI from here: '+str(megaclipath))
 		break
-	else:
-		dbgprint ('Found MegaCLI here: '+str(megaclipath))
 	
 # Check binary exists (and +x), if not print an error message
-if os.path.exists(megaclipath) and os.access(megaclipath, os.X_OK):
-	pass
-else:
-	if nagiosmode:
-		print 'UNKNOWN - Cannot find '+megaclipath
+if (megaclipath != None):
+	if os.path.exists(megaclipath) and os.access(megaclipath, os.X_OK):
+		pass
 	else:
-		print 'Cannot find ' + megaclipath + 'in your PATH. Please install it.'
+		if nagiosmode:
+			print 'UNKNOWN - Cannot find '+megaclipath
+		else:
+			print 'Cannot find ' + megaclipath + 'in your PATH. Please install it.'
+		sys.exit(3)
+else:
+	print 'Cannot find "MegaCli64","MegaCli" or "megacli" in your PATH. Please install it.'
 	sys.exit(3)
 
 
@@ -148,17 +151,13 @@ def returnRebuildProgress(output):
 			percent = int(tmpstr.split('%')[0].strip())
 	return percent
 
-def returnUnconfDriveNumber(output):
+def returnConfDriveNumber(output):
+	# Count the configured drives
 	confdrives = 0
-	unconfdrives = 0
-	totaldrivenumber = 0
 	for line in output:
 		if re.match(r'.*Number of PDs:.*$',line.strip()):
-			totaldrivenumber += int(line.split(':')[2].strip())
-		if re.match(r'^Firmware state:.*$',line.strip()):
-			confdrives += 1
-	unconfdrives = totaldrivenumber - confdrives
-	return int(unconfdrives)
+			confdrives += int(line.split(':')[2].strip())
+	return int(confdrives)
 
 def returnControllerModel(output):
 	for line in output:
@@ -258,7 +257,7 @@ def returnHBAInfo(table,output,controllerid):
 	if controllermodel != 'Unknown':
 		table.append([ 'c'+str(controllerid), controllermodel, controllerram, str(controllertemp), str(controllerbbu), str('FW: '+controllerrev) ])
 
-def returnArrayInfo(output,controllerid,arrayid):
+def returnArrayInfo(output,controllerid,arrayid,arrayindex):
 	id = 'c'+str(controllerid)+'u'+str(arrayid)
 	operationlinennumber = False
 	linenumber = 0
@@ -272,14 +271,16 @@ def returnArrayInfo(output,controllerid,arrayid):
 	properties = ''
 	spandepth = 0
 	diskperspan = 0
+	cachecade_info = 'None'
+
 	for line in output:
 		if re.match(r'^Virtual Drive:.*(Target Id: [0-9]+).*$',line.strip()):
 			# Extract the SCSI Target ID
 			targetid = line.strip().split(':')[2].split(')')[0].strip()
-		if re.match(r'^RAID Level.*?:.*$',line.strip()):
+		elif re.match(r'^RAID Level.*?:.*$',line.strip()):
 			# Extract the primary raid type, decide on X0 RAID level later when we hit Span Depth
 			raidlvl = int(line.strip().split(':')[1].split(',')[0].split('-')[1].strip())
-		if re.match(r'^Size.*?:.*$',line.strip()):
+		elif re.match(r'^Size.*?:.*$',line.strip()):
 			# Size reported in MB
 			if re.match(r'^.*MB$',line.strip().split(':')[1]):
 				size = line.strip().split(':')[1].strip('MB').strip()
@@ -295,16 +296,16 @@ def returnArrayInfo(output,controllerid,arrayid):
 			else:
 				size = line.strip().split(':')[1].strip('GB').strip()
 				size = str(int(round((float(size)))))+'G'
-		if re.match(r'^Span Depth.*?:.*$',line.strip()):
+		elif re.match(r'^Span Depth.*?:.*$',line.strip()):
 			# If Span Depth is greater than 1 chances are we have a RAID 10, 50 or 60
 			spandepth = line.strip().split(':')[1].strip()
-		if re.match(r'^State.*?:.*$',line.strip()):
+		elif re.match(r'^State.*?:.*$',line.strip()):
 			state = line.strip().split(':')[1].strip()
-		if re.match(r'^Strip Size.*?:.*$',line.strip()):
+		elif re.match(r'^Strip Size.*?:.*$',line.strip()):
 			strpsz = line.strip().split(':')[1].strip()
-		if re.match(r'^Number Of Drives per span.*:.*$',line.strip()):
+		elif re.match(r'^Number Of Drives per span.*:.*$',line.strip()):
 			diskperspan = int(line.strip().split(':')[1].strip())
-		if re.match(r'^Current Cache Policy.*?:.*$',line.strip()):
+		elif re.match(r'^Current Cache Policy.*?:.*$',line.strip()):
 			props = line.strip().split(':')[1].strip()
 			if re.search('ReadAdaptive', props):
 				properties += 'ADRA'
@@ -316,7 +317,7 @@ def returnArrayInfo(output,controllerid,arrayid):
 				properties += ',WB'
 			if re.match('WriteThrough', props):
 				properties += ',WT'
-		if re.match(r'^Disk Cache Policy.*?:.*$',line.strip()):
+		elif re.match(r'^Disk Cache Policy.*?:.*$',line.strip()):
 			props = line.strip().split(':')[1].strip()
 			if re.search('Disabled', props):
 				dskcache = 'Disabled'
@@ -324,22 +325,33 @@ def returnArrayInfo(output,controllerid,arrayid):
 				dskcache = 'Default'
 			if re.search('Enabled', props):
 				dskcache = 'Enabled'
-		if re.match(r'^Ongoing Progresses.*?:.*$',line.strip()):
+		elif re.match(r'^Ongoing Progresses.*?:.*$',line.strip()):
 			operationlinennumber = linenumber
+		elif re.match(r'Cache Cade Type\s*:.*$', line):
+			cachecade_info = "Type : " + line.strip().split(':')[1].strip()
+		elif re.match(r'^Target Id of the Associated LDs\s*:.*$', line):
+			associated=[]
+			for array in line.split(':')[1].strip().split(','):
+				associated.append('c%du%d' % (controller_id, int(array)))
+			cachecade_info = "Associated : %s" %(', '.join(associated))
+
 		linenumber += 1
-		if operationlinennumber:
-			inprogress = output[operationlinennumber+1]
-		else:
-			inprogress = 'None'
+
+	# If there was an ongoing operation, find the relevant line in the previous output
+	if operationlinennumber:
+		inprogress = output[operationlinennumber + 1]
+	else:
+		inprogress = 'None'
+
 	# Compute the RAID level
 	if (int(spandepth) >= 2):
 		raidtype = str('RAID-' + str(raidlvl) + '0')
-		NestedLDTable[controllerid][arrayid] = True
+		NestedLDTable[controllerid][arrayindex] = True
 	else:
 		if(raidlvl == 1):
 			if(diskperspan > 2):
 				raidtype = str('RAID-10')
-				NestedLDTable[controllerid][arrayid] = True
+				NestedLDTable[controllerid][arrayindex] = True
 			else:
 				raidtype = str('RAID-' + str(raidlvl))
 		else:
@@ -349,10 +361,11 @@ def returnArrayInfo(output,controllerid,arrayid):
 		+ ' Span Depth: ' + str(spandepth)
 		+ ' Disk Per Span: ' + str(diskperspan)
 		+ ' Raid Type: ' + str(raidtype))
-	return [id,raidtype,size,strpsz,properties,dskcache,state,targetid,inprogress]
+	return [id,raidtype,size,strpsz,properties,dskcache,state,targetid,cachecade_info,inprogress]
 
 def returnDiskInfo(output,controllerid):
 	arrayid = False
+	arrayindex = -1
 	sarrayid = 'Unknown'
 	diskid = False
 	oldenclid = False
@@ -372,7 +385,7 @@ def returnDiskInfo(output,controllerid):
 		if re.match(r'^Span: [0-9]+ - Number of PDs:',line.strip()):
 			spanid = line.split(':')[1].strip()
 			spanid = re.sub(' - Number of PDs.*', '', spanid)
-		if re.match(r'Enclosure Device ID: .*$',line.strip()):
+		elif re.match(r'Enclosure Device ID: .*$',line.strip()):
 			# We match here early in the analysis so reset the vars if this is a new disk we're reading..
 			oldenclid = enclid
 			enclid = line.split(':')[1].strip()
@@ -383,22 +396,23 @@ def returnDiskInfo(output,controllerid):
 				temp = 'Unk0C'
 				slotid = False
 				lsidid = 'Unknown'
-		if re.match(r'^Coerced Size: ',line.strip()):
+		elif re.match(r'^Coerced Size: ',line.strip()):
 			dsize = line.split(':')[1].strip()
 			dsize = re.sub(' \[.*\.*$', '', dsize)
 			dsize = re.sub('[0-9][0-9] GB', ' Gb', dsize)
-		if re.match(r'^Virtual Drive: [0-9]+.*$',line.strip()):
+		elif re.match(r'^(CacheCade )?Virtual (Disk|Drive): [0-9]+.*$',line.strip()):
+			arrayindex += 1
 			arrayid = line.split('(')[0].split(':')[1].strip()
-		if re.match(r'PD: [0-9]+ Information.*$',line.strip()):
+		elif re.match(r'PD: [0-9]+ Information.*$',line.strip()):
 			diskid = line.split()[1].strip()
-		if re.match(r'^Device Id: .*$',line.strip()):
+		elif re.match(r'^Device Id: .*$',line.strip()):
 			lsidid = line.split(':')[1].strip()
-		if re.match(r'Slot Number: .*$',line.strip()):
+		elif re.match(r'Slot Number: .*$',line.strip()):
 			slotid = line.split(':')[1].strip()
-		if re.match(r'Firmware state: .*$',line.strip()):
+		elif re.match(r'Firmware state: .*$',line.strip()):
 			fstate = line.split(':')[1].strip()
 			subfstate = re.sub('\(.*', '', fstate)
-		if re.match(r'Inquiry Data: .*$',line.strip()):
+		elif re.match(r'Inquiry Data: .*$',line.strip()):
 			model = line.split(':')[1].strip()
 			model = re.sub(' +', ' ', model)
 			# Sub code
@@ -406,7 +420,7 @@ def returnDiskInfo(output,controllerid):
 			dtype = re.sub(manuf+' ', '', model)
 			dtype = re.sub(' .*', '', dtype)
 			hwserial = re.sub('.*'+dtype+' *', '', model)
-		if re.match(r'^Media Type: .*$',line.strip()):
+		elif re.match(r'^Media Type: .*$',line.strip()):
 			mtype = line.split(':')[1].strip()
 			if mtype == 'Hard Disk Device':
 				mtype = 'HDD'
@@ -415,9 +429,9 @@ def returnDiskInfo(output,controllerid):
 					mtype = 'SSD'
 				else:
 					mtype = 'N/A'
-		if re.match(r'Device Speed: .*$',line.strip()):
+		elif re.match(r'Device Speed: .*$',line.strip()):
 			speed = line.split(':')[1].strip()
-		if re.match(r'Drive Temperature :.*$',line.strip()):
+		elif re.match(r'Drive Temperature :.*$',line.strip()):
 		# Drive temp is amongst the last few lines matched, decide here if we add information to the table..
 			temp = line.split(':')[1].strip()
 			temp = re.sub(' \(.*\)', '', temp)
@@ -429,7 +443,7 @@ def returnDiskInfo(output,controllerid):
  					percent = returnRebuildProgress(output)
  					fstate = str('Rebuilding (%d%%)' % (percent))
 
-				if (( NestedLDTable[controllerid][int(arrayid)] == True) and (spanid != False)):
+				if (( NestedLDTable[controllerid][int(arrayindex)] == True) and (spanid != False)):
 					sarrayid = str(arrayid)+"s"+spanid
 				else:
 					sarrayid = str(arrayid)
@@ -466,29 +480,29 @@ def returnUnconfDiskInfo(output,controllerid):
 				slotid = False
 				lsidid = 'Unknown'
 
-		if re.match(r'^Coerced Size: ',line.strip()):
+		elif re.match(r'^Coerced Size: ',line.strip()):
 			dsize = line.split(':')[1].strip()
 			dsize = re.sub(' \[.*\.*$', '', dsize)
 			dsize = re.sub('[0-9][0-9] GB', ' Gb', dsize)
-		if re.match(r'^Drive.s position: DiskGroup: [0-9]+,.*$',line.strip()):
+		elif re.match(r'^Drive.s position: DiskGroup: [0-9]+,.*$',line.strip()):
 			arrayid = line.split(',')[1].split(':')[1].strip()
-		if re.match(r'^Device Id: [0-9]+.*$',line.strip()):
+		elif re.match(r'^Device Id: [0-9]+.*$',line.strip()):
 			diskid = line.split(':')[1].strip()
-		if re.match(r'^Device Id: .*$',line.strip()):
+		elif re.match(r'^Device Id: .*$',line.strip()):
 			lsidid = line.split(':')[1].strip()
-		if re.match(r'Slot Number: .*$',line.strip()):
+		elif re.match(r'Slot Number: .*$',line.strip()):
 			slotid = line.split(':')[1].strip()
-		if re.match(r'Firmware state: .*$',line.strip()):
+		elif re.match(r'Firmware state: .*$',line.strip()):
 			fstate = line.split(':')[1].strip()
 			subfstate = re.sub('\(.*', '', fstate)
-		if re.match(r'Inquiry Data: .*$',line.strip()):
+		elif re.match(r'Inquiry Data: .*$',line.strip()):
 			model = line.split(':')[1].strip()
 			model = re.sub(' +', ' ', model)
 			manuf = re.sub(' .*', '', model)
 			dtype = re.sub(manuf+' ', '', model)
 			dtype = re.sub(' .*', '', dtype)
 			hwserial = re.sub('.*'+dtype+' *', '', model)
-		if re.match(r'^Media Type: .*$',line.strip()):
+		elif re.match(r'^Media Type: .*$',line.strip()):
 			mtype = line.split(':')[1].strip()
 			if mtype == 'Hard Disk Device':
 				mtype = 'HDD'
@@ -497,16 +511,16 @@ def returnUnconfDiskInfo(output,controllerid):
 					mtype = 'SSD'
 				else:
 					mtype = 'N/A'
-		if re.match(r'Device Speed: .*$',line.strip()):
+		elif re.match(r'Device Speed: .*$',line.strip()):
 			speed = line.split(':')[1].strip()
-		if re.match(r'Drive Temperature :.*$',line.strip()):
+		elif re.match(r'Drive Temperature :.*$',line.strip()):
 			temp = line.split(':')[1].strip()
 			temp = re.sub('\(.*\)', '', temp)
 		# Drive temp is amongst the last few lines matched, decide here if we add information to the table..
 			if arrayid == False:
 				if subfstate == 'Unconfigured':
 					dbgprint('Unconfigured Disk: Arrayid: '+str(arrayid)+' DiskId: '+str(diskid)+' '+str(olddiskid)+' '+str(fstate))
-				if subfstate == 'Online, Spun Up':
+				elif subfstate == 'Online, Spun Up':
 					dbgprint('Online Disk: Arrayid: '+str(arrayid)+' DiskId: '+str(diskid)+' '+str(olddiskid)+' '+str(fstate))
 				table.append([ mtype, model, dsize, fstate, speed, temp, enclid, slotid, lsidid])
 	return table
@@ -564,10 +578,9 @@ if printarray:
 	pcipath = ''
 	diskpath = ''
 	i = 0 ; j = 0
-	mlen = 0
-	rlen = 0
+	mlen = 0 ; rlen = 0 ; clen = 0
 	while controllerid < controllernumber:
-		arrayid = 0
+		arrayindex = 0
 
 		cmd = '%s -LDInfo -lall -a%d -NoLog' % (megaclipath, controllerid)
 		output = getOutput(cmd)
@@ -580,27 +593,29 @@ if printarray:
 			for line in output:
 				if re.match(r'^Adapter.*Virtual Drive .* Does not Exist',line.strip()):
 					ldid += 1
-				if re.match(r'^Virtual Drive:',line.strip()):
+				elif re.match(r'^(CacheCade )?Virtual Drive:',line.strip()):
 					LDTable[controllerid].append ( ldid )
 					NestedLDTable[controllerid].append ( False )
 					ldcount += 1
 					ldid += 1
 
-		while arrayid < arraynumber:
-			ldid = LDTable[controllerid][arrayid]
+		while arrayindex < arraynumber:
+			ldid = LDTable[controllerid][arrayindex]
 			cmd = '%s -LDInfo -l%d -a%d -NoLog' % (megaclipath, ldid, controllerid)
 			output = getOutput(cmd)
-			arrayinfo = returnArrayInfo(output, controllerid, ldid)
-			if ( len(arrayinfo[4]) > mlen):
-				mlen = len(arrayinfo[4])
+			arrayinfo = returnArrayInfo(output, controllerid, ldid, arrayindex)
 			if ( len(arrayinfo[1]) > rlen):
 				rlen = len(arrayinfo[1])
-			arrayid += 1
+			if ( len(arrayinfo[4]) > mlen):
+				mlen = len(arrayinfo[4])
+			if ( len(arrayinfo[8]) > clen):
+				clen = len(arrayinfo[8])
+			arrayindex += 1
 		controllerid += 1
 
 	controllerid = 0
 	while controllerid < controllernumber:
-		arrayid = 0
+		arrayindex = 0
 
 		cmd = '%s -AdpGetPciInfo -a%d -NoLog' % (megaclipath, controllerid)
 		output = getOutput(cmd)
@@ -609,11 +624,11 @@ if printarray:
 		cmd = '%s -LDInfo -lall -a%d -NoLog' % (megaclipath, controllerid)
 		output = getOutput(cmd)
 		arraynumber = returnArrayNumber(output)
-		while arrayid < arraynumber:
-			ldid = LDTable[controllerid][arrayid]
+		while arrayindex < arraynumber:
+			ldid = LDTable[controllerid][arrayindex]
 			cmd = '%s -LDInfo -l%d -a%d -NoLog' % (megaclipath, ldid, controllerid)
 			output = getOutput(cmd)
-			arrayinfo = returnArrayInfo(output,controllerid, ldid)
+			arrayinfo = returnArrayInfo(output,controllerid, ldid, arrayindex)
 
 			if pcipath:
 				diskprefix = str('/dev/disk/by-path/pci-' + pcipath + '-scsi-0:')
@@ -624,11 +639,19 @@ if printarray:
 			else:
 				arrayinfo[7] = 'N/A'
 
-			ldfmt = str('%-5s | %-'+str(rlen)+'s | %7s | %7s | %'+str(mlen)+'s | %8s | %8s | %8s | %-12s ')
+			# Pad the string length, just to make sure it's aligned with the headers...
+			if (rlen < len("Type")):
+				rlen = len("Type")
+			if (mlen < len("Flags")):
+				mlen = len("Flags")
+			if (clen < len("Cache Cade")):
+				clen = len("Cache Cade")
+
+			ldfmt = str('%-5s | %-'+str(rlen)+'s | %7s | %7s | %'+str(mlen)+'s | %8s | %8s | %8s | %-'+str(clen)+'s |%-12s ')
 			# Header
 			if ( i == 0 ):
 				if not nagiosmode:
-					print ldfmt % ("-- ID", "Type", "Size", "Strpsz", "Flags", "DskCache", "Status", "OS Path", "InProgress" )
+					print ldfmt % ("-- ID", "Type", "Size", "Strpsz", "Flags", "DskCache", "Status", "OS Path", "Cache Cade", "InProgress" )
 			if not nagiosmode:
 				print ldfmt % (
 					arrayinfo[0],
@@ -639,14 +662,15 @@ if printarray:
 					arrayinfo[5],
 					arrayinfo[6],
 					arrayinfo[7],
-					arrayinfo[8])
+					arrayinfo[8],
+					arrayinfo[9])
 			dbgprint("Array state : "+arrayinfo[6])
 			if not arrayinfo[6] == 'Optimal':
 				bad = True
 				nagiosbadarray=nagiosbadarray+1
 			else:
 				nagiosgoodarray=nagiosgoodarray+1
-			arrayid += 1
+			arrayindex += 1
 			i += 1
 		controllerid += 1
 	if not nagiosmode:
@@ -664,9 +688,7 @@ if totaldrivenumber:
 		print '-- Disk information --'
 
 	i = 0
-	dlen = 0
-	mlen = 0
-	flen = 0
+	dlen = 0 ; mlen = 0 ; flen = 0
 	controllerid = 0
 	while controllerid < controllernumber:
 		arrayid = 0
@@ -734,10 +756,19 @@ if totaldrivenumber:
 		print ''
 
 controllerid = 0
+totalconfdrivenumber = 0
+totalunconfdrivenumber = 0
+totaldrivenumber = 0
 while controllerid < controllernumber:
 	cmd = '%s -LdPdInfo -a%d -NoLog' % (megaclipath, controllerid)
 	output = getOutput(cmd)
-	totalunconfdrivenumber += returnUnconfDriveNumber(output)
+	totalconfdrivenumber = returnConfDriveNumber(output)
+
+	cmd = '%s -PDGetNum -a%d -NoLog' % (megaclipath, controllerid)
+	output = getOutput(cmd)
+	totaldrivenumber = returnTotalDriveNumber(output)
+	totalunconfdrivenumber += totaldrivenumber - totalconfdrivenumber
+
 	controllerid += 1
 
 if totalunconfdrivenumber:
@@ -759,7 +790,7 @@ if totalunconfdrivenumber:
 		arraydisk = returnUnconfDiskInfo(output,controllerid)
 		for array in arraydisk:
 			dbgprint('Disk c'+str(controllerid)+'uXpY status : ' + array[3])
-			if array[3] not in [ 'Online', 'Unconfigured(good), Spun Up', 'JBOD' ]:
+			if array[3] not in [ 'Online', 'Unconfigured(good), Spun Up', 'JBOD','Hotspare, Spun Up','Hotspare, Spun down' ]:
 				bad = True
 				nagiosbaddisk=nagiosbaddisk+1
 			else:
@@ -769,7 +800,7 @@ if totalunconfdrivenumber:
 		flen = returnWdthFromArrayCol(arraydisk,3)
 
 		# Adjust print format with widths computed above
-		drvfmt = "%-7s | %-4s | %-"+str(mlen)+"s | %-8s | %-"+str(flen)+"s | %-8s | %-4s | %-8s | %-8s"
+		drvfmt = "%-7s | %-4s | %-"+str(mlen)+"s | %-8s | %-"+str(flen+2)+"s | %-8s | %-4s | %-8s | %-8s"
 		i = 0
 		for array in arraydisk:
 			# Header
