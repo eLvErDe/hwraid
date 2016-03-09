@@ -216,7 +216,7 @@ def returnBBUStatus(output):
 def returnArrayNumber(output):
 	i = 0
 	for line in output:
-		if re.match(r'^Virtual Drive:.*$',line.strip()):
+		if re.match(r'^(CacheCade )?Virtual Drive:.*$',line.strip()):
 			i += 1
 	return i
 
@@ -275,7 +275,7 @@ def returnArrayInfo(output,controllerid,arrayid,arrayindex):
 	cachecade_info = 'None'
 
 	for line in output:
-		if re.match(r'^Virtual Drive:.*(Target Id: [0-9]+).*$',line.strip()):
+		if re.match(r'^(CacheCade )?Virtual Drive:.*(Target Id: [0-9]+).*$',line.strip()):
 			# Extract the SCSI Target ID
 			targetid = line.strip().split(':')[2].split(')')[0].strip()
 		elif re.match(r'^RAID Level.*?:.*$',line.strip()):
