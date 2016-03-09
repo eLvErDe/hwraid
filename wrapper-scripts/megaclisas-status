@@ -644,14 +644,14 @@ if printarray:
 				rlen = len("Type")
 			if (mlen < len("Flags")):
 				mlen = len("Flags")
-			if (clen < len("Cache Cade")):
-				clen = len("Cache Cade")
+			if (clen < len("CacheCade")):
+				clen = len("CacheCade")
 
 			ldfmt = str('%-5s | %-'+str(rlen)+'s | %7s | %7s | %'+str(mlen)+'s | %8s | %8s | %8s | %-'+str(clen)+'s |%-12s ')
 			# Header
 			if ( i == 0 ):
 				if not nagiosmode:
-					print ldfmt % ("-- ID", "Type", "Size", "Strpsz", "Flags", "DskCache", "Status", "OS Path", "Cache Cade", "InProgress" )
+					print ldfmt % ("-- ID", "Type", "Size", "Strpsz", "Flags", "DskCache", "Status", "OS Path", "CacheCade", "InProgress" )
 			if not nagiosmode:
 				print ldfmt % (
 					arrayinfo[0],
@@ -702,7 +702,7 @@ if totaldrivenumber:
 		arraydisk = returnDiskInfo(output,controllerid)
 		for array in arraydisk:
 			dbgprint('Disk c'+str(controllerid)+'u'+array[0]+'p'+array[1] + ' status : ' + array[5])
-			if not array[5] == 'Online' and not array[5] == 'Online, Spun Up':
+			if array[5] not in [ 'Online', 'Online, Spun Up' ]:
 				bad = True
 				nagiosbaddisk=nagiosbaddisk+1
 			else:
