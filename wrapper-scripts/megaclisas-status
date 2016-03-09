@@ -332,7 +332,7 @@ def returnArrayInfo(output,controllerid,arrayid,arrayindex):
 		elif re.match(r'^Target Id of the Associated LDs\s*:.*$', line):
 			associated=[]
 			for array in line.split(':')[1].strip().split(','):
-				associated.append('c%du%d' % (controller_id, int(array)))
+				associated.append('c%du%d' % (controllerid, int(array)))
 			cachecade_info = "Associated : %s" %(', '.join(associated))
 
 		linenumber += 1
