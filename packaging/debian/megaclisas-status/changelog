@@ -1,3 +1,9 @@
+megaclisas-status (0.14) unstable; urgency=medium
+
+  * Handle CacheCade devices plus various fixes.
+
+ -- Adam Cécile <gandalf@le-vert.net>  Tue, 15 Mar 2016 14:02:20 +0100
+
 megaclisas-status (0.13) unstable; urgency=medium
 
   * Fix root privileges detection.
