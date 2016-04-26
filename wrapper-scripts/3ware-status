@@ -122,13 +122,14 @@ if not nagiosmode:
 # List disks
 if not nagiosmode:
     print '-- Disks informations'
-    print '-- ID\tModel\t\t\tStatus'
+    print '-- ID\tModel\t\tSerial\t\tStatus'
 for controller in controllerlist:
     cmd = binarypath+' info '+controller
     output = getOutput(cmd)
     disklist = returnDiskList(output)
     for disk in disklist:
         id = controller+disk[2]+disk[0]
+        serial = disk[6]
         cmd = binarypath+' info '+controller+' '+disk[0]+' model'
         model = getOutput(cmd)[0].split(' = ')[1].strip()
         cmd = binarypath+' info '+controller+' '+disk[0]+' status'
@@ -139,7 +140,7 @@ for controller in controllerlist:
         else:
             nagiosgooddisk=nagiosgooddisk+1
         if not nagiosmode:
-            print id+'\t'+model+'\t'+status
+            print id+'\t'+model+'\t'+serial+'\t'+status
 
 if nagiosmode:
     if bad:
