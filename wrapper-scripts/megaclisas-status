@@ -335,7 +335,7 @@ def returnArrayInfo(output,controllerid,arrayid,arrayindex):
 			for array in line.split(':')[1].strip().split(','):
 					if isintance(array, int):
 						associated.append('c%du%d' % (controllerid, str(array)))
-			if associated:
+			if len(associated) >= 1:
 				cachecade_info = "Associated : %s" %(', '.join(associated))
 		linenumber += 1
 
