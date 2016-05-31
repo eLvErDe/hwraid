@@ -667,7 +667,7 @@ if printarray:
 					arrayinfo[8],
 					arrayinfo[9])
 			dbgprint("Array state : "+arrayinfo[6])
-			if not arrayinfo[6] == 'Optimal':
+			if arrayinfo[6] not in [ 'Optimal', '' ]:
 				bad = True
 				nagiosbadarray=nagiosbadarray+1
 			else:
