@@ -26,9 +26,9 @@ printcontroller = True
 debugmode = False
 totaldrivenumber = 0
 
-# Hardcode a max of 16 HBA for now. LDTable must be initialized to accept populating list of LD's into each ctlr's list.
-LDTable = [ [] * 16 for i in range(16) ]
-NestedLDTable = [[False for i in range(16)] for j in range(16)]
+# Hardcode a max of 128 HBA and 128 LDs for now. LDTable must be initialized to accept populating list of LD's into each ctlr's list.
+LDTable = [ [] * 128 for i in range(128) ]
+NestedLDTable = [[False for i in range(128)] for j in range(128)]
 
 # Outputs is a 'dict' of all MegaCLI outputs so we can re-use them during loops..
 Outputs = {}
