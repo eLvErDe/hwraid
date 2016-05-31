@@ -333,7 +333,7 @@ def returnArrayInfo(output,controllerid,arrayid,arrayindex):
 		elif re.match(r'^Target Id of the Associated LDs\s*:.*$', line):
 			associated=[]
 			for array in line.split(':')[1].strip().split(','):
-					if isintance(array, int):
+					if array.isdigit():
 						associated.append('c%du%d' % (controllerid, str(array)))
 			if len(associated) >= 1:
 				cachecade_info = "Associated : %s" %(', '.join(associated))
