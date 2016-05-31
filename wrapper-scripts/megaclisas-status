@@ -266,7 +266,7 @@ def returnArrayInfo(output,controllerid,arrayid,arrayindex):
 	raidtype = ''
 	raidlvl = ''
 	size = ''
-	state = ''
+	state = 'N/A'
 	strpsz = ''
 	dskcache = 'N/A'
 	properties = ''
@@ -667,7 +667,7 @@ if printarray:
 					arrayinfo[8],
 					arrayinfo[9])
 			dbgprint("Array state : "+arrayinfo[6])
-			if arrayinfo[6] not in [ 'Optimal', '' ]:
+			if arrayinfo[6] not in [ 'Optimal', 'N/A' ]:
 				bad = True
 				nagiosbadarray=nagiosbadarray+1
 			else:
