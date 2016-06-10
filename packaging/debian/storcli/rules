@@ -1,0 +1,56 @@
+#!/usr/bin/make -f
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+DESTDIR=$(CURDIR)/debian/storcli/usr
+DEB_BUILD_ARCH  ?= $(shell dpkg-architecture -qDEB_BUILD_ARCH)
+
+build: build-arch build-indep
+build-arch:
+build-indep:
+
+clean:
+	dh_testdir
+	dh_testroot
+	rm -f debian/StorCLI_RefMan_revf.pdf
+	dh_clean
+
+install:
+	dh_testdir
+	dh_testroot
+	dh_clean -k
+	dh_installdirs
+ifeq ($(DEB_BUILD_ARCH),amd64)
+	install -D -m 0755 $(CURDIR)/storcli64 \
+		$(DESTDIR)/sbin/storcli
+endif
+ifeq ($(DEB_BUILD_ARCH),i386)
+	install -D -m 0755 $(CURDIR)/storcli \
+		$(DESTDIR)/sbin/storcli
+endif
+	# To create the uu file:
+	# uuencode debian/CLIGuide.pdf debian/CLIGuide.pdf > debian/CLIGuide.pdf.uu
+	uudecode debian/StorCLI_RefMan_revf.pdf.uu > debian/StorCLI_RefMan_revf.pdf
+	install -D -m 0644 $(CURDIR)/debian/StorCLI_RefMan_revf.pdf \
+		$(DESTDIR)/share/doc/storcli/StorCLI_RefMan_revf.pdf
+
+binary-indep: build install
+binary-arch: build install
+	dh_testdir
+	dh_testroot
+	dh_installchangelogs
+	dh_installdocs
+	dh_installman
+	dh_link
+	dh_strip
+	dh_compress
+	dh_fixperms
+	dh_installdeb
+	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary: binary-indep binary-arch
+.PHONY: build clean binary-indep binary-arch binary install
