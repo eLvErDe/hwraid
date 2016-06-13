@@ -158,8 +158,10 @@ def returnConfDriveNumber(output):
 	# Count the configured drives
 	confdrives = 0
 	for line in output:
-		if re.match(r'.*Number of PDs:.*$',line.strip()):
-			confdrives += int(line.split(':')[2].strip())
+		# if re.match(r'.*Number of PDs:.*$',line.strip()):
+		# confdrives += int(line.split(':')[2].strip())
+		if re.match(r'^Device Id:.*$',line.strip()):
+			confdrives += 1
 	return int(confdrives)
 
 def returnUnConfDriveNumber(output):
