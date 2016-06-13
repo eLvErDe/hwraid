@@ -158,9 +158,15 @@ def returnConfDriveNumber(output):
 	# Count the configured drives
 	confdrives = 0
 	for line in output:
-		# if re.match(r'.*Number of PDs:.*$',line.strip()):
-		# confdrives += int(line.split(':')[2].strip())
-		if re.match(r'^Device Id:.*$',line.strip()):
+		if re.match(r'.*Number of PDs:.*$',line.strip()):
+			confdrives += int(line.split(':')[2].strip())
+	return int(confdrives)
+
+def returnUnConfDriveNumber(output):
+	# Count the configured drives
+	confdrives = 0
+	for line in output:
+		if re.match(r'^Firmware state: Unconfigured.*$',line):
 			confdrives += 1
 	return int(confdrives)
 
@@ -774,17 +780,22 @@ totaldrivenumber = 0
 while controllerid < controllernumber:
 	cmd = '%s -LdPdInfo -a%d -NoLog' % (megaclipath, controllerid)
 	output = getOutput(cmd)
-	totalconfdrivenumber = returnConfDriveNumber(output)
-	dbgprint('Total Confed Drives on c'+str(controllerid)+' : ' + str(totalconfdrivenumber))
+	totalconfdrivenumber += returnConfDriveNumber(output)
 
 	cmd = '%s -PDGetNum -a%d -NoLog' % (megaclipath, controllerid)
 	output = getOutput(cmd)
-	totaldrivenumber = returnTotalDriveNumber(output)
-	dbgprint('Total Drives on c'+str(controllerid)+' : ' + str(totaldrivenumber))
-	totalunconfdrivenumber += totaldrivenumber - totalconfdrivenumber
-	dbgprint('Total Unconfed Drives on c'+str(controllerid)+' : ' + str(totalunconfdrivenumber))
+	totaldrivenumber += returnTotalDriveNumber(output)
+
+	cmd = '%s -PDList -a%d -NoLog' % (megaclipath, controllerid)
+	output = getOutput(cmd)
+	totalunconfdrivenumber += returnUnConfDriveNumber(output)
 
 	controllerid += 1
+
+dbgprint('Total Drives in system : ' + str(totaldrivenumber))
+dbgprint('Total Configured Drives : ' + str(totalconfdrivenumber))
+dbgprint('Total Unconfigured Drives : ' + str(totalunconfdrivenumber))
+
 if totalunconfdrivenumber:
 	if not nagiosmode:
 		print '-- Unconfigured Disk information --'
@@ -796,7 +807,7 @@ if totalunconfdrivenumber:
 		cmd = '%s -LDInfo -lall -a%d -NoLog' % (megaclipath, controllerid)
 		output = getOutput(cmd)
 		arraynumber = returnArrayNumber(output)
-		#### BUG: -LdPdInfo shows all PD on the adapter, not just for said LD..
+		#### BUG: -LdPdInfo shows all PD on the adapter, not just for given LD..
 		#### while arrayid <= arraynumber:
 
 		cmd = '%s -PDList -a%d -NoLog' % (megaclipath, controllerid)
