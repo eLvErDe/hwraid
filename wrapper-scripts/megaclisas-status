@@ -158,8 +158,10 @@ def returnConfDriveNumber(output):
 	# Count the configured drives
 	confdrives = 0
 	for line in output:
-		if re.match(r'.*Number of PDs:.*$',line.strip()):
-			confdrives += int(line.split(':')[2].strip())
+		# if re.match(r'.*Number of PDs:.*$',line.strip()):
+		# confdrives += int(line.split(':')[2].strip())
+		if re.match(r'^Device Id:.*$',line.strip()):
+			confdrives += 1
 	return int(confdrives)
 
 def returnControllerModel(output):
@@ -420,6 +422,7 @@ def returnDiskInfo(output,controllerid):
 		elif re.match(r'Firmware state: .*$',line.strip()):
 			fstate = line.split(':')[1].strip()
 			subfstate = re.sub('\(.*', '', fstate)
+			dbgprint('Firmware State: '+str(fstate)+' '+str(subfstate))
 		elif re.match(r'Inquiry Data: .*$',line.strip()):
 			model = line.split(':')[1].strip()
 			model = re.sub(' +', ' ', model)
@@ -503,6 +506,7 @@ def returnUnconfDiskInfo(output,controllerid):
 		elif re.match(r'Firmware state: .*$',line.strip()):
 			fstate = line.split(':')[1].strip()
 			subfstate = re.sub('\(.*', '', fstate)
+			dbgprint('Firmware State: '+str(fstate)+' '+str(subfstate))
 		elif re.match(r'Inquiry Data: .*$',line.strip()):
 			model = line.split(':')[1].strip()
 			model = re.sub(' +', ' ', model)
@@ -524,7 +528,7 @@ def returnUnconfDiskInfo(output,controllerid):
 		elif re.match(r'Drive Temperature :.*$',line.strip()):
 			temp = line.split(':')[1].strip()
 			temp = re.sub('\(.*\)', '', temp)
-		# Drive temp is amongst the last few lines matched, decide here if we add information to the table..
+			# Drive temp is amongst the last few lines matched, decide here if we add information to the table..
 			if arrayid == False:
 				if subfstate == 'Unconfigured':
 					dbgprint('Unconfigured Disk: Arrayid: '+str(arrayid)+' DiskId: '+str(diskid)+' '+str(olddiskid)+' '+str(fstate))
@@ -771,14 +775,16 @@ while controllerid < controllernumber:
 	cmd = '%s -LdPdInfo -a%d -NoLog' % (megaclipath, controllerid)
 	output = getOutput(cmd)
 	totalconfdrivenumber = returnConfDriveNumber(output)
+	dbgprint('Total Confed Drives on c'+str(controllerid)+' : ' + str(totalconfdrivenumber))
 
 	cmd = '%s -PDGetNum -a%d -NoLog' % (megaclipath, controllerid)
 	output = getOutput(cmd)
 	totaldrivenumber = returnTotalDriveNumber(output)
+	dbgprint('Total Drives on c'+str(controllerid)+' : ' + str(totaldrivenumber))
 	totalunconfdrivenumber += totaldrivenumber - totalconfdrivenumber
+	dbgprint('Total Unconfed Drives on c'+str(controllerid)+' : ' + str(totalunconfdrivenumber))
 
 	controllerid += 1
-
 if totalunconfdrivenumber:
 	if not nagiosmode:
 		print '-- Unconfigured Disk information --'
