@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: megaclisas-status,v 1.62 2016/03/09 14:22:59 root Exp root $
+# $Id: megaclisas-status,v 1.65 2016/06/01 18:57:18 root Exp root $
 #
 # Written by Adam Cecile <gandalf@NOSPAM.le-vert.net>
 # Modified by Vincent S. Cojot <vincent@NOSPAM.cojot.name>
@@ -28,9 +28,11 @@ printcontroller = True
 debugmode = False
 totaldrivenumber = 0
 
-# Hardcode a max of 16 HBA for now. LDTable must be initialized to accept populating list of LD's into each ctlr's list.
-LDTable = [ [] * 16 for i in range(16) ]
-NestedLDTable = [[False for i in range(16)] for j in range(16)]
+# Hardcode a max of 16 HBA and 128 LDs for now. LDTable must be initialized to accept populating list of LD's into each ctlr's list.
+MaxNumHBA = 16
+MaxNumLD = 128
+LDTable = [ [] * MaxNumHBA for i in range(MaxNumLD) ]
+NestedLDTable = [[False for i in range(MaxNumHBA)] for j in range(MaxNumLD)]
 
 # Outputs is a 'dict' of all MegaCLI outputs so we can re-use them during loops..
 Outputs = {}
@@ -164,6 +166,14 @@ def returnConfDriveNumber(output):
 			confdrives += int(line.split(':')[2].strip())
 	return int(confdrives)
 
+def returnUnConfDriveNumber(output):
+	# Count the configured drives
+	confdrives = 0
+	for line in output:
+		if re.match(r'^Firmware state: Unconfigured.*$',line.strip()):
+			confdrives += 1
+	return int(confdrives)
+
 def returnControllerModel(output):
 	for line in output:
 		if re.match(r'^Product Name.*$',line.strip()):
@@ -270,7 +280,7 @@ def returnArrayInfo(output,controllerid,arrayid,arrayindex):
 	raidtype = ''
 	raidlvl = ''
 	size = ''
-	state = ''
+	state = 'N/A'
 	strpsz = ''
 	dskcache = 'N/A'
 	properties = ''
@@ -337,9 +347,10 @@ def returnArrayInfo(output,controllerid,arrayid,arrayindex):
 		elif re.match(r'^Target Id of the Associated LDs\s*:.*$', line):
 			associated=[]
 			for array in line.split(':')[1].strip().split(','):
-				associated.append('c%du%d' % (controllerid, int(array)))
-			cachecade_info = "Associated : %s" %(', '.join(associated))
-
+					if array.isdigit():
+						associated.append('c%du%d' % (controllerid, int(array)))
+			if len(associated) >= 1:
+				cachecade_info = "Associated : %s" %(', '.join(associated))
 		linenumber += 1
 
 	# If there was an ongoing operation, find the relevant line in the previous output
@@ -350,18 +361,21 @@ def returnArrayInfo(output,controllerid,arrayid,arrayindex):
 
 	# Compute the RAID level
 	NestedLDTable[int(controllerid)][int(arrayindex)] = False
-	if (int(spandepth) >= 2):
-		raidtype = str('RAID-' + str(raidlvl) + '0')
-		NestedLDTable[controllerid][int(arrayindex)] = True
+	if raidlvl == '':
+		raidtype = str('N/A')
 	else:
-		if(raidlvl == 1):
-			if(diskperspan > 2):
-				raidtype = str('RAID-10')
-				NestedLDTable[controllerid][int(arrayindex)] = True
+		if (int(spandepth) >= 2):
+			raidtype = str('RAID-' + str(raidlvl) + '0')
+			NestedLDTable[controllerid][int(arrayindex)] = True
+		else:
+			if(raidlvl == 1):
+				if(diskperspan > 2):
+					raidtype = str('RAID-10')
+					NestedLDTable[controllerid][int(arrayindex)] = True
+				else:
+					raidtype = str('RAID-' + str(raidlvl))
 			else:
 				raidtype = str('RAID-' + str(raidlvl))
-		else:
-			raidtype = str('RAID-' + str(raidlvl))
 
 	dbgprint('RAID Level: ' + str(raidlvl)
 		+ ' Span Depth: ' + str(spandepth)
@@ -418,6 +432,7 @@ def returnDiskInfo(output,controllerid):
 		elif re.match(r'Firmware state: .*$',line.strip()):
 			fstate = line.split(':')[1].strip()
 			subfstate = re.sub('\(.*', '', fstate)
+			dbgprint('Firmware State: '+str(fstate)+' '+str(subfstate))
 		elif re.match(r'Inquiry Data: .*$',line.strip()):
 			model = line.split(':')[1].strip()
 			model = re.sub(' +', ' ', model)
@@ -501,6 +516,7 @@ def returnUnconfDiskInfo(output,controllerid):
 		elif re.match(r'Firmware state: .*$',line.strip()):
 			fstate = line.split(':')[1].strip()
 			subfstate = re.sub('\(.*', '', fstate)
+			dbgprint('Firmware State: '+str(fstate)+' '+str(subfstate))
 		elif re.match(r'Inquiry Data: .*$',line.strip()):
 			model = line.split(':')[1].strip()
 			model = re.sub(' +', ' ', model)
@@ -522,7 +538,7 @@ def returnUnconfDiskInfo(output,controllerid):
 		elif re.match(r'Drive Temperature :.*$',line.strip()):
 			temp = line.split(':')[1].strip()
 			temp = re.sub('\(.*\)', '', temp)
-		# Drive temp is amongst the last few lines matched, decide here if we add information to the table..
+			# Drive temp is amongst the last few lines matched, decide here if we add information to the table..
 			if arrayid == False:
 				if subfstate == 'Unconfigured':
 					dbgprint('Unconfigured Disk: Arrayid: '+str(arrayid)+' DiskId: '+str(diskid)+' '+str(olddiskid)+' '+str(fstate))
@@ -671,7 +687,7 @@ if printarray:
 					arrayinfo[8],
 					arrayinfo[9])
 			dbgprint("Array state : "+arrayinfo[6])
-			if not arrayinfo[6] == 'Optimal':
+			if arrayinfo[6] not in [ 'Optimal', 'N/A' ]:
 				bad = True
 				nagiosbadarray=nagiosbadarray+1
 			else:
@@ -768,14 +784,21 @@ totaldrivenumber = 0
 while controllerid < controllernumber:
 	cmd = '%s -LdPdInfo -a%d -NoLog' % (megaclipath, controllerid)
 	output = getOutput(cmd)
-	totalconfdrivenumber = returnConfDriveNumber(output)
+	totalconfdrivenumber += returnConfDriveNumber(output)
 
 	cmd = '%s -PDGetNum -a%d -NoLog' % (megaclipath, controllerid)
 	output = getOutput(cmd)
-	totaldrivenumber = returnTotalDriveNumber(output)
-	totalunconfdrivenumber += totaldrivenumber - totalconfdrivenumber
+	totaldrivenumber += returnTotalDriveNumber(output)
+
+	cmd = '%s -PDList -a%d -NoLog' % (megaclipath, controllerid)
+	output = getOutput(cmd)
+	totalunconfdrivenumber += returnUnConfDriveNumber(output)
 
 	controllerid += 1
+
+dbgprint('Total Drives in system : ' + str(totaldrivenumber))
+dbgprint('Total Configured Drives : ' + str(totalconfdrivenumber))
+dbgprint('Total Unconfigured Drives : ' + str(totalunconfdrivenumber))
 
 if totalunconfdrivenumber:
 	if not nagiosmode:
@@ -788,7 +811,7 @@ if totalunconfdrivenumber:
 		cmd = '%s -LDInfo -lall -a%d -NoLog' % (megaclipath, controllerid)
 		output = getOutput(cmd)
 		arraynumber = returnArrayNumber(output)
-		#### BUG: -LdPdInfo shows all PD on the adapter, not just for said LD..
+		#### BUG: -LdPdInfo shows all PD on the adapter, not just for given LD..
 		#### while arrayid <= arraynumber:
 
 		cmd = '%s -PDList -a%d -NoLog' % (megaclipath, controllerid)
