@@ -118,11 +118,11 @@ def returnDisksInfo(output,controllerid):
             diskid = re.split('\s:\s',line)[1].strip()
             diskid = re.sub('\(.*\)','',diskid)
             diskid = str(controllerid)+','+diskid
-        if re.match(r'^State\s+: .*$',line.strip()):
+        if re.match(r'^State\s+:.*$',line.strip()):
             state = line.split(':')[1].strip()
-        if re.match(r'^Vendor\s+: .*$',line.strip()):
+        if re.match(r'^Vendor\s+:.*$',line.strip()):
             vendor = line.split(':')[1].strip()
-        if re.match(r'^Model\s+: .*$',line.strip()):
+        if re.match(r'^Model\s+:.*$',line.strip()):
             model = line.split(':')[1].strip()
         if diskid != False and vendor != False and model != False and state != False:
             disks.append([diskid,state,vendor,model])
