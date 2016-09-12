@@ -212,7 +212,12 @@ while controllerid <= controllernumber:
                     bad = True
                 if disk[0] == member:
                     print 'c'+str(controllerid-1)+'u'+str(arrayid)+'d'+str(i)+' | '+disk[2]+' '+disk[3]+' | '+disk[1]
+                    # Remove from disks list
+                    del diskinfo[i]
                 i += 1
+        # Some disks may not be attached to an array (ie: global hot spare)
+        for unattached_disk in diskinfo:
+            print 'c'+str(controllerid-1)+'uX'+'d'+str(i)+' | '+disk[2]+' '+disk[3]+' | '+disk[1]
     controllerid += 1
 
 if bad:
