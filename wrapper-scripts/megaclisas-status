@@ -9,6 +9,8 @@ import os
 import re
 import sys
 import pdb
+if sys.platform == 'win32':
+	import ctypes
 
 def_megaclipath = "/opt/MegaRAID/MegaCli/MegaCli64"
 
@@ -39,10 +41,12 @@ def print_usage():
 
 # We need root access to query
 if __name__ == '__main__':
-	myuid = os.geteuid()
-	if myuid != 0:
-		print '# This script requires Administrator privs (Current EUID: '+str(myuid)+'! e.g :\r'
-		print 'sudo '+str(sys.argv[0])+'\r'
+	try:
+		root_or_admin = os.geteuid() == 0
+	except AttributeError:
+		root_or_admin = ctypes.windll.shell32.IsUserAnAdmin() !=0
+	if not root_or_admin:
+		print '# This script requires Administrator privileges'
 		sys.exit(5)
 
 # Check command line arguments to enable nagios or not
