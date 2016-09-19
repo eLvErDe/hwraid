@@ -8,34 +8,34 @@ from argparse import ArgumentParser
 # Argument parser
 # My own ArgumentParser with single-line stdout output and unknown state Nagios retcode
 class NagiosArgumentParser(ArgumentParser):
-	def error(self, message):
-		sys.stdout.write('UNKNOWN: Bad arguments (see --help): %s\n' % message)
-		sys.exit(3)
+    def error(self, message):
+        sys.stdout.write('UNKNOWN: Bad arguments (see --help): %s\n' % message)
+        sys.exit(3)
 
 def parse_args():
-	parser = NagiosArgumentParser(description='Adaptec AACRAID status script')
-	parser.add_argument('-d', '--disks-only', action="store_true", help='Only disply disk statuses')
-	parser.add_argument('-n', '--nagios',     action="store_true", help='Use Nagios-like output and return code')
-	return parser.parse_args()
+    parser = NagiosArgumentParser(description='Adaptec AACRAID status script')
+    parser.add_argument('-d', '--disks-only', action="store_true", help='Only disply disk statuses')
+    parser.add_argument('-n', '--nagios',     action="store_true", help='Use Nagios-like output and return code')
+    return parser.parse_args()
 
 def which(program):
-	fpath, fname = os.path.split(program)
-	if fpath:
-		if is_exe(program):
-			return program
-	else:
-		# Add some defaults
-		os.environ["PATH"] += os.pathsep + '/usr/StorMan/arcconf'
-		os.environ["PATH"] += os.pathsep + os.path.dirname(os.path.realpath(sys.argv[0]))
-		for path in os.environ["PATH"].split(os.pathsep):
-			path = path.strip('"')
-			exe_file = os.path.join(path, program)
-			if is_exe(exe_file):
-				return exe_file
-	return None
+    fpath, fname = os.path.split(program)
+    if fpath:
+        if is_exe(program):
+            return program
+    else:
+        # Add some defaults
+        os.environ["PATH"] += os.pathsep + '/usr/StorMan/arcconf'
+        os.environ["PATH"] += os.pathsep + os.path.dirname(os.path.realpath(sys.argv[0]))
+        for path in os.environ["PATH"].split(os.pathsep):
+            path = path.strip('"')
+            exe_file = os.path.join(path, program)
+            if is_exe(exe_file):
+                return exe_file
+    return None
 
 def is_exe(fpath):
-	return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+    return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
 
 # Get command output
 def getOutput(cmd):
@@ -150,33 +150,42 @@ def returnDisksInfo(output,controllerid):
 
 config = parse_args()
 if config.disks_only:
-	printarray = False
-	printcontroller = False
+    printarray = False
+    printcontroller = False
 else:
-	printarray = True
-	printcontroller = True
+    printarray = True
+    printcontroller = True
+
+nagiosoutput=''
+nagiosgoodctrl = 0
+nagiosbadctrl = 0
+nagiosctrlbadarray = 0
+nagiosgoodarray = 0
+nagiosbadarray = 0
+nagiosgooddisk = 0
+nagiosbaddisk = 0
 
 bad = False
 
 # Find arcconf
 for arcconfbin in "arcconf","arcconf.exe":
-	arcconfpath = which(arcconfbin)
-	if (arcconfpath != None):
-		break
+    arcconfpath = which(arcconfbin)
+    if (arcconfpath != None):
+        break
 
 # Check binary exists (and +x), if not print an error message
 if (arcconfpath != None):
-	if is_exe(arcconfpath):
-		pass
-	else:
-		if nagiosmode:
-			print 'UNKNOWN - Cannot find '+arcconfpath
-		else:
-			print 'Cannot find ' + arcconfpath + 'in your PATH. Please install it.'
-		sys.exit(3)
+    if is_exe(arcconfpath):
+        pass
+    else:
+        if config.nagios:
+            print 'UNKNOWN - Cannot find '+arcconfpath
+        else:
+            print 'Cannot find ' + arcconfpath + 'in your PATH. Please install it.'
+        sys.exit(3)
 else:
-	print 'Cannot find "arcconf, "arcconf.exe" in your PATH. Please install it.'
-	sys.exit(3)
+    print 'Cannot find "arcconf, "arcconf.exe" in your PATH. Please install it.'
+    sys.exit(3)
 
 
 cmd = '"%s" GETVERSION' % arcconfpath
