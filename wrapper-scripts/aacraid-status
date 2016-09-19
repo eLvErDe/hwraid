@@ -3,27 +3,43 @@
 import os
 import re
 import sys
+from argparse import ArgumentParser
 
-if len(sys.argv) > 2:
-    print 'Usage: aacraid-status [-d]'
-    sys.exit(1)
+# Argument parser
+# My own ArgumentParser with single-line stdout output and unknown state Nagios retcode
+class NagiosArgumentParser(ArgumentParser):
+	def error(self, message):
+		sys.stdout.write('UNKNOWN: Bad arguments (see --help): %s\n' % message)
+		sys.exit(3)
 
-printarray = True
-printcontroller = True
+def parse_args():
+	parser = NagiosArgumentParser(description='Adaptec AACRAID status script')
+	parser.add_argument('-d', '--disks-only', action="store_true", help='Only disply disk statuses')
+	parser.add_argument('-n', '--nagios',     action="store_true", help='Use Nagios-like output and return code')
+	return parser.parse_args()
 
-bad = False
+def which(program):
+	fpath, fname = os.path.split(program)
+	if fpath:
+		if is_exe(program):
+			return program
+	else:
+		# Add some defaults
+		os.environ["PATH"] += os.pathsep + '/usr/StorMan/arcconf'
+		os.environ["PATH"] += os.pathsep + os.path.dirname(os.path.realpath(sys.argv[0]))
+		for path in os.environ["PATH"].split(os.pathsep):
+			path = path.strip('"')
+			exe_file = os.path.join(path, program)
+			if is_exe(exe_file):
+				return exe_file
+	return None
 
-if len(sys.argv) > 1:
-    if sys.argv[1] == '-d':
-        printarray = False
-        printcontroller = False
-    else:
-        print 'Usage: aacraid-status [-d]'
-        sys.exit(1)
+def is_exe(fpath):
+	return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
 
 # Get command output
 def getOutput(cmd):
-    output = os.popen(cmd+' 2>/dev/null')
+    output = os.popen('%s 2>%s' % (cmd, os.devnull))
     lines = []
     for line in output:
         if not re.match(r'^$',line.strip()):
@@ -132,7 +148,38 @@ def returnDisksInfo(output,controllerid):
             state = False
     return disks
 
-cmd = '/usr/sbin/arcconf GETVERSION'
+config = parse_args()
+if config.disks_only:
+	printarray = False
+	printcontroller = False
+else:
+	printarray = True
+	printcontroller = True
+
+bad = False
+
+# Find arcconf
+for arcconfbin in "arcconf","arcconf.exe":
+	arcconfpath = which(arcconfbin)
+	if (arcconfpath != None):
+		break
+
+# Check binary exists (and +x), if not print an error message
+if (arcconfpath != None):
+	if is_exe(arcconfpath):
+		pass
+	else:
+		if nagiosmode:
+			print 'UNKNOWN - Cannot find '+arcconfpath
+		else:
+			print 'Cannot find ' + arcconfpath + 'in your PATH. Please install it.'
+		sys.exit(3)
+else:
+	print 'Cannot find "arcconf, "arcconf.exe" in your PATH. Please install it.'
+	sys.exit(3)
+
+
+cmd = '"%s" GETVERSION' % arcconfpath
 output = getOutput(cmd)
 controllernumber = returnControllerNumber(output)
 
@@ -142,7 +189,7 @@ if printcontroller:
     print '-- ID | Model | Status'
     controllerid = 1
     while controllerid <= controllernumber:
-        cmd = '/usr/sbin/arcconf GETCONFIG '+str(controllerid)
+        cmd = '"%s" GETCONFIG %d' % (arcconfpath, controllerid)
         output = getOutput(cmd)
         controllermodel = returnControllerModel(output)
         controllerstatus = returnControllerStatus(output)
@@ -159,16 +206,16 @@ if printarray:
     print '-- ID | Type | Size | Status | Task | Progress'
     while controllerid <= controllernumber:
         arrayid = 0
-        cmd = '/usr/sbin/arcconf GETCONFIG '+str(controllerid)
+        cmd = '"%s" GETCONFIG %s' % (arcconfpath, controllerid)
         output = getOutput(cmd)
         arrayids = returnArrayIds(output)
         for arrayid in arrayids:
-            cmd = '/usr/sbin/arcconf GETCONFIG '+str(controllerid)+' LD '+str(arrayid)
+            cmd = '"%s" GETCONFIG %s LD %s' % (arcconfpath, controllerid, arrayid)
             output = getOutput(cmd)
             arrayinfo = returnArrayInfo(output)
             if arrayinfo[1] != 'Optimal':
                 bad = True
-            cmd = '/usr/sbin/arcconf GETSTATUS '+str(controllerid)
+            cmd = '"%s" GETSTATUS %s', (arcconfpath, controllerid)
             output = getOutput(cmd)
             tasksinfo = returnControllerTasks(output)
             done = False
@@ -195,14 +242,14 @@ print '-- Disks informations'
 print '-- ID | Model | Status'
 while controllerid <= controllernumber:
     arrayid = 0
-    cmd = '/usr/sbin/arcconf GETCONFIG '+str(controllerid)
+    cmd = '"%s" GETCONFIG %s' % (arcconfpath, controllerid)
     output = getOutput(cmd)
     arrayids = returnArrayIds(output)
     for arrayid in arrayids:
-        cmd = '/usr/sbin/arcconf GETCONFIG '+str(controllerid)+' LD '+str(arrayid)
+        cmd = '"%s" GETCONFIG %s LD %s' % (arcconfpath, controllerid, arrayid)
         output = getOutput(cmd)
         arrayinfo = returnArrayInfo(output)
-        cmd = '/usr/sbin/arcconf GETCONFIG '+str(controllerid)+' PD'
+        cmd = '"%s" GETCONFIG %d PD' % (arcconfpath, controllerid)
         output = getOutput(cmd)
         diskinfo = returnDisksInfo(output,controllerid)
         for member in arrayinfo[3]:
