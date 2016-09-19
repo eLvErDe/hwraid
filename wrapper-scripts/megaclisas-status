@@ -91,7 +91,7 @@ def which(program):
 	return None
 
 # Find MegaCli
-for megabin in "MegaCli64","MegaCli","megacli":
+for megabin in "MegaCli64","MegaCli","megacli", "MegaCli.exe":
 	dbgprint ('Looking for '+str(megabin)+' in PATH next..')
 	megaclipath = which(megabin)
 	if (megaclipath != None):
@@ -109,7 +109,7 @@ if (megaclipath != None):
 			print 'Cannot find ' + megaclipath + 'in your PATH. Please install it.'
 		sys.exit(3)
 else:
-	print 'Cannot find "MegaCli64","MegaCli" or "megacli" in your PATH. Please install it.'
+	print 'Cannot find "MegaCli64","MegaCli" or "megacli" or "MegaCli.exe" in your PATH. Please install it.'
 	sys.exit(3)
 
 
