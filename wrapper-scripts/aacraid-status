@@ -194,8 +194,9 @@ controllernumber = returnControllerNumber(output)
 
 # List controllers
 if printcontroller:
-    print '-- Controller informations --'
-    print '-- ID | Model | Status'
+    if not config.nagios:
+        print '-- Controller informations --'
+        print '-- ID | Model | Status'
     controllerid = 1
     while controllerid <= controllernumber:
         cmd = '"%s" GETCONFIG %d' % (arcconfpath, controllerid)
@@ -204,15 +205,21 @@ if printcontroller:
         controllerstatus = returnControllerStatus(output)
         if controllerstatus != 'Optimal':
             bad = True
-        print 'c'+str(controllerid-1)+' | '+controllermodel+' | '+controllerstatus
+            nagiosbadctrl += 1
+        else:
+            nagiosgoodctrl += 1
+        if not config.nagios:
+            print 'c'+str(controllerid-1)+' | '+controllermodel+' | '+controllerstatus
         controllerid += 1
-    print ''
+        if not config.nagios:
+            print ''
 
 # List arrays
 if printarray:
     controllerid = 1
-    print '-- Arrays informations --'
-    print '-- ID | Type | Size | Status | Task | Progress'
+    if not config.nagios:
+        print '-- Arrays informations --'
+        print '-- ID | Type | Size | Status | Task | Progress'
     while controllerid <= controllernumber:
         arrayid = 0
         cmd = '"%s" GETCONFIG %s' % (arcconfpath, controllerid)
@@ -223,7 +230,10 @@ if printarray:
             output = getOutput(cmd)
             arrayinfo = returnArrayInfo(output)
             if arrayinfo[1] != 'Optimal':
+                nagiosbadarray += 1
                 bad = True
+            else:
+                nagiosgoodarray += 1
             cmd = '"%s" GETSTATUS %s', (arcconfpath, controllerid)
             output = getOutput(cmd)
             tasksinfo = returnControllerTasks(output)
@@ -237,18 +247,22 @@ if printarray:
                 raidtype = arrayinfo[0]
             for tasks in tasksinfo:
                 if int(tasks[0]) == int(arrayid):
-                    print 'c'+str(controllerid-1)+'u'+str(arrayid)+' | '+raidtype+' | '+arrayinfo[2]+'G | '+arrayinfo[1]+' | '+tasks[1]+' | '+tasks[2]+'%'
+                    if not config.nagios:
+                        print 'c'+str(controllerid-1)+'u'+str(arrayid)+' | '+raidtype+' | '+arrayinfo[2]+'G | '+arrayinfo[1]+' | '+tasks[1]+' | '+tasks[2]+'%'
                     done = True
                     break
             if done == False:
-                print 'c'+str(controllerid-1)+'u'+str(arrayid)+' | '+raidtype+' | '+arrayinfo[2]+'G | '+arrayinfo[1]
+                if not config.nagios:
+                    print 'c'+str(controllerid-1)+'u'+str(arrayid)+' | '+raidtype+' | '+arrayinfo[2]+'G | '+arrayinfo[1]
         controllerid += 1
-    print ''
+    if not config.nagios:
+        print ''
 
 # List disks
 controllerid = 1
-print '-- Disks informations'
-print '-- ID | Model | Status'
+if not config.nagios:
+    print '-- Disks informations'
+    print '-- ID | Model | Status'
 while controllerid <= controllernumber:
     arrayid = 0
     cmd = '"%s" GETCONFIG %s' % (arcconfpath, controllerid)
@@ -264,19 +278,31 @@ while controllerid <= controllernumber:
         for member in arrayinfo[3]:
             i = 0
             for disk in diskinfo:
-                if disk[1] != 'Online' and disk[1] != 'Hot Spare' and disk[1] != 'Ready':
+
+                if disk[1] != 'Online' and disk[1] != 'Hot Spare' and disk[1] != 'Ready' and disk[1] != 'Global Hot-Spare':
                     bad = True
+                    nagiosbaddisk += 1
+                else:
+                    nagiosgooddisk += 1
+
                 if disk[0] == member:
-                    print 'c'+str(controllerid-1)+'u'+str(arrayid)+'d'+str(i)+' | '+disk[2]+' '+disk[3]+' | '+disk[1]
-                    # Remove from disks list
-                    del diskinfo[i]
+                    if not config.nagios:
+                        print 'c'+str(controllerid-1)+'u'+str(arrayid)+'d'+str(i)+' | '+disk[2]+' '+disk[3]+' | '+disk[1]
+                # Some disks may not be attached to an array (ie: global hot spare)
+                else:
+                    if not config.nagios:
+                        print 'c'+str(controllerid-1)+'uX'+'d'+str(i)+' | '+disk[2]+' '+disk[3]+' | '+disk[1]
                 i += 1
-        # Some disks may not be attached to an array (ie: global hot spare)
-        for unattached_disk in diskinfo:
-            print 'c'+str(controllerid-1)+'uX'+'d'+str(i)+' | '+disk[2]+' '+disk[3]+' | '+disk[1]
     controllerid += 1
 
-if bad:
-    print '\nThere is at least one disk/array in a NOT OPTIMAL state.'
-    print '\nUse "arcconf GETCONFIG [1-9]" to get details.'
-    sys.exit(1)
+if config.nagios:
+    if bad:
+        print('RAID ERROR - Controllers OK:%d Bad:%d - Arrays OK:%d Bad:%d - Disks OK:%d Bad:%d' % (nagiosgoodctrl, nagiosbadctrl, nagiosgoodarray, nagiosbadarray, nagiosgooddisk, nagiosbaddisk))
+        sys.exit(2)
+    else:
+        print('RAID OK - Controllers OK:%d Bad:%d - Arrays OK:%d Bad:%d - Disks OK:%d Bad:%d' % (nagiosgoodctrl, nagiosbadctrl, nagiosgoodarray, nagiosbadarray, nagiosgooddisk, nagiosbaddisk))
+else:
+    if bad:
+        print '\nThere is at least one disk/array in a NOT OPTIMAL state.'
+        print '\nUse "arcconf GETCONFIG [1-9]" to get details.'
+        sys.exit(1)
