@@ -128,6 +128,7 @@ def returnDisksInfo(output,controllerid):
     vendor = False
     model = False
     state = False
+    serial = False
     disks = []
     for line in output:
         if re.match(r'^Reported Channel,Device(\(T:L\))?\s+: [0-9]+,[0-9]+(\([0-9]+:[0-9]+\))?$',line.strip()):
@@ -140,12 +141,15 @@ def returnDisksInfo(output,controllerid):
             vendor = line.split(':')[1].strip()
         if re.match(r'^Model\s+:.*$',line.strip()):
             model = line.split(':')[1].strip()
-        if diskid != False and vendor != False and model != False and state != False:
-            disks.append([diskid,state,vendor,model])
+        if re.match(r'^Serial number\s+:.*$',line.strip()):
+            serial = line.split(':')[1].strip()
+        if diskid != False and vendor != False and model != False and state != False and serial != False:
+            disks.append([diskid, state, vendor, model, serial])
             diskid = False
             vendor = False
             model = False
             state = False
+            serial = False
     return disks
 
 config = parse_args()
@@ -296,14 +300,14 @@ while controllerid <= controllernumber:
                 # Matched in members of this array
                 if disk[0] == member:
                     if not config.nagios:
-                        print 'c'+str(controllerid-1)+'u'+str(arrayid)+'d'+str(memberid)+' | '+disk[2]+' '+disk[3]+' | '+disk[1]
+                        print 'c'+str(controllerid-1)+'u'+str(arrayid)+'d'+str(memberid)+' | '+disk[2]+' '+disk[3]+' '+disk[4]+' | '+disk[1]
                     array_member = True
                     memberid += 1
 
         # Some disks may not be attached to any array (ie: global hot spare)
         if not array_member:
             if not config.nagios:
-                print 'c'+str(controllerid-1)+'uX'+'d'+str(no_array_disk_id)+' | '+disk[2]+' '+disk[3]+' | '+disk[1]
+                print 'c'+str(controllerid-1)+'uX'+'d'+str(no_array_disk_id)+' | '+disk[2]+' '+disk[3]+' '+disk[4]+' | '+disk[1]
             no_array_disk_id += 1
 
     controllerid += 1
