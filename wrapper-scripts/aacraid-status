@@ -268,31 +268,44 @@ while controllerid <= controllernumber:
     cmd = '"%s" GETCONFIG %s' % (arcconfpath, controllerid)
     output = getOutput(cmd)
     arrayids = returnArrayIds(output)
-    for arrayid in arrayids:
-        cmd = '"%s" GETCONFIG %s LD %s' % (arcconfpath, controllerid, arrayid)
-        output = getOutput(cmd)
-        arrayinfo = returnArrayInfo(output)
-        cmd = '"%s" GETCONFIG %d PD' % (arcconfpath, controllerid)
-        output = getOutput(cmd)
-        diskinfo = returnDisksInfo(output,controllerid)
-        for member in arrayinfo[3]:
-            i = 0
-            for disk in diskinfo:
 
-                if disk[1] != 'Online' and disk[1] != 'Hot Spare' and disk[1] != 'Ready' and disk[1] != 'Global Hot-Spare':
-                    bad = True
-                    nagiosbaddisk += 1
-                else:
-                    nagiosgooddisk += 1
 
+    cmd = '"%s" GETCONFIG %d PD' % (arcconfpath, controllerid)
+    output = getOutput(cmd)
+    diskinfo = returnDisksInfo(output,controllerid)
+    no_array_disk_id = 0
+    for disk in diskinfo:
+
+        # Generic verification no matter is the disk is member of an array or not
+        if disk[1] != 'Online' and disk[1] != 'Hot Spare' and disk[1] != 'Ready' and disk[1] != 'Global Hot-Spare':
+            bad = True
+            nagiosbaddisk += 1
+        else:
+            nagiosgooddisk += 1
+
+        array_member = False
+        for arrayid in arrayids:
+            cmd = '"%s" GETCONFIG %s LD %s' % (arcconfpath, controllerid, arrayid)
+            output = getOutput(cmd)
+            arrayinfo = returnArrayInfo(output)
+
+            # Try to attach current disk to array (loop)
+            memberid = 0
+            for member in arrayinfo[3]:
+
+                # Matched in members of this array
                 if disk[0] == member:
                     if not config.nagios:
-                        print 'c'+str(controllerid-1)+'u'+str(arrayid)+'d'+str(i)+' | '+disk[2]+' '+disk[3]+' | '+disk[1]
-                # Some disks may not be attached to an array (ie: global hot spare)
-                else:
-                    if not config.nagios:
-                        print 'c'+str(controllerid-1)+'uX'+'d'+str(i)+' | '+disk[2]+' '+disk[3]+' | '+disk[1]
-                i += 1
+                        print 'c'+str(controllerid-1)+'u'+str(arrayid)+'d'+str(memberid)+' | '+disk[2]+' '+disk[3]+' | '+disk[1]
+                    array_member = True
+                    memberid += 1
+
+        # Some disks may not be attached to any array (ie: global hot spare)
+        if not array_member:
+            if not config.nagios:
+                print 'c'+str(controllerid-1)+'uX'+'d'+str(no_array_disk_id)+' | '+disk[2]+' '+disk[3]+' | '+disk[1]
+            no_array_disk_id += 1
+
     controllerid += 1
 
 if config.nagios:
