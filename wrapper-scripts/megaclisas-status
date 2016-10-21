@@ -26,6 +26,7 @@ nagiosbaddisk = 0
 printarray = True
 printcontroller = True
 debugmode = False
+notempmode = False
 totaldrivenumber = 0
 
 # Hardcode a max of 16 HBA and 128 LDs for now. LDTable must be initialized to accept populating list of LD's into each ctlr's list.
@@ -39,7 +40,7 @@ Outputs = {}
 
 # Startup
 def print_usage():
-	print 'Usage: megaraid-status [--nagios|--debug]'
+	print 'Usage: megaraid-status [--nagios|--debug|--notemp]'
 
 # We need root access to query
 if __name__ == '__main__':
@@ -61,6 +62,8 @@ if len(sys.argv) > 1:
 		nagiosmode = True
 	elif sys.argv[1] == '--debug':
 		debugmode = True
+	elif sys.argv[1] == '--notemp':
+		notempmode = True
 	else:
 		print_usage()
 		sys.exit(1)
@@ -192,14 +195,17 @@ def returnFirmwareVersion(output):
 def returnROCTemp(output):
 	ROCtemp = ''
 	tmpstr = ''
-	for line in output:
-		if re.match(r'^ROC temperature :.*$',line.strip()):
-			tmpstr = line.split(':')[1].strip()
-			ROCtemp = re.sub(' +.*$', '', tmpstr)
-	if ( ROCtemp != '' ):
-		return str(str(ROCtemp)+'C')
-	else:
+	if (notempmode):
 		return str('N/A')
+	else:
+		for line in output:
+			if re.match(r'^ROC temperature :.*$',line.strip()):
+				tmpstr = line.split(':')[1].strip()
+				ROCtemp = re.sub(' +.*$', '', tmpstr)
+		if ( ROCtemp != '' ):
+			return str(str(ROCtemp)+'C')
+		else:
+			return str('N/A')
 
 def returnBBUPresence(output):
 	BBU = ''
@@ -453,9 +459,12 @@ def returnDiskInfo(output,controllerid):
 		elif re.match(r'Device Speed: .*$',line.strip()):
 			speed = line.split(':')[1].strip()
 		elif re.match(r'Drive Temperature :.*$',line.strip()):
-		# Drive temp is amongst the last few lines matched, decide here if we add information to the table..
-			temp = line.split(':')[1].strip()
-			temp = re.sub(' \(.*\)', '', temp)
+			if (notempmode):
+				temp = 'N/A'
+			else:
+				# Drive temp is amongst the last few lines matched, decide here if we add information to the table..
+				temp = line.split(':')[1].strip()
+				temp = re.sub(' \(.*\)', '', temp)
 			if model != 'Unknown':
 				dbgprint('Disk Info: '+str(arrayid)+' '+str(diskid)+' '+str(oldenclid))
 				if subfstate == 'Rebuild':
