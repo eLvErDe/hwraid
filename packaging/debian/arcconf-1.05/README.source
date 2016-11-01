@@ -1,0 +1,14 @@
+arcconf-1.05 (1:1.05.20942) unstable; urgency=low
+
+  Sources have been repacked from the following upstream archive:
+
+    de7e676bdd9c04db8125d04086d9efd6  arcconf_v1_5_20942.zip
+
+  Upstream licence has been reformated using the following command:
+
+    cat /tmp/1 | sed 's!$!\n!' | \
+    sed "s|Bureau of Industry and Security's Lists to Check|http://www.bis.doc.gov/ComplianceAndEnforcement/ListsToCheck.htm|" | \
+    awk 'NR==1 || NF || prvNF {print} {prvNF=NF}' | sed 's!^$!.!' | \
+    vim - -c '%!fold -s -w76' -c '%s/^/ /'
+
+ -- Reto Kaiser (njam) <reto@cargomedia.ch>  Thu Mar 20 14:32:12 UTC 2014
