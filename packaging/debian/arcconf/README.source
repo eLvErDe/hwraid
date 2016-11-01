@@ -1,8 +1,8 @@
-arcconf-linux-32bit (1.5.20942) unstable; urgency=low
+arcconf-1.08 (1:1.08.21375) unstable; urgency=low
 
   Sources have been repacked from the following upstream archive:
 
-    de7e676bdd9c04db8125d04086d9efd6  arcconf_v1_5_20942.zip
+    7a697a7c8b99b66312116d4249ab1922  arcconf_v1_8_21375.zip
 
   Upstream licence has been reformated using the following command:
 

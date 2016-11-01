@@ -13,6 +13,14 @@ install:
 	dh_testroot
 	dh_clean -k
 	dh_installdirs
+ifeq ($(DEB_BUILD_ARCH),amd64)
+	install -D -m 0755 linux_x64/cmdline/arcconf \
+			   debian/arcconf/usr/sbin/arcconf
+endif
+ifeq ($(DEB_BUILD_ARCH),i386)
+	install -D -m 0755 linux/cmdline/arcconf \
+			   debian/arcconf/usr/sbin/arcconf
+endif
 	dh_install
 
 binary-indep: build install

@@ -1,5 +1,5 @@
-arcconf-32bit (1:1.5.20942) unstable; urgency=low
+arcconf (1:1.08.21375) unstable; urgency=low
 
   * New upstream release.
 
- -- Reto Kaiser (njam) <reto@cargomedia.ch>  Thu, 20 Mar 2014 09:00:00 +0200
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Thu, 20 Mar 2014 09:00:00 +0200
