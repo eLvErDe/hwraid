@@ -1,6 +1,6 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: arcconf
-Source: http://storage.microsemi.com/en-us/speed/raid/storage_manager/arcconf_v1_8_21375_zip.php
+Source: http://storage.microsemi.com/en-us/speed/raid/storage_manager/arcconf_v1_7_21229_zip.php
 
 Files: debian/*
 Copyright: Copyright (C) 2016 Adam Cecile (Le_Vert) <gandalf@le-vert.net>
