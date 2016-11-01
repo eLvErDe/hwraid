@@ -1,3 +1,10 @@
+aacraid-status (0.21) unstable; urgency=medium
+
+  * Simple volume drives now handled correctly.
+  * Various code improvments.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Tue, 01 Nov 2016 16:56:39 +0100
+
 aacraid-status (0.20) unstable; urgency=low
 
   * There's at least on more way arcconf can print disk position
