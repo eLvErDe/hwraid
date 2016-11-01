@@ -9,8 +9,8 @@ Package: arcconf
 Architecture: amd64 i386
 Depends: ${misc:Depends}, ${shlibs:Depends}
 Description: Adaptec ARCCONF command line tool
- .
  Compatible Products:
+ .
  Adaptec RAID 6405
  Adaptec RAID 6405E
  Adaptec RAID 6405T
