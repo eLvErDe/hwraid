@@ -1,0 +1,43 @@
+#!/usr/bin/make -f
+
+# Quilt patch system
+include /usr/share/quilt/quilt.make
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+clean: unpatch
+	dh_testdir
+	dh_testroot
+	dh_clean
+
+install:
+	dh_testdir
+	dh_testroot
+	dh_clean -k
+	dh_installdirs
+	test -e arcconf_v1_5_20942.zip || wget http://download.adaptec.com/raid/storage_manager/arcconf_v1_5_20942.zip
+	unzip -o arcconf_v1_5_20942.zip
+	install -D -m 755 linux_x64/cmdline/arcconf $(CURDIR)/cmdline/arcconf
+	dh_install
+
+binary-indep: build install
+binary-arch: build install
+	dh_testdir
+	dh_testroot
+	dh_installchangelogs
+	dh_installdocs
+	dh_installinit -Nadaptec-universal-storage-snmpd
+	# Priority 21, so it will start after snmpd
+	dh_installinit -padaptec-universal-storage-snmpd -- defaults 21
+	dh_link
+	dh_compress
+	dh_fixperms
+	dh_strip
+	dh_installdeb
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary: binary-arch binary-indep
+.PHONY: build clean binary-indep binary-arch binary install
