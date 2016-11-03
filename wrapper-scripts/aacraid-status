@@ -95,13 +95,6 @@ def returnArrayInfo(output):
                 members.append('?,?')
             else:
                 members.append(splitter.split(line)[1].strip('(').strip(')'))
-        if re.match(r'^Group [0-9], Segment [0-9]+\s+: .*$',line.strip()):
-            splitter = re.compile('(\(.*\))')
-            line = line.split(':')[1]
-            if re.match(r'^ Missing',line):
-                members.append('?,?')
-            else:
-                members.append(splitter.split(line)[1].strip('(').strip(')'))
     return [type,status,size,members]
 
 def returnControllerTasks(output):
