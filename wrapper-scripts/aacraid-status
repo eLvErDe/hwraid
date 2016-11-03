@@ -64,8 +64,8 @@ def returnControllerStatus(output):
 def returnArrayIds(output):
     ids = []
     for line in output:
-        if re.match(r'^Logical device number [0-9]+$',line.strip()):
-            ids.append(line.strip('Logical device number').strip())
+        if re.match(r'^Logical [Dd]evice number [0-9]+$',line.strip()):
+            ids.append(re.sub(r'^Logical [Dd]evice number', line).strip())
     return ids
 
 def returnArrayInfo(output):
@@ -75,7 +75,7 @@ def returnArrayInfo(output):
         # (a disk connected to the card, not hotspare, not part of any array)
         if re.match(r'^RAID level\s+: .+$',line.strip()):
             type = line.split(':')[1].strip()
-        if re.match(r'^Status of logical device\s+: .*$',line.strip()):
+        if re.match(r'^Status of logical [Dd]evice\s+: .*$',line.strip()):
             status = line.split(':')[1].strip()
         if re.match(r'^Size\s+: [0-9]+ MB$',line.strip()):
             size = str(int(line.strip('MB').split(':')[1].strip()) / 1000)
