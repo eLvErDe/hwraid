@@ -68,7 +68,7 @@ def returnArrayIds(output):
             ids.append(re.sub(r'^Logical [Dd]evice number', line).strip())
     return ids
 
-def returnArrayInfo(output):
+def returnArrayInfo(output, ctrl_id='?'):
     members = []
     for line in output:
         # RAID level may be either N or Simple_Volume
@@ -79,22 +79,55 @@ def returnArrayInfo(output):
             status = line.split(':')[1].strip()
         if re.match(r'^Size\s+: [0-9]+ MB$',line.strip()):
             size = str(int(line.strip('MB').split(':')[1].strip()) / 1000)
+
         if re.match(r'^(Group\s[0-9]+,\s)?Segment [0-9]+\s+: .*$',line.strip()):
-            splitter = re.compile('(\(.*\))')
-            # The line can be either
-            # Segment 0 : Present (Controller:1,Enclosure:0,Slot:0) JPW9J0N00RWMUV
-            # Or
-            # Segment 0 : Present (Controller:1,Channel:0,Device:0) S13PJ1CQ719255
-            # Or
-            # Segment 0 : Present (Controller:1,Connector:1,Device:2) 9QJ7D0MJ
-            line = re.sub('Controller:','',line)
-            line = re.sub('(Channel|Enclosure|Connector):','',line)
-            line = re.sub('(Device|Slot):','',line)
-            line = line.split(':')[1]
-            if re.match(r'^ Missing',line):
-                members.append('?,?')
+
+            # The line can be either (arcconf 1.x)
+            # Group 0, Segment 0 : Present (Controller:1,Enclosure:0,Slot:0) JPW9J0N00RWMUV
+            # Group 0, Segment 0 : Present (Controller:1,Channel:0,Device:0) S13PJ1CQ719255
+            # Group 0; Segment 0 : Present (Controller:1,Connector:1,Device:2) 9QJ7D0MJ
+            #
+            # Or (arcconf 2.x)
+            # Group 0, Segment 0 : Present (953869MB, SATA, HDD, Connector:1, Device:1)       JPW9K0HZ216NJL'
+
+            # Cut on : and re-join everything except first part
+            line = ':'.join(line.split(':')[1:]).strip()
+            # Extract everything between ()
+            device_state = re.search('\s+\((.*)\)\s+', line).group(1)
+            # Coma separated
+            device_attrs = device_state.split(',')
+            device_attrs = [ x.strip() for x in device_attrs ]
+            print(device_attrs)
+            # Some magic here...
+            # Strip out from the list element not matching Xyz:12
+            # Split on column: now we have and array of arrays like [['Controller', '1'], ['Connector', '1'], ['Device', '0']]
+            # Casting to dict will turn Controller as key and 1 as value
+            device_attrs = dict([ x.split(':') for x in device_attrs if re.match('\w+:\d+', x) ])
+
+            # Extract id for this device
+            if 'Controller' in device_attrs:
+                controller_id = device_attrs['Controller']
             else:
-                members.append(splitter.split(line)[1].strip('(').strip(')'))
+                controller_id = ctrl_id
+
+            if 'Channel' in device_attrs:
+                channel_id = device_attrs['Channel']
+            elif 'Enclosure' in device_attrs:
+                channel_id = device_attrs['Enclosure']
+            elif 'Connector' in device_attrs:
+                channel_id = device_attrs['Connector']
+            else:
+                channel_id = '?'
+
+            if 'Device' in device_attrs:
+                device_id = device_attrs['Device']
+            elif 'Slot' in device_attrs:
+                device_id = device_attrs['Slot']
+            else:
+                device_id = '?'
+
+            members.append('%s,%s,%s' % (controller_id, channel_id, device_id))
+
     return [type,status,size,members]
 
 def returnControllerTasks(output):
@@ -225,7 +258,7 @@ if printarray:
         for arrayid in arrayids:
             cmd = '"%s" GETCONFIG %s LD %s' % (arcconfpath, controllerid, arrayid)
             output = getOutput(cmd)
-            arrayinfo = returnArrayInfo(output)
+            arrayinfo = returnArrayInfo(output, ctrl_id=controllerid)
             if arrayinfo[1] != 'Optimal':
                 nagiosbadarray += 1
                 bad = True
@@ -284,7 +317,7 @@ while controllerid <= controllernumber:
         for arrayid in arrayids:
             cmd = '"%s" GETCONFIG %s LD %s' % (arcconfpath, controllerid, arrayid)
             output = getOutput(cmd)
-            arrayinfo = returnArrayInfo(output)
+            arrayinfo = returnArrayInfo(output, ctrl_id=controllerid)
 
             # Try to attach current disk to array (loop)
             memberid = 0
