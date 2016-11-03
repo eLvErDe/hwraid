@@ -1,0 +1,44 @@
+#!/usr/bin/make -f
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+clean:
+	dh_testdir
+	dh_testroot
+	dh_clean
+
+install:
+	dh_testdir
+	dh_testroot
+	dh_clean -k
+	dh_installdirs
+ifeq ($(DEB_BUILD_ARCH),amd64)
+	install -D -m 0755 linux_x64/cmdline/arcconf \
+			   debian/arcconf/usr/sbin/arcconf
+endif
+#ifeq ($(DEB_BUILD_ARCH),i386)
+#	install -D -m 0755 linux/cmdline/arcconf \
+#			   debian/arcconf/usr/sbin/arcconf
+#endif
+	dh_install
+
+binary-indep: build install
+binary-arch: build install
+	dh_testdir
+	dh_testroot
+	dh_installchangelogs
+	dh_installdocs
+	dh_link
+	dh_compress
+	dh_fixperms
+	dh_makeshlibs
+	dh_strip
+	dh_installdeb
+	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary: binary-arch binary-indep
+.PHONY: build clean binary-indep binary-arch binary install

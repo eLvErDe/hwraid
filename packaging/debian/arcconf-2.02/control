@@ -1,0 +1,43 @@
+Source: arcconf-2.02
+Section: admin
+Priority: optional
+Maintainer: Adam Cécile (Le_Vert) <gandalf@le-vert.net>
+Build-Depends: debhelper (>= 5)
+Standards-Version: 3.9.3
+
+Package: arcconf
+Architecture: amd64
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: Adaptec ARCCONF command line tool
+ Compatible Products:
+ .
+ Adaptec RAID 6405E
+ Adaptec RAID 6405T
+ Adaptec RAID 6445
+ Adaptec RAID 6805
+ Adaptec RAID 6805E
+ Adaptec RAID 6805Q
+ Adaptec RAID 6805T
+ Adaptec RAID 6805TQ
+ Adaptec RAID 7805
+ Adaptec RAID 7805Q
+ Adaptec RAID 71605
+ Adaptec RAID 71605E
+ Adaptec RAID 71605Q
+ Adaptec RAID 71685
+ Adaptec RAID 72405
+ Adaptec RAID 78165
+ Adaptec RAID 8405
+ Adaptec RAID 8405E
+ Adaptec RAID 8805
+ Adaptec RAID 8805E
+ Adaptec RAID 8885
+ Adaptec RAID 8885Q
+ Adaptec RAID 81605Z
+ Adaptec RAID 81605ZQ
+ PMC Adaptec HBA 1000-8e
+ PMC Adaptec HBA 1000-8i
+ PMC Adaptec HBA 1000-8i8e
+ PMC Adaptec HBA 1000-16e
+ PMC Adaptec HBA 1000-16i
+ Adaptec SAS Expander 82885T
