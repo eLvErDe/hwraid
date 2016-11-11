@@ -69,18 +69,23 @@ def returnArrayIds(output):
     return ids
 
 def returnArrayInfo(output, ctrl_id='?'):
+
+    # For testing purpose
+    #with open('/tmp/output') as f:
+    #    output = f.read().splitlines()
+
     members = []
     for line in output:
         # RAID level may be either N or Simple_Volume
         # (a disk connected to the card, not hotspare, not part of any array)
         if re.match(r'^RAID level\s+: .+$',line.strip()):
             type = line.split(':')[1].strip()
-        if re.match(r'^Status of logical [Dd]evice\s+: .*$',line.strip()):
+        if re.match(r'^Status of [Ll]ogical [Dd]evice\s+: .*$',line.strip()):
             status = line.split(':')[1].strip()
         if re.match(r'^Size\s+: [0-9]+ MB$',line.strip()):
             size = str(int(line.strip('MB').split(':')[1].strip()) / 1000)
 
-        if re.match(r'^(Group\s[0-9]+,\s)?Segment [0-9]+\s+: .*$',line.strip()):
+        if re.match(r'^(Group\s[0-9]+,\s)?Segment\s[0-9]+\s+: .*$',line.strip()):
 
             # The line can be either (arcconf 1.x)
             # Group 0, Segment 0 : Present (Controller:1,Enclosure:0,Slot:0) JPW9J0N00RWMUV
@@ -97,7 +102,6 @@ def returnArrayInfo(output, ctrl_id='?'):
             # Coma separated
             device_attrs = device_state.split(',')
             device_attrs = [ x.strip() for x in device_attrs ]
-            print(device_attrs)
             # Some magic here...
             # Strip out from the list element not matching Xyz:12
             # Split on column: now we have and array of arrays like [['Controller', '1'], ['Connector', '1'], ['Device', '0']]
