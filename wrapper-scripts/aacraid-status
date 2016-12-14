@@ -225,6 +225,9 @@ else:
 cmd = '"%s" GETVERSION' % arcconfpath
 output = getOutput(cmd)
 controllernumber = returnControllerNumber(output)
+if not controllernumber:
+    print '"arcconf" returned no controller, are you sure to have an Adaptec adapter?'
+    sys.exit(3)
 
 # List controllers
 if printcontroller:
