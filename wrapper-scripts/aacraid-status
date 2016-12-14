@@ -268,7 +268,7 @@ if printarray:
                 bad = True
             else:
                 nagiosgoodarray += 1
-            cmd = '"%s" GETSTATUS %s', (arcconfpath, controllerid)
+            cmd = '"%s" GETSTATUS %s' % (arcconfpath, controllerid)
             output = getOutput(cmd)
             tasksinfo = returnControllerTasks(output)
             done = False
