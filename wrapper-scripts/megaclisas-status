@@ -33,7 +33,7 @@ totaldrivenumber = 0
 MaxNumHBA = 16
 MaxNumLD = 128
 LDTable = [ [] * MaxNumHBA for i in range(MaxNumLD) ]
-NestedLDTable = [[False for i in range(MaxNumHBA)] for j in range(MaxNumLD)]
+NestedLDTable = [[False for i in range(MaxNumLD)] for j in range(MaxNumHBA)]
 
 # Outputs is a 'dict' of all MegaCLI outputs so we can re-use them during loops..
 Outputs = {}
