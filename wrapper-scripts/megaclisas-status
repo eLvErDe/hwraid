@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: megaclisas-status,v 1.69 2017/01/11 17:12:46 root Exp root $
+# $Id: megaclisas-status,v 1.70 2017/03/28 16:02:04 root Exp root $
 #
 # Written by Adam Cecile <gandalf@NOSPAM.le-vert.net>
 # Modified by Vincent S. Cojot <vincent@NOSPAM.cojot.name>
@@ -414,7 +414,7 @@ def returnDiskInfo(output,controllerid):
 		elif re.match(r'Enclosure Device ID: .*$',line.strip()):
 			# We match here early in the analysis so reset the vars if this is a new disk we're reading..
 			oldenclid = enclid
-			enclid = line.split(':')[1].strip()
+			enclid = line.split(':')[1].strip().replace("N/A","")
 			if oldenclid != False:
 				fstate = 'Offline'
 				model = 'Unknown'
@@ -500,7 +500,7 @@ def returnUnconfDiskInfo(output,controllerid):
 		if re.match(r'Enclosure Device ID: .*$',line.strip()):
 		# We match here early in the analysis so reset the vars if this is a new disk we're reading..
 			oldenclid = enclid
-			enclid = line.split(':')[1].strip()
+			enclid = line.split(':')[1].strip().replace("N/A","")
 			if oldenclid != False:
 				arrayid = False
 				fstate = 'Offline'
