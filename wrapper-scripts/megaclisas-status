@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: megaclisas-status,v 1.68 2016/10/21 14:38:56 root Exp root $
+# $Id: megaclisas-status,v 1.71 2017/04/04 18:45:52 root Exp root $
 #
 # Written by Adam Cecile <gandalf@NOSPAM.le-vert.net>
 # Modified by Vincent S. Cojot <vincent@NOSPAM.cojot.name>
@@ -33,7 +33,7 @@ totaldrivenumber = 0
 MaxNumHBA = 16
 MaxNumLD = 128
 LDTable = [ [] * MaxNumHBA for i in range(MaxNumLD) ]
-NestedLDTable = [[False for i in range(MaxNumHBA)] for j in range(MaxNumLD)]
+NestedLDTable = [[False for i in range(MaxNumLD)] for j in range(MaxNumHBA)]
 
 # Outputs is a 'dict' of all MegaCLI outputs so we can re-use them during loops..
 Outputs = {}
@@ -174,6 +174,8 @@ def returnUnConfDriveNumber(output):
 	confdrives = 0
 	for line in output:
 		if re.match(r'^Firmware state: Unconfigured.*$',line.strip()):
+			confdrives += 1
+		if re.match(r'^Firmware state: Hotspare.*$',line.strip()):
 			confdrives += 1
 	return int(confdrives)
 
@@ -414,7 +416,7 @@ def returnDiskInfo(output,controllerid):
 		elif re.match(r'Enclosure Device ID: .*$',line.strip()):
 			# We match here early in the analysis so reset the vars if this is a new disk we're reading..
 			oldenclid = enclid
-			enclid = line.split(':')[1].strip()
+			enclid = line.split(':')[1].strip().replace("N/A","")
 			if oldenclid != False:
 				fstate = 'Offline'
 				model = 'Unknown'
@@ -500,7 +502,7 @@ def returnUnconfDiskInfo(output,controllerid):
 		if re.match(r'Enclosure Device ID: .*$',line.strip()):
 		# We match here early in the analysis so reset the vars if this is a new disk we're reading..
 			oldenclid = enclid
-			enclid = line.split(':')[1].strip()
+			enclid = line.split(':')[1].strip().replace("N/A","")
 			if oldenclid != False:
 				arrayid = False
 				fstate = 'Offline'
