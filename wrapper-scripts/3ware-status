@@ -92,7 +92,11 @@ if not nagiosmode:
     print '-- ID | Model'
     for controller in controllerlist:
         cmd = binarypath+' info '+controller+' model'
-        model = getOutput(cmd)[0].split(' = ')[1].strip()
+        # https://github.com/eLvErDe/hwraid/issues/69
+        try:
+            model = getOutput(cmd)[0].split(' = ')[1].strip()
+        except IndexError:
+            model = 'N/A'
         print controller+' | '+model
     print ''
 
