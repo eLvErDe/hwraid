@@ -547,8 +547,11 @@ def returnUnconfDiskInfo(output,controllerid):
 		elif re.match(r'Device Speed: .*$',line.strip()):
 			speed = line.split(':')[1].strip()
 		elif re.match(r'Drive Temperature :.*$',line.strip()):
-			temp = line.split(':')[1].strip()
-			temp = re.sub('\(.*\)', '', temp)
+			if (notempmode):
+				temp = 'N/A'
+			else:
+				temp = line.split(':')[1].strip()
+				temp = re.sub('\(.*\)', '', temp)
 			# Drive temp is amongst the last few lines matched, decide here if we add information to the table..
 			if arrayid == False:
 				if subfstate == 'Unconfigured':
