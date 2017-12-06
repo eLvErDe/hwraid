@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: megaclisas-status,v 1.71 2017/04/04 18:45:52 root Exp root $
+# $Id: megaclisas-status,v 1.72 2017/12/06 04:50:58 root Exp root $
 #
 # Written by Adam Cecile <gandalf@NOSPAM.le-vert.net>
 # Modified by Vincent S. Cojot <vincent@NOSPAM.cojot.name>
@@ -547,9 +547,12 @@ def returnUnconfDiskInfo(output,controllerid):
 		elif re.match(r'Device Speed: .*$',line.strip()):
 			speed = line.split(':')[1].strip()
 		elif re.match(r'Drive Temperature :.*$',line.strip()):
-			temp = line.split(':')[1].strip()
-			temp = re.sub('\(.*\)', '', temp)
 			# Drive temp is amongst the last few lines matched, decide here if we add information to the table..
+			if (notempmode):
+				temp = 'N/A'
+			else:
+				temp = line.split(':')[1].strip()
+				temp = re.sub('\(.*\)', '', temp)
 			if arrayid == False:
 				if subfstate == 'Unconfigured':
 					dbgprint('Unconfigured Disk: Arrayid: '+str(arrayid)+' DiskId: '+str(diskid)+' '+str(olddiskid)+' '+str(fstate))
