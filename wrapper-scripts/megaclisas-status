@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: megaclisas-status,v 1.72 2017/12/06 04:50:58 root Exp root $
+# $Id: megaclisas-status,v 1.73 2017/12/06 16:08:43 root Exp root $
 #
 # Written by Adam Cecile <gandalf@NOSPAM.le-vert.net>
 # Modified by Vincent S. Cojot <vincent@NOSPAM.cojot.name>
@@ -9,6 +9,7 @@ import os
 import re
 import sys
 import pdb
+import inspect
 if sys.platform == 'win32':
 	import ctypes
 
@@ -70,7 +71,7 @@ if len(sys.argv) > 1:
 # Functions
 def dbgprint(msg):
 	if (debugmode):
-		sys.stderr.write ( str('# DEBUG : '+msg+'\n'))
+		sys.stderr.write ( str('# DEBUG ('+str(inspect.currentframe().f_back.f_lineno)+') : '+msg+'\n'))
 
 def is_exe(fpath):
 	return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
@@ -85,6 +86,8 @@ def which(program):
 		# Add some defaults
 		os.environ["PATH"] += os.pathsep + '/opt/MegaRAID/MegaCli'
 		os.environ["PATH"] += os.pathsep + '/ms/dist/hwmgmt/bin'
+		os.environ["PATH"] += os.pathsep + '/opt/MegaRAID/storcli'
+		os.environ["PATH"] += os.pathsep + '/opt/lsi/storcli'
 		os.environ["PATH"] += os.pathsep + os.path.dirname(os.path.realpath(sys.argv[0]))
 		for path in os.environ["PATH"].split(os.pathsep):
 			dbgprint ('Looking in PATH '+str(path))
@@ -96,7 +99,7 @@ def which(program):
 	return None
 
 # Find MegaCli
-for megabin in "MegaCli64","MegaCli","megacli", "MegaCli.exe":
+for megabin in "MegaCli64","MegaCli","megacli", "MegaCli.exe", "storcli64", "storcli":
 	dbgprint ('Looking for '+str(megabin)+' in PATH next..')
 	megaclipath = which(megabin)
 	if (megaclipath != None):
@@ -556,9 +559,9 @@ def returnUnconfDiskInfo(output,controllerid):
 			if arrayid == False:
 				if subfstate == 'Unconfigured':
 					dbgprint('Unconfigured Disk: Arrayid: '+str(arrayid)+' DiskId: '+str(diskid)+' '+str(olddiskid)+' '+str(fstate))
+					table.append([ mtype, model, dsize, fstate, speed, temp, enclid, slotid, lsidid])
 				elif subfstate == 'Online, Spun Up':
 					dbgprint('Online Disk: Arrayid: '+str(arrayid)+' DiskId: '+str(diskid)+' '+str(olddiskid)+' '+str(fstate))
-				table.append([ mtype, model, dsize, fstate, speed, temp, enclid, slotid, lsidid])
 	return table
 
 cmd = '%s -adpCount -NoLog' % (megaclipath)
