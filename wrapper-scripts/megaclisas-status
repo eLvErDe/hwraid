@@ -86,6 +86,7 @@ def which(program):
 		# Add some defaults
 		os.environ["PATH"] += os.pathsep + '/opt/MegaRAID/MegaCli'
 		os.environ["PATH"] += os.pathsep + '/ms/dist/hwmgmt/bin'
+		os.environ["PATH"] += os.pathsep + '/opt/MegaRAID/perccli'
 		os.environ["PATH"] += os.pathsep + '/opt/MegaRAID/storcli'
 		os.environ["PATH"] += os.pathsep + '/opt/lsi/storcli'
 		os.environ["PATH"] += os.pathsep + os.path.dirname(os.path.realpath(sys.argv[0]))
@@ -99,7 +100,7 @@ def which(program):
 	return None
 
 # Find MegaCli
-for megabin in "MegaCli64","MegaCli","megacli", "MegaCli.exe", "storcli64", "storcli":
+for megabin in "MegaCli64","MegaCli","megacli", "MegaCli.exe", "perccli64", "perccli", "storcli64", "storcli":
 	dbgprint ('Looking for '+str(megabin)+' in PATH next..')
 	megaclipath = which(megabin)
 	if (megaclipath != None):
