@@ -434,6 +434,8 @@ def returnDiskInfo(output,controllerid):
 		elif re.match(r'^(CacheCade )?Virtual (Disk|Drive): [0-9]+.*$',line.strip()):
 			arrayindex += 1
 			arrayid = line.split('(')[0].split(':')[1].strip()
+		elif re.match(r'^Drive.s pos[a-z]*tion: DiskGroup: [0-9]+,.*$',line.strip()):
+			arrayid = line.split(',')[1].split(':')[1].strip()
 		elif re.match(r'PD: [0-9]+ Information.*$',line.strip()):
 			diskid = line.split()[1].strip()
 		elif re.match(r'^Device Id: .*$',line.strip()):
@@ -519,7 +521,7 @@ def returnUnconfDiskInfo(output,controllerid):
 			dsize = line.split(':')[1].strip()
 			dsize = re.sub(' \[.*\.*$', '', dsize)
 			dsize = re.sub('[0-9][0-9] GB', ' Gb', dsize)
-		elif re.match(r'^Drive.s position: DiskGroup: [0-9]+,.*$',line.strip()):
+		elif re.match(r'^Drive.s pos[a-z]*tion: DiskGroup: [0-9]+,.*$',line.strip()):
 			arrayid = line.split(',')[1].split(':')[1].strip()
 		elif re.match(r'^Device Id: [0-9]+.*$',line.strip()):
 			diskid = line.split(':')[1].strip()
