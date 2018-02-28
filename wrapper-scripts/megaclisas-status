@@ -101,10 +101,10 @@ def which(program):
 
 # Find MegaCli
 for megabin in "MegaCli64","MegaCli","megacli", "MegaCli.exe", "perccli64", "perccli", "storcli64", "storcli":
-	dbgprint ('Looking for '+str(megabin)+' in PATH next..')
+	dbgprint ('Looking for '+str(megabin)+' in PATH...')
 	megaclipath = which(megabin)
 	if (megaclipath != None):
-		dbgprint ('Will use MegaCLI from here: '+str(megaclipath))
+		dbgprint ('Will use this executable: '+str(megaclipath))
 		break
 	
 # Check binary exists (and +x), if not print an error message
@@ -118,7 +118,7 @@ if (megaclipath != None):
 			print 'Cannot find ' + megaclipath + 'in your PATH. Please install it.'
 		sys.exit(3)
 else:
-	print 'Cannot find "MegaCli64","MegaCli" or "megacli" or "MegaCli.exe" in your PATH. Please install it.'
+	print 'Cannot find "MegaCli{64,}", "megacli{64,}", "perccli{64,}" or "storcli{64,}" in your PATH. Please install one of them.'
 	sys.exit(3)
 
 
@@ -878,6 +878,14 @@ if totalunconfdrivenumber:
 	if not nagiosmode:
 		print ''
 
+if (debugmode):
+	dbgprint ('Printing Outputs[][]')
+	for myl in Outputs:
+		dbgprint(myl+'\n')
+		sys.stderr.write("\n".join("".join(map(str,myd)) for myd in Outputs[myl])+'\n')
+	dbgprint ('Printing arraydisk[]')
+	sys.stderr.write("\n".join(" | ".join(map(str,myd)) for myd in arraydisk)+'\n')
+	
 if nagiosmode:
 	if bad:
 		print 'RAID ERROR - Arrays: OK:'+str(nagiosgoodarray)+' Bad:'+str(nagiosbadarray)+' - Disks: OK:'+str(nagiosgooddisk)+' Bad:'+str(nagiosbaddisk)
