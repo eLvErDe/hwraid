@@ -29,6 +29,8 @@ printcontroller = True
 debugmode = False
 notempmode = False
 totaldrivenumber = 0
+totalconfdrivenumber = 0
+totalunconfdrivenumber = 0
 
 # Hardcode a max of 16 HBA and 128 LDs for now. LDTable must be initialized to accept populating list of LD's into each ctlr's list.
 MaxNumHBA = 16
@@ -38,6 +40,9 @@ NestedLDTable = [[False for i in range(MaxNumLD)] for j in range(MaxNumHBA)]
 
 # Outputs is a 'dict' of all MegaCLI outputs so we can re-use them during loops..
 Outputs = {}
+ConfDisks = {}
+NagiosBadDisks = {}
+NagiosGoodDisks = {}
 
 # Startup
 def print_usage():
@@ -131,7 +136,7 @@ def returnWdthFromArrayCol(glarray,idx):
 			maxwdth = len(glrow[idx])
 	return maxwdth
 
-# Get command output
+# Get and cache command output
 def getOutput(cmd):
 	lines = []
 	if ( Outputs.has_key(cmd) ):
@@ -146,6 +151,17 @@ def getOutput(cmd):
 		Outputs[cmd] = lines
 	return lines
  
+# Get and cache disks, make sure we don't count the same disk twice
+def AddDisk(mytable,disk):
+	lines = []
+	if ( mytable.has_key(disk) ):
+		dbgprint ("Disk: "+str(disk)+" Already present in Disk Table")
+		return False
+	else:
+		dbgprint ("Confed "+str(nagiosgooddisk)+'/'+str(nagiosbaddisk)+"Disk: "+str(disk)+" Not already present in Disk Table, adding")
+		mytable[disk] = True
+		return True
+
 def returnControllerNumber(output):
 	for line in output:
 		if re.match(r'^Controller Count.*$',line.strip()):
@@ -165,23 +181,29 @@ def returnRebuildProgress(output):
 			percent = int(tmpstr.split('%')[0].strip())
 	return percent
 
-def returnConfDriveNumber(output):
+def returnConfDriveNumber(controllerid,output):
 	# Count the configured drives
-	confdrives = 0
+	confdrives = 0 ; enclid = 'N/A' ; slotid = 'N/A'
 	for line in output:
-		if re.match(r'.*Number of PDs:.*$',line.strip()):
-			confdrives += int(line.split(':')[2].strip())
+
+		if re.match(r'Enclosure Device ID: .*$',line.strip()):
+			# We match here early in the analysis so reset the vars if this is a new disk we're reading..
+			enclid = line.split(':')[1].strip()
+		elif re.match(r'Slot Number: .*$',line.strip()):
+			slotid = line.split(':')[1].strip()
+			if ( AddDisk(ConfDisks, str(controllerid) + enclid + slotid)):
+				confdrives += 1
 	return int(confdrives)
 
 def returnUnConfDriveNumber(output):
-	# Count the configured drives
-	confdrives = 0
+	# Count the un-configured/Hotspare drives
+	unconfdrives = 0
 	for line in output:
 		if re.match(r'^Firmware state: Unconfigured.*$',line.strip()):
-			confdrives += 1
-		if re.match(r'^Firmware state: Hotspare.*$',line.strip()):
-			confdrives += 1
-	return int(confdrives)
+			unconfdrives += 1
+		elif re.match(r'^Firmware state: Hotspare.*$',line.strip()):
+			unconfdrives += 1
+	return int(unconfdrives)
 
 def returnControllerModel(output):
 	for line in output:
@@ -435,8 +457,8 @@ def returnDiskInfo(output,controllerid):
 		elif re.match(r'^(CacheCade )?Virtual (Disk|Drive): [0-9]+.*$',line.strip()):
 			arrayindex += 1
 			arrayid = line.split('(')[0].split(':')[1].strip()
-		elif re.match(r'^Drive.s pos[a-z]*tion: DiskGroup: [0-9]+,.*$',line.strip()):
-			arrayid = line.split(',')[1].split(':')[1].strip()
+		elif re.match(r'^Drive.s posi*tion: DiskGroup: [0-9]+,.*$',line.strip()):
+			notarrayid = line.split(',')[1].split(':')[1].strip()
 		elif re.match(r'PD: [0-9]+ Information.*$',line.strip()):
 			diskid = line.split()[1].strip()
 		elif re.match(r'^Device Id: .*$',line.strip()):
@@ -522,7 +544,7 @@ def returnUnconfDiskInfo(output,controllerid):
 			dsize = line.split(':')[1].strip()
 			dsize = re.sub(' \[.*\.*$', '', dsize)
 			dsize = re.sub('[0-9][0-9] GB', ' Gb', dsize)
-		elif re.match(r'^Drive.s pos[a-z]*tion: DiskGroup: [0-9]+,.*$',line.strip()):
+		elif re.match(r'^Drive.s posi*tion: DiskGroup: [0-9]+,.*$',line.strip()):
 			arrayid = line.split(',')[1].split(':')[1].strip()
 		elif re.match(r'^Device Id: [0-9]+.*$',line.strip()):
 			diskid = line.split(':')[1].strip()
@@ -562,9 +584,9 @@ def returnUnconfDiskInfo(output,controllerid):
 			if arrayid == False:
 				if subfstate == 'Unconfigured':
 					dbgprint('Unconfigured Disk: Arrayid: '+str(arrayid)+' DiskId: '+str(diskid)+' '+str(olddiskid)+' '+str(fstate))
-					table.append([ mtype, model, dsize, fstate, speed, temp, enclid, slotid, lsidid])
 				elif subfstate == 'Online, Spun Up':
 					dbgprint('Online Disk: Arrayid: '+str(arrayid)+' DiskId: '+str(diskid)+' '+str(olddiskid)+' '+str(fstate))
+				table.append([ mtype, model, dsize, fstate, speed, temp, enclid, slotid, lsidid])
 	return table
 
 cmd = '%s -adpCount -NoLog' % (megaclipath)
@@ -741,18 +763,21 @@ if totaldrivenumber:
 		cmd = '%s -LDInfo -lall -a%d -NoLog' % (megaclipath, controllerid)
 		output = getOutput(cmd)
 		arraynumber = returnArrayNumber(output)
-		#### BUG: -LdPdInfo shows all PD on the adapter, not just for said LD..
+		#### BUG: -LdPdInfo shows all PD on the adapter, not just for the LD we wanted..
 		#### while arrayid <= arraynumber:
 		cmd = '%s -LdPdInfo -a%d -NoLog' % (megaclipath, controllerid)
 		output = getOutput(cmd)
 		arraydisk = returnDiskInfo(output,controllerid)
 		for array in arraydisk:
-			dbgprint('Disk c'+str(controllerid)+'u'+array[0]+'p'+array[1] + ' status : ' + array[5])
-			if array[5] not in [ 'Online', 'Online, Spun Up' ]:
-				bad = True
-				nagiosbaddisk += 1
+			diskname = str(controllerid) + array[8] + array[9]
+			dbgprint('Disk c'+diskname + ' status : ' + array[5])
+			if re.match("|".join([ '^Online$', '^Online, Spun Up$', '^Rebuilding \(.*' ]), array[5]):
+				if ( AddDisk(NagiosGoodDisks, diskname) ):
+					nagiosgooddisk += 1
 			else:
-				nagiosgooddisk += 1
+				bad = True
+				if ( AddDisk(NagiosBadDisks, diskname) ):
+					nagiosbaddisk += 1
 
 		if ( returnWdthFromArrayCol(arraydisk,0) > dlen):
 			dlen = returnWdthFromArrayCol(arraydisk,0)
@@ -808,7 +833,7 @@ totaldrivenumber = 0
 while controllerid < controllernumber:
 	cmd = '%s -LdPdInfo -a%d -NoLog' % (megaclipath, controllerid)
 	output = getOutput(cmd)
-	totalconfdrivenumber += returnConfDriveNumber(output)
+	totalconfdrivenumber += returnConfDriveNumber(controllerid,output)
 
 	cmd = '%s -PDGetNum -a%d -NoLog' % (megaclipath, controllerid)
 	output = getOutput(cmd)
@@ -842,12 +867,12 @@ if totalunconfdrivenumber:
 		output = getOutput(cmd)
 		arraydisk = returnUnconfDiskInfo(output,controllerid)
 		for array in arraydisk:
-			dbgprint('Disk c'+str(controllerid)+'uXpY status : ' + array[3])
-			if array[3] not in [ 'Online', 'Unconfigured(good), Spun Up', 'Unconfigured(good), Spun down', 'JBOD','Hotspare, Spun Up','Hotspare, Spun down' ]:
+			dbgprint('Unconfed '+str(nagiosgooddisk)+'/'+str(nagiosbaddisk)+' Disk c'+str(controllerid)+'uXpY status : ' + array[3])
+			if array[3] in [ 'Online', 'Unconfigured(good), Spun Up', 'Unconfigured(good), Spun down', 'JBOD','Hotspare, Spun Up','Hotspare, Spun down' ]:
+				nagiosgooddisk += 1
+			else:
 				bad = True
 				nagiosbaddisk += 1
-			else:
-				nagiosgooddisk += 1
 
 		mlen = returnWdthFromArrayCol(arraydisk,1)
 		flen = returnWdthFromArrayCol(arraydisk,3)
@@ -885,7 +910,13 @@ if (debugmode):
 		sys.stderr.write("\n".join("".join(map(str,myd)) for myd in Outputs[myl])+'\n')
 	dbgprint ('Printing arraydisk[]')
 	sys.stderr.write("\n".join(" | ".join(map(str,myd)) for myd in arraydisk)+'\n')
-	
+	dbgprint ('Printing ConfDisks[]')
+	sys.stderr.write("\n".join("".join(map(str,myd)) for myd in ConfDisks)+'\n')
+	dbgprint ('Printing NagiosGoodDisks[]')
+	sys.stderr.write("\n".join("".join(map(str,myd)) for myd in NagiosGoodDisks)+'\n')
+	dbgprint ('Printing NagiosBadDisks[]')
+	sys.stderr.write("\n".join("".join(map(str,myd)) for myd in NagiosBadDisks)+'\n')
+
 if nagiosmode:
 	if bad:
 		print 'RAID ERROR - Arrays: OK:'+str(nagiosgoodarray)+' Bad:'+str(nagiosbadarray)+' - Disks: OK:'+str(nagiosgooddisk)+' Bad:'+str(nagiosbaddisk)
@@ -894,6 +925,5 @@ if nagiosmode:
 		print 'RAID OK - Arrays: OK:'+str(nagiosgoodarray)+' Bad:'+str(nagiosbadarray)+' - Disks: OK:'+str(nagiosgooddisk)+' Bad:'+str(nagiosbaddisk)
 else:
 	if bad:
-		print '\nThere is at least one disk/array in a NOT OPTIMAL state.'
-		print 'RAID ERROR - Arrays: OK:'+str(nagiosgoodarray)+' Bad:'+str(nagiosbadarray)+' - Disks: OK:'+str(nagiosgooddisk)+' Bad:'+str(nagiosbaddisk)
+		print '\nThere is at least one disk/array NOT in an OPTIMAL state.: Arrays: OK:'+str(nagiosgoodarray)+', Bad:'+str(nagiosbadarray)+' - Disks: OK:'+str(nagiosgooddisk)+', Bad:'+str(nagiosbaddisk)
 		sys.exit(1)
