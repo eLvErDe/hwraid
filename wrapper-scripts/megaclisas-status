@@ -710,12 +710,12 @@ if printarray:
 					arrayinfo[7],
 					arrayinfo[8],
 					arrayinfo[9])
-			dbgprint("Array state : "+arrayinfo[6])
+			dbgprint('Array state : LD ' + arrayinfo[0] + ', status : ' + arrayinfo[6])
 			if arrayinfo[6] not in [ 'Optimal', 'N/A' ]:
 				bad = True
-				nagiosbadarray=nagiosbadarray+1
+				nagiosbadarray += 1
 			else:
-				nagiosgoodarray=nagiosgoodarray+1
+				nagiosgoodarray += 1
 			arrayindex += 1
 			i += 1
 		controllerid += 1
@@ -750,9 +750,9 @@ if totaldrivenumber:
 			dbgprint('Disk c'+str(controllerid)+'u'+array[0]+'p'+array[1] + ' status : ' + array[5])
 			if array[5] not in [ 'Online', 'Online, Spun Up' ]:
 				bad = True
-				nagiosbaddisk=nagiosbaddisk+1
+				nagiosbaddisk += 1
 			else:
-				nagiosgooddisk=nagiosgooddisk+1
+				nagiosgooddisk += 1
 
 		if ( returnWdthFromArrayCol(arraydisk,0) > dlen):
 			dlen = returnWdthFromArrayCol(arraydisk,0)
@@ -845,9 +845,9 @@ if totalunconfdrivenumber:
 			dbgprint('Disk c'+str(controllerid)+'uXpY status : ' + array[3])
 			if array[3] not in [ 'Online', 'Unconfigured(good), Spun Up', 'Unconfigured(good), Spun down', 'JBOD','Hotspare, Spun Up','Hotspare, Spun down' ]:
 				bad = True
-				nagiosbaddisk=nagiosbaddisk+1
+				nagiosbaddisk += 1
 			else:
-				nagiosgooddisk=nagiosgooddisk+1
+				nagiosgooddisk += 1
 
 		mlen = returnWdthFromArrayCol(arraydisk,1)
 		flen = returnWdthFromArrayCol(arraydisk,3)
@@ -895,4 +895,5 @@ if nagiosmode:
 else:
 	if bad:
 		print '\nThere is at least one disk/array in a NOT OPTIMAL state.'
+		print 'RAID ERROR - Arrays: OK:'+str(nagiosgoodarray)+' Bad:'+str(nagiosbadarray)+' - Disks: OK:'+str(nagiosgooddisk)+' Bad:'+str(nagiosbaddisk)
 		sys.exit(1)
