@@ -389,7 +389,11 @@ def returnArrayInfo(output,controllerid,arrayid,arrayindex):
 
 	# If there was an ongoing operation, find the relevant line in the previous output
 	if operationlinennumber:
-		inprogress = output[operationlinennumber + 1]
+		inprogress = str(output[operationlinennumber + 1])
+		# some ugly output fix..
+		str1 = inprogress.split(':')[0].strip()
+		str2 = inprogress.split(':')[1].strip()
+		inprogress = str1+" : "+str2
 	else:
 		inprogress = 'None'
 
@@ -548,8 +552,6 @@ def returnUnconfDiskInfo(output,controllerid):
 			arrayid = line.split(',')[1].split(':')[1].strip()
 		elif re.match(r'^Device Id: [0-9]+.*$',line.strip()):
 			diskid = line.split(':')[1].strip()
-		elif re.match(r'^Device Id: .*$',line.strip()):
-			lsidid = line.split(':')[1].strip()
 		elif re.match(r'Slot Number: .*$',line.strip()):
 			slotid = line.split(':')[1].strip()
 		elif re.match(r'Firmware state: .*$',line.strip()):
@@ -585,8 +587,8 @@ def returnUnconfDiskInfo(output,controllerid):
 				if subfstate == 'Unconfigured':
 					dbgprint('Unconfigured Disk: Arrayid: '+str(arrayid)+' DiskId: '+str(diskid)+' '+str(olddiskid)+' '+str(fstate))
 				elif subfstate == 'Online, Spun Up':
-					dbgprint('Online Disk: Arrayid: '+str(arrayid)+' DiskId: '+str(diskid)+' '+str(olddiskid)+' '+str(fstate))
-				table.append([ mtype, model, dsize, fstate, speed, temp, enclid, slotid, lsidid])
+					dbgprint('Online Unconfed Disk: Arrayid: '+str(arrayid)+' DiskId: '+str(diskid)+' '+str(olddiskid)+' '+str(fstate))
+				table.append([ mtype, model, dsize, fstate, speed, temp, enclid, slotid, diskid])
 	return table
 
 cmd = '%s -adpCount -NoLog' % (megaclipath)
@@ -841,7 +843,10 @@ while controllerid < controllernumber:
 
 	cmd = '%s -PDList -a%d -NoLog' % (megaclipath, controllerid)
 	output = getOutput(cmd)
-	totalunconfdrivenumber += returnUnConfDriveNumber(output)
+	# Sometimes a drive will be reconfiguring without any info on that it is going through a rebuild process.
+	# This happens when expanding an R{5,6,50,60} array, for example. In that case, totaldrivenumber will still be
+	# greater than totalconfdrivenumber while returnUnConfDriveNumber(output) will be zero. The math below attempts to solve this.
+	totalunconfdrivenumber += max(returnUnConfDriveNumber(output), totaldrivenumber - totalconfdrivenumber)
 
 	controllerid += 1
 
@@ -868,7 +873,7 @@ if totalunconfdrivenumber:
 		arraydisk = returnUnconfDiskInfo(output,controllerid)
 		for array in arraydisk:
 			dbgprint('Unconfed '+str(nagiosgooddisk)+'/'+str(nagiosbaddisk)+' Disk c'+str(controllerid)+'uXpY status : ' + array[3])
-			if array[3] in [ 'Online', 'Unconfigured(good), Spun Up', 'Unconfigured(good), Spun down', 'JBOD','Hotspare, Spun Up','Hotspare, Spun down' ]:
+			if array[3] in [ 'Online', 'Unconfigured(good), Spun Up', 'Unconfigured(good), Spun down', 'JBOD','Hotspare, Spun Up','Hotspare, Spun down','Online, Spun Up' ]:
 				nagiosgooddisk += 1
 			else:
 				bad = True
