@@ -302,7 +302,7 @@ def returnHBAInfo(table,output,controllerid):
 		cmd = '%s -AdpBbuCmd -GetBbuStatus -a%d -NoLog' % (megaclipath, controllerid)
 		output = getOutput(cmd)
 		controllerbbu = returnBBUStatus(output)
-		
+
 	if controllermodel != 'Unknown':
 		table.append([ 'c'+str(controllerid), controllermodel, controllerram, str(controllertemp), str(controllerbbu), str('FW: '+controllerrev) ])
 
@@ -530,6 +530,7 @@ def returnUnconfDiskInfo(output,controllerid):
 	mtype = 'Unknown'
 	dsize = 'Unknown'
 	temp = 'Unk0C'
+	ospath = 'N/A'
 	for line in output:
 		if re.match(r'Enclosure Device ID: .*$',line.strip()):
 		# We match here early in the analysis so reset the vars if this is a new disk we're reading..
@@ -588,7 +589,7 @@ def returnUnconfDiskInfo(output,controllerid):
 					dbgprint('Unconfigured Disk: Arrayid: '+str(arrayid)+' DiskId: '+str(diskid)+' '+str(olddiskid)+' '+str(fstate))
 				elif subfstate == 'Online, Spun Up':
 					dbgprint('Online Unconfed Disk: Arrayid: '+str(arrayid)+' DiskId: '+str(diskid)+' '+str(olddiskid)+' '+str(fstate))
-				table.append([ mtype, model, dsize, fstate, speed, temp, enclid, slotid, diskid])
+				table.append([ mtype, model, dsize, fstate, speed, temp, enclid, slotid, diskid, ospath])
 	return table
 
 cmd = '%s -adpCount -NoLog' % (megaclipath)
@@ -860,12 +861,16 @@ if totalunconfdrivenumber:
 		print '-- Unconfigured Disk information --'
 
 	controllerid = 0
+	pcipath = ''
 	while controllerid < controllernumber:
 		arrayid = 0
 
 		cmd = '%s -LDInfo -lall -a%d -NoLog' % (megaclipath, controllerid)
 		output = getOutput(cmd)
 		arraynumber = returnArrayNumber(output)
+		cmd = '%s -AdpGetPciInfo -a%d -NoLog' % (megaclipath, controllerid)
+		output = getOutput(cmd)
+		pcipath = returnHBAPCIInfo(output)
 		#### BUG: -LdPdInfo shows all PD on the adapter, not just for given LD..
 		#### while arrayid <= arraynumber:
 
@@ -880,18 +885,33 @@ if totalunconfdrivenumber:
 				bad = True
 				nagiosbaddisk += 1
 
+			# JBOD disks has a real device path and are not masked. Try to find a device name here, if possible.
+			if pcipath:
+				if array[3] in [ 'JBOD' ]:
+					diskprefix = str('/dev/disk/by-path/pci-' + pcipath + '-scsi-0:0:')
+					dbgprint('Will look for DISKprefix : ' + diskprefix)
+					# RAID disks are usually with a channel of '2', JBOD disks with a channel of '0'
+					diskpath = diskprefix + str(array[8]) + ':0'
+					dbgprint('Looking for DISKpath : ' + diskpath)
+					if os.path.exists(diskpath):
+						dbgprint('Found DISK match: ' + diskpath + ' -> ' + array[9])
+						array[9] = os.path.realpath(diskpath)
+					else:
+						dbgprint('DISK NOT present: ' + diskpath)
+						array[9] = 'N/A'
+
 		mlen = returnWdthFromArrayCol(arraydisk,1)
 		flen = returnWdthFromArrayCol(arraydisk,3)
 
 		# Adjust print format with widths computed above
-		drvfmt = "%-7s | %-4s | %-"+str(mlen)+"s | %-8s | %-"+str(flen+2)+"s | %-8s | %-4s | %-8s | %-8s"
+		drvfmt = "%-7s | %-4s | %-"+str(mlen)+"s | %-8s | %-"+str(flen+2)+"s | %-8s | %-4s | %-8s | %-6s | %-8s"
 		i = 0
 		for array in arraydisk:
 			# Header
 			if ( i == 0 ):
 				if not nagiosmode:
 					print drvfmt % (
-					"-- ID", "Type", "Drive Model", "Size", "Status", "Speed", "Temp", "Slot ID", "LSI Device ID")
+					"-- ID", "Type", "Drive Model", "Size", "Status", "Speed", "Temp", "Slot ID", "LSI ID", "Path")
 			# Drive information
 			if not nagiosmode:
 				print drvfmt % (
@@ -903,8 +923,9 @@ if totalunconfdrivenumber:
 					array[4],							# Speed
 					array[5],							# Temp
 					str('['+array[6]+':'+array[7]+']'),				# Slot ID
-					array[8])							# LSI ID
-			i = i + 1
+					array[8],							# LSI ID
+					array[9])							# OS path, if any
+			i += 1
 		controllerid += 1
 	if not nagiosmode:
 		print ''
