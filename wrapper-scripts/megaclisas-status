@@ -699,7 +699,8 @@ if printarray:
 			if pcipath:
 				diskprefix = str('/dev/disk/by-path/pci-' + pcipath + '-scsi-0:')
 				dbgprint('Will look for DISKprefix : ' + diskprefix)
-				for j in range (8):
+				# RAID disks are usually with a channel of '2', JBOD disks with a channel of '0'
+				for j in range (1, 8):
 					diskpath = diskprefix + str(j) + ':' + str(arrayinfo[7]) + ':0'
 					dbgprint('Looking for DISKpath : ' + diskpath)
 					if os.path.exists(diskpath):
