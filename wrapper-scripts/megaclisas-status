@@ -812,7 +812,7 @@ if totaldrivenumber:
 			if ( i == 0 ):
 				if not nagiosmode:
 					print drvfmt % (
-					"-- ID", "Type", "Drive Model", "Size", "Status", "Speed", "Temp", "Slot ID", "LSI Device ID")
+					"-- ID", "Type", "Drive Model", "Size", "Status", "Speed", "Temp", "Slot ID", "LSI ID")
 			# Drive information
 			if not nagiosmode:
 				print drvfmt % (
