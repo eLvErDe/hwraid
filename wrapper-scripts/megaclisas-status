@@ -806,7 +806,7 @@ if totaldrivenumber:
 		arraydisk = returnDiskInfo(output,controllerid)
 
 		# Adjust print format with width computed above
-		drvfmt = "%-"+str(dlen+5)+"s | %-4s | %-"+str(mlen)+"s | %-8s | %-"+str(flen)+"s | %-8s | %-4s | %-8s | %-8s"
+		drvfmt = "%-"+str(dlen+6)+"s | %-4s | %-"+str(mlen)+"s | %-8s | %-"+str(flen)+"s | %-8s | %-4s | %-8s | %-8s"
 		for array in arraydisk:
 			# Header
 			if ( i == 0 ):
