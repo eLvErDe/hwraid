@@ -1,3 +1,9 @@
+megamgr (5.20-4) unstable; urgency=medium
+
+  * Use lsb-release to generate unique distribution tag in pkgs version.
+
+ -- Adam Cecile <acecile@le-vert.net>  Wed, 03 Jul 2019 00:18:05 +0200
+
 megamgr (5.20-3) unstable; urgency=low
 
   * Fix typo in package's description.
