@@ -1,3 +1,9 @@
+3dm2 (2.11.00.019+10.2.1+KB16625-2) unstable; urgency=medium
+
+  * Use lsb-release to add unique distribution tag in pkgs version.
+
+ -- Adam Cecile <acecile@le-vert.net>  Tue, 02 Jul 2019 19:29:55 +0200
+
 3dm2 (2.11.00.019+10.2.1+KB16625-1) unstable; urgency=low
 
   * New upstream release:
