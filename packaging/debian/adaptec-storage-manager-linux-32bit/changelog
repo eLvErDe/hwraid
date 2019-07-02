@@ -1,3 +1,10 @@
+adaptec-storage-manager-linux-32bit (7.31.18856-2) unstable; urgency=medium
+
+  * Use lsb-release to generate unique distribution tag in pkgs version.
+  * Add alternative for JRE for newer distributions.
+
+ -- Adam Cecile <acecile@le-vert.net>  Tue, 02 Jul 2019 21:38:02 +0200
+
 adaptec-storage-manager-linux-32bit (7.31.18856-1) unstable; urgency=low
 
   * New upstream release.
