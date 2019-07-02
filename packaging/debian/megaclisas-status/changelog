@@ -1,3 +1,11 @@
+megaclisas-status (0.16) unstable; urgency=medium
+
+  * JBOD fixes, various minor fixes.
+  * Support for alternative tools like storcli and perccli.
+  * Add distribution tag to version using lsb-release.
+
+ -- Adam Cecile <acecile@le-vert.net>  Mon, 01 Oct 2018 10:24:39 +0200
+
 megaclisas-status (0.15) unstable; urgency=medium
 
   * CacheCade, Max LD fixes.

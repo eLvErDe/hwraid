@@ -2,7 +2,8 @@ Source: megaclisas-status
 Section: admin
 Priority: optional
 Maintainer: Adam Cécile (Le_Vert) <gandalf@le-vert.net>
-Build-Depends: debhelper (>= 5)
+Build-Depends: debhelper (>= 5),
+ lsb-release,
 Standards-Version: 3.9.2
 
 Package: megaclisas-status
