@@ -1,3 +1,16 @@
+aacraid-status (0.23) unstable; urgency=medium
+
+  * Use lsb-release to generate unique distribution tag in pkgs version.
+
+ -- Adam Cecile <acecile@le-vert.net>  Tue, 02 Jul 2019 21:27:47 +0200
+
+aacraid-status (0.22) unstable; urgency=medium
+
+  * Various parsing fixes related to arcconf 2.x.
+  * Now fails if not controller are detected.
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Wed, 14 Dec 2016 20:30:44 +0100
+
 aacraid-status (0.21) unstable; urgency=medium
 
   * Simple volume drives now handled correctly.
