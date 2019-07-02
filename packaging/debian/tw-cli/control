@@ -2,7 +2,7 @@ Source: tw-cli
 Section: admin
 Priority: optional
 Maintainer: Adam Cécile (Le_Vert) <gandalf@le-vert.net>
-Build-Depends: debhelper (>= 5), sharutils
+Build-Depends: debhelper (>= 5), sharutils, lsb-release
 Standards-Version: 3.9.2
 Homepage: http://www.lsi.com/channel/support/products/Pages/3wareSAS9750-8e.aspx
 

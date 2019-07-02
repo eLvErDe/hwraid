@@ -6,6 +6,16 @@
 DESTDIR=$(CURDIR)/debian/tw-cli/usr
 DEB_BUILD_ARCH  ?= $(shell dpkg-architecture -qDEB_BUILD_ARCH)
 
+# Get version from changelog as well as lsb_release
+# to compute unique build version (useful for repo mirroring systems doing file pooling)
+PKG_VERSION  := $(shell dpkg-parsechangelog | egrep '^Version:' | cut -f2 -d' ')
+DIST_NAME    := $(shell lsb_release -si)
+DIST_RELEASE := $(shell lsb_release -sc)
+DIST_VERSION := $(shell lsb_release -sr)
+PKG_VERSION_TAG := $(PKG_VERSION)+$(DIST_NAME).$(DIST_RELEASE).$(DIST_VERSION)
+SUBSTVARS_BINARY_VERSION := -Vbinary:Version="$(PKG_VERSION_TAG)"
+SUBSTVARS_SOURCE_VERSION := -Vsource:Version="$(PKG_VERSION_TAG)"
+
 build: build-arch build-indep
 build-arch:
 build-indep:
@@ -50,9 +60,10 @@ binary-arch: build install
 	dh_strip
 	dh_compress
 	dh_fixperms
+	dh_makeshlibs
 	dh_installdeb
 	dh_shlibdeps
-	dh_gencontrol
+	dh_gencontrol -- -v"$(PKG_VERSION_TAG)" $(SUBSTVARS_BINARY_VERSION) $(SUBSTVARS_SOURCE_VERSION)
 	dh_md5sums
 	dh_builddeb
 
