@@ -1,3 +1,10 @@
+megacli (8.07.14-2) unstable; urgency=medium
+
+  * Use lsb-release to generate unique distribution tag in pkgs version.
+  * Add libncurses5 as build dependency so shlibsdeps find proper dep.
+
+ -- Adam Cecile <acecile@le-vert.net>  Tue, 02 Jul 2019 23:58:31 +0200
+
 megacli (8.07.14-1) unstable; urgency=medium
 
   * New upstream release.
