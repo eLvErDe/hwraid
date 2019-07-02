@@ -2,7 +2,7 @@ Source: arcconf-1.07
 Section: admin
 Priority: optional
 Maintainer: Adam Cécile (Le_Vert) <gandalf@le-vert.net>
-Build-Depends: debhelper (>= 5)
+Build-Depends: debhelper (>= 5), lsb-release
 Standards-Version: 3.9.3
 
 Package: arcconf
