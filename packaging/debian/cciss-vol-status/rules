@@ -18,6 +18,20 @@ endif
 
 DESTDIR=$(CURDIR)/debian/cciss-vol-status
 
+CFLAGS := $(shell dpkg-buildflags --get CFLAGS)
+LDFLAGS := $(shell dpkg-buildflags --get LDFLAGS)
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+
+# Get version from changelog as well as lsb_release
+# to compute unique build version (useful for repo mirroring systems doing file pooling)
+PKG_VERSION  := $(shell dpkg-parsechangelog | egrep '^Version:' | cut -f2 -d' ')
+DIST_NAME    := $(shell lsb_release -si)
+DIST_RELEASE := $(shell lsb_release -sc)
+DIST_VERSION := $(shell lsb_release -sr)
+PKG_VERSION_TAG := $(PKG_VERSION)+$(DIST_NAME).$(DIST_RELEASE).$(DIST_VERSION)
+SUBSTVARS_BINARY_VERSION := -Vbinary:Version="$(PKG_VERSION_TAG)"
+SUBSTVARS_SOURCE_VERSION := -Vsource:Version="$(PKG_VERSION_TAG)"
+
 configure: patch
 
 config.status: configure
@@ -33,7 +47,7 @@ endif
 		    --bindir=/usr/sbin \
 		    --mandir=/usr/share/man \
 		    CFLAGS="$(CFLAGS)" \
-		    LDFLAGS="-Wl,-z,defs"
+		    LDFLAGS="$(LDFLAGS)"
 
 build: build-arch build-indep
 build-indep:
@@ -62,7 +76,8 @@ binary-arch: build install
 	dh_testdir
 	dh_testroot
 	dh_installchangelogs ChangeLog
-	dh_installdocs
+	dh_installdocs -XREADME
+	dh_installexamples
 	dh_installman
 	dh_installinit --name=cciss-vol-statusd
 	dh_link
@@ -71,7 +86,7 @@ binary-arch: build install
 	dh_fixperms
 	dh_installdeb
 	dh_shlibdeps
-	dh_gencontrol
+	dh_gencontrol -- -v"$(PKG_VERSION_TAG)" $(SUBSTVARS_BINARY_VERSION) $(SUBSTVARS_SOURCE_VERSION)
 	dh_md5sums
 	dh_builddeb
 

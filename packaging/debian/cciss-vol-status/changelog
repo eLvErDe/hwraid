@@ -1,21 +1,72 @@
-cciss-vol-status (1:1.10-1hwraid1) unstable; urgency=low
+cciss-vol-status (1.12-1+hwraid1) unstable; urgency=medium
 
-  * New upstream release.
-  * Drop allow_short_persnickety_option patch. 
+  * Use lsb-release to add unique distribution tag in pkgs version.
+  * Relax debhelper compat from 10 to 5 to support very old distributions.
+  * Rewrite rules to use regular legacy debhelper.
+  * Re-add dependency on bsd-mail | mailx.
+  * Switch source/format to 1.0 and introduce manual quilt for patch mgmt.
+  * Turn into a periodic service as cciss-vol-statusd based on work done
+    in mpt-status package.
 
- -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Tue, 05 Feb 2013 16:55:37 +0100
+ -- Adam Cecile <acecile@le-vert.net>  Wed, 03 Jul 2019 12:44:51 +0200
 
-cciss-vol-status (1:1.09-2hwraid1) unstable; urgency=low
+cciss-vol-status (1.12-1) unstable; urgency=medium
 
-  * Brand new package based on 1.09-2 debian's one.
-  * Fully backported to debhelper 5 to keep old releases compatibility.
-  * Improved init script by importing fixes from mpt-status 1.2.0-7 package.
-  * Add an epoch to be sure it will be installed over debian's official 
-    package (Closes: #90).
-  * Binary renamed from cciss-vol-status to cciss_vol_status to match
-    upstream's and Debian's name (Add debian/NEWS).
+  * New upstream version 1.12
+  * Remove new-ids patch, upstream has updated their list
+  * Update Standards-Version to 4.0.0
 
- -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Tue, 31 Jan 2012 14:31:50 +0100
+ -- Christian Hofstaedtler <zeha@debian.org>  Tue, 11 Jul 2017 10:43:40 +0000
+
+cciss-vol-status (1.11-4) unstable; urgency=medium
+
+  * Use https:// in Vcs-* URLs
+  * Enable hardening=+all
+  * Update Standards-Version to 3.9.8 (no changes)
+
+ -- Christian Hofstaedtler <zeha@debian.org>  Sun, 17 Jul 2016 19:53:09 +0000
+
+cciss-vol-status (1.11-3) unstable; urgency=medium
+
+  * Moved packaging git to collab-maint
+  * Set Standards-Version to 3.9.6 (no addtl. changes)
+  * Update controller names (based on kernel 4.0)
+
+ -- Christian Hofstaedtler <zeha@debian.org>  Sun, 28 Jun 2015 22:52:09 +0200
+
+cciss-vol-status (1.11-2) unstable; urgency=medium
+
+  * Use dh-autoreconf instead of manually running autoreconf
+  * Update my E-Mail Address
+  * Refresh patch: fix-manpage
+  * Add patch: add new PCI IDs
+  * Bump Standards-Version to 3.9.5 (no further changes)
+
+ -- Christian Hofstaedtler <zeha@debian.org>  Sat, 05 Jul 2014 21:53:52 +0200
+
+cciss-vol-status (1.11-1) unstable; urgency=low
+
+  * New Upstream version 1.11
+  * Replace 'automake1.11' with 'automake'
+  * Bump Standards-Version to 3.9.4
+
+ -- Christian Hofstaedtler <christian@hofstaedtler.name>  Mon, 10 Jun 2013 10:39:58 +0200
+
+cciss-vol-status (1.10-1) unstable; urgency=low
+
+  * Imported Upstream version 1.10
+    * Remove local patch 'device_ids'
+    * Remove local patch 'allow_short_persnickety_option'
+
+ -- Christian Hofstaedtler <christian@hofstaedtler.name>  Fri, 24 Aug 2012 13:12:48 +0200
+
+cciss-vol-status (1.09-3) unstable; urgency=low
+
+  * Add new hardware IDs for HP G8 servers. (Closes: #680310)
+  * Bump Standards-Version to 3.9.3.
+  * Build with debhelper 9, to import dpkg buildflags.
+
+ -- Christian Hofstaedtler <christian@hofstaedtler.name>  Tue, 24 Jul 2012 23:22:06 +0200
 
 cciss-vol-status (1.09-2) unstable; urgency=low
 
