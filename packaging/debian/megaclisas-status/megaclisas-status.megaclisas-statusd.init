@@ -5,6 +5,7 @@
 #
 ### BEGIN INIT INFO
 # Provides:          megaclisas-statusd
+# Description:       Check megaclisas-status values in the background.
 # Required-Start:    $remote_fs $syslog
 # Required-Stop:     $remote_fs $syslog
 # Default-Start:     2 3 4 5
@@ -100,7 +101,12 @@ EOF
                 echo "Report from $0 on $hostname"
             ) | mail -s "info: MegaRAID raid status change on $hostname" $MAILTO
         fi
-        sleep $PERIOD
+	sleep $PERIOD &
+	# Kill sleep if we're signaled to exit, otherwise we will stay defunct
+	# until sleep terminates.
+	trap "kill $!; exit" TERM
+	wait $!
+	trap - TERM
     done
 }
 
@@ -138,11 +144,7 @@ d_start() {
 #
 d_stop() {
         if [ -f $PIDFILE ] ; then
-                # Doesn't work (kill init script instance, but not daemon...)
-             	#start-stop-daemon --stop --oknodo --quiet --pidfile $PIDFILE > /dev/null 2>&1 
-                DAEMONPID=`ps aux | grep '/usr/bin/daemon /etc/init.d/megaclisas-statusd check_megaclisas' | grep -v 'grep' | awk '{ print $2 }'`
-                SCRIPTPID=`cat $PIDFILE`
-                kill -9 $DAEMONPID $SCRIPTPID || true
+             	start-stop-daemon --stop --oknodo --quiet --pidfile $PIDFILE > /dev/null 2>&1 
 		rm -f $PIDFILE
         else
                 log_progress_msg "Daemon is already stopped."
@@ -154,11 +156,7 @@ d_stop() {
 # therefore can be used by a restart
 d_stop_by_restart() {
         if [ -f $PIDFILE ] ; then
-                # Doesn't work (kill init script instance, but not daemon...)
-                #start-stop-daemon --oknodo --stop --quiet --pidfile $PIDFILE
-                DAEMONPID=`ps aux | grep '/usr/bin/daemon /etc/init.d/megaclisas-statusd check_megaclisas' | grep -v 'grep' | awk '{ print $2 }'`
-                SCRIPTPID=`cat $PIDFILE`
-                kill -9 $DAEMONPID $SCRIPTPID || true
+                start-stop-daemon --oknodo --stop --quiet --pidfile $PIDFILE
                 rm -f $PIDFILE
                 log_end_msg 0
         else
@@ -182,6 +180,10 @@ case "$1" in
   check_megaclisas)
         check_megaclisas
         ;;
+  status)
+	status_of_proc /usr/bin/daemon $NAME
+	exit $?
+	;;
   restart|force-reload)
         log_begin_msg "Restarting $DESC: $NAME"
         d_stop_by_restart
