@@ -47,11 +47,11 @@ check_megaclisas() {
         # Check ever $PERIOD seconds, send email on every status
         # change and repeat ever $REMIND seconds if the raid is still
         # bad.
-        if (megaclisas-status --notemp) |grep -q 'NOT OPTIMAL' ; then
+        if (megaclisas-status --notemp); then
+            BADRAID=false
+        else
             BADRAID=true
             logger -t megaclisas-statusd "detected non-optimal RAID status"
-        else
-            BADRAID=false
         fi
         STATUSCHANGE=false
         if [ true = "$BADRAID" ] ; then
