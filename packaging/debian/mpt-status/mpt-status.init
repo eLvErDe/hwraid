@@ -5,14 +5,13 @@
 #
 ### BEGIN INIT INFO
 # Provides:          mpt-statusd
+# Description:       Fusion MPT RAID controller diagnostic tool
 # Required-Start:    $remote_fs $syslog
 # Required-Stop:     $remote_fs $syslog
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
 # Short-Description: Check mpt-status values in the background.
 ### END INIT INFO
-
-set -e
 
 PATH=/sbin:/bin:/usr/sbin:/usr/bin
 DESC="mpt-status monitor"
@@ -35,16 +34,10 @@ ID=0
 test -x /usr/sbin/mpt-status || exit 0
 
 . /lib/lsb/init-functions
-. /etc/default/rcS
+[ -e /etc/default/rcS ] && . /etc/default/rcS
 
 if [ $RUN_DAEMON = "no" ] ; then
 	log_begin_msg "mpt-statusd is disabled in /etc/default/mpt-statusd, not starting."
-    	log_end_msg 0
-	exit 0
-fi
-
-if ! [ -e "/proc/mpt/version" ] ; then
-  	log_failure_msg "The mptctl module is missing. Please have a look at the README.Debian.gz."
     	log_end_msg 0
 	exit 0
 fi
@@ -109,7 +102,12 @@ EOF
                 echo "Report from $0 on $hostname"
             ) | mail -s "info: mpt raid status change on $hostname" $MAILTO
         fi
-        sleep $PERIOD
+	sleep $PERIOD &
+	# Kill sleep if we're signaled to exit, otherwise we will stay defunct
+	# until sleep terminates.
+	trap "kill $!; exit" TERM
+	wait $!
+	trap - TERM
     done
 }
 
@@ -134,7 +132,7 @@ d_start() {
     elif check_daemon ; then
         # Use the daemon package to turn this script into a daemon
         start-stop-daemon --start --quiet --pidfile $PIDFILE \
-                --oknodo --exec /usr/bin/daemon $SCRIPTNAME check_mpt
+                --oknodo --exec /usr/bin/daemon /usr/bin/daemon $SCRIPTNAME check_mpt
 	return 0
     else
         log_progress_msg "Daemon is already running. Refusing to start another"
@@ -147,9 +145,8 @@ d_start() {
 #
 d_stop() {
         if [ -f $PIDFILE ] ; then
-                start-stop-daemon --oknodo --stop --quiet --pidfile $PIDFILE
-                rm -f $PIDFILE
-                return 0
+             	start-stop-daemon --stop --oknodo --quiet --pidfile $PIDFILE > /dev/null 2>&1 
+		rm -f $PIDFILE
         else
                 log_progress_msg "Daemon is already stopped."
                 return 0
@@ -171,7 +168,13 @@ d_stop_by_restart() {
 
 case "$1" in
   start)
-        echo -n ""
+	if ! [ -e "/dev/mptctl" ] ; then
+		modprobe -q mptctl 2>/dev/null
+		if [ $? -ne 0 ]; then
+			log_failure_msg "Starting $DESC: failed to load mptctl."
+			exit 1
+		fi
+	fi
         log_begin_msg "Starting $DESC: $NAME"
         d_start ; CODE=$?
         log_end_msg $CODE
@@ -184,6 +187,10 @@ case "$1" in
   check_mpt)
         check_mpt
         ;;
+  status)
+	status_of_proc /usr/bin/daemon $NAME
+	exit $?
+	;;
   restart|force-reload)
         log_begin_msg "Restarting $DESC: $NAME"
         d_stop_by_restart

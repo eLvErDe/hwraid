@@ -1,11 +1,62 @@
-mpt-status (1.2.0-4.2.hwraid1) unstable; urgency=low
+mpt-status (1.2.0-8+hwraid1) unstable; urgency=medium
 
-  * Non-maintainer upload.
-  * Based on debian's 1.2.0-4.2 release.
-  * Relax debhelper bdep to allow sarge builds.
-  * Allow pciutils-dev bdep as libpci-dev alternative.
+  * Use lsb-release to generate unique distribution tag in pkgs version.
+  * Relax debhelper compat from 9 to 5 to support very old distributions.
+  * Rewrite rules to use regular legacy debhelper.
+  * Re-add dependency on bsd-mail | mailx.
+  * Add pciutils-dev alternative to libpci-dev for old releases.
+  * Switch source/format to 1.0 and introduce dpatch for patch mgmt.
 
- -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Thu, 21 Aug 2008 16:09:53 +0200
+ -- Adam Cecile <acecile@le-vert.net>  Wed, 03 Jul 2019 11:27:15 +0200
+
+mpt-status (1.2.0-8) unstable; urgency=medium
+
+  * QA Upload.
+  * Set maintainer to Debian QA Group.
+  * Bump standards to 3.9.5 and compat to 9 (no changes needed).
+  * Build using hardening flags.
+  * Add a patch marking --debug as having a mandatory argument
+    (closes: #716283, #615638).
+  * mpt-status.init: check_mpt(): kill the sleep child process upon SIGTERM
+    (closes: #620186).
+  * mpt-status.init: implement status support (closes: #679070)
+  * mpt-status.init: try loading mptctl if /dev/mptctl is missing
+    (closes: #646863).
+  * mpt-status.init: add LSB description (lintian info).
+
+ -- Apollon Oikonomopoulos <apoikos@gmail.com>  Tue, 17 Dec 2013 21:49:43 +0200
+
+mpt-status (1.2.0-7) unstable; urgency=low
+
+  * Remove set -e stanza from init-script to not interrupt update of
+    Raid-Controller statusfile (Closes: #590691)
+  * Extend init script to suppress warnings if mpt-status is already
+    terminated (Closes: #586152) 
+  * Bump Standards to 3.9.1.0
+
+ -- Stefan Bauer <stefan.bauer@cubewerk.de>  Wed, 28 Jul 2010 19:46:56 +0200
+
+mpt-status (1.2.0-6) unstable; urgency=low
+
+  * Switch to dpkg-source 3.0 (quilt) format
+  * Merge 2 patches
+  * Bump Standards to 3.9.0
+  * Daemon does not double-fork on startup (Closes: #500040)
+ 
+ -- Stefan Bauer <stefan.bauer@cubewerk.de>  Wed, 30 Jun 2010 11:45:09 +0200
+
+mpt-status (1.2.0-5) unstable; urgency=low
+
+  * New Maintainer (Closes: #535798)
+  * Acknowledge NMU changes
+  * Bump Standards to 3.8.4
+  * Let package not depend on mailx anymore but offer it as Suggested
+    Idea taken from Andre Cruz (Closes: #540762)
+  * Adjust license information as package is distributed under GPL-2
+  * Fix lintian error and several warnings
+  * add watch-file
+
+ -- Stefan Bauer <stefan.bauer@cubewerk.de>  Wed, 30 Jun 2010 11:44:50 +0200
 
 mpt-status (1.2.0-4.2) unstable; urgency=low
 

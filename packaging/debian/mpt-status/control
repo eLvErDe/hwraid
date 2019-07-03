@@ -1,13 +1,13 @@
 Source: mpt-status
 Section: admin
-Priority: extra
-Maintainer: Steffen Joeris <white@debian.org>
-Build-Depends: cdbs, debhelper (>= 4), libpci-dev | pciutils-dev
-Standards-Version: 3.7.2
+Priority: optional
+Maintainer: Debian QA Group <packages@qa.debian.org>
+Build-Depends: debhelper (>= 5), libpci-dev | pciutils-dev, lsb-release, dpatch
+Standards-Version: 3.9.5
 
 Package: mpt-status
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, lsb-base, daemon, mailx
+Depends: ${shlibs:Depends}, ${misc:Depends}, lsb-base, daemon, bsd-mailx | mailx
 Description: get RAID status out of mpt (and other) HW RAID controllers
  The mpt-status software is a query tool to access the running
  configuration and status of LSI SCSI HBAs.  mpt-status allows you to

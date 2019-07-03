@@ -1,0 +1,3 @@
+0001-include.headers.patch
+fix_debug_crash.patch
+use_dpkg-buildflags.patch

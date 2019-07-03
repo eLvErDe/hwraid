@@ -1,0 +1,31 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+#
+# DP: Fix segfault when invoked with --debug
+# Author: Apollon Oikonomopoulos <apoikos@gmail.com>
+# Last-Update: 2013-12-17
+# 
+# The short form of -d is marked as requiring an argument, while the long option
+# (--debug) was marked as taking an optional argument. Since the code really
+# doesn't handle the optional argument, we change --debug to require an argument
+# and update the help message accordingly.
+
+--- a/mpt-status.c
++++ b/mpt-status.c
+@@ -57,7 +57,7 @@
+ static const struct option long_options[] = {
+ 	{ "autoload",		no_argument,       &sel,  ARG_M_A },
+ 	{ "controller",		required_argument, NULL, 'u' },
+-	{ "debug",		optional_argument, NULL, 'd' },
++	{ "debug",		required_argument, NULL, 'd' },
+ 	{ "help",		no_argument,       NULL, 'h' },
+ 	{ "newstyle",		no_argument,       NULL, 'n' },
+ 	{ "probe_id",		no_argument,	   NULL, 'p' },
+@@ -74,7 +74,7 @@
+   "\n"
+   "      --autoload             This will try to automatically load the \n"
+   "                             mptctl kernel module\n"
+-  "  -d, --debug [<int>]        Enable debugging and set level optionally\n"
++  "  -d, --debug <int>          Enable debugging and set level\n"
+   "                             NOTE: This is not fully implemented yet\n"
+   "  -h, --help                 Print this help information page\n"
+   "  -n, --newstyle             Use the new style output. This parameter was\n"
