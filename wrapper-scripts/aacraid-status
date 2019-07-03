@@ -314,7 +314,7 @@ while controllerid <= controllernumber:
     for disk in diskinfo:
 
         # Generic verification no matter is the disk is member of an array or not
-        if disk[1] not in [ 'Online', 'Online (JBOD)', 'Hot Spare', 'Ready', 'Global Hot-Spare', 'Dedicated Hot-Spare' ]:
+        if disk[1] not in [ 'Online', 'Online (JBOD)', 'Hot Spare', 'Ready', 'Global Hot-Spare', 'Dedicated Hot-Spare', 'Raw (Pass Through)' ]:
             bad = True
             nagiosbaddisk += 1
         else:
