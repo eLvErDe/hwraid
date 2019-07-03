@@ -2,12 +2,12 @@ Source: megaide-status
 Section: admin
 Priority: optional
 Maintainer: Adam Cécile (Le_Vert) <gandalf@le-vert.net>
-Build-Depends: debhelper (>= 4)
+Build-Depends: debhelper (>= 5), lsb-release
 Standards-Version: 3.8.0
 
 Package: megaide-status
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python, lsb-base, daemon, mailx
+Depends: ${shlibs:Depends}, ${misc:Depends}, python, lsb-base, daemon, bsd-mailx | mailx
 Description: get RAID status out of LSI MegaIDE Software RAID controllers
  The megaide-status software is a query tool to access the running
  configuration and status of LSI MegaIDE HBAs.
