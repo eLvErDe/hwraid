@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# $Id: megaclisas-status,v 1.79 2019/08/19 21:13:17 root Exp root $
+# $Id: megaclisas-status,v 1.80 2019/08/19 21:20:58 root Exp root $
 #
 # Written by Adam Cecile <gandalf@NOSPAM.le-vert.net>
 # Modified by Vincent S. Cojot <vincent@NOSPAM.cojot.name>
@@ -476,6 +476,21 @@ def returnDiskInfo(output,controllerid):
 		elif re.match(r'Inquiry Data: .*$',line.strip()):
 			model = line.split(':')[1].strip()
 			model = re.sub(' +', ' ', model)
+
+			# re-define our "sub-code"
+			# our seagate drives have an ID string of
+			# 'Z1E19S2QST2000DM001-1CH164                      CC43'
+			# or
+			# '6XW02738ST32000542AS                            CC32'
+
+			m = re.match(r'(\w{8})(ST\w+)(?:-(\w{6}))?(?:\s+(\w+))', model)
+			if m:
+			    if m.group(3):
+				model = '{}-{} {} {}'.format(m.group(2), m.group(3), m.group(4), m.group(1))
+			    else:
+				model = '{} {:>10} {}'.format(m.group(2), m.group(4), m.group(1))
+			    continue
+
 			# Sub code
 			manuf = re.sub(' .*', '', model)
 			dtype = re.sub(manuf+' ', '', model)
@@ -562,6 +577,21 @@ def returnUnconfDiskInfo(output,controllerid):
 		elif re.match(r'Inquiry Data: .*$',line.strip()):
 			model = line.split(':')[1].strip()
 			model = re.sub(' +', ' ', model)
+
+			# re-define our "sub-code"
+			# our seagate drives have an ID string of
+			# 'Z1E19S2QST2000DM001-1CH164                      CC43'
+			# or
+			# '6XW02738ST32000542AS                            CC32'
+
+			m = re.match(r'(\w{8})(ST\w+)(?:-(\w{6}))?(?:\s+(\w+))', model)
+			if m:
+			    if m.group(3):
+				model = '{}-{} {} {}'.format(m.group(2), m.group(3), m.group(4), m.group(1))
+			    else:
+				model = '{} {:>10} {}'.format(m.group(2), m.group(4), m.group(1))
+			    continue
+
 			manuf = re.sub(' .*', '', model)
 			dtype = re.sub(manuf+' ', '', model)
 			dtype = re.sub(' .*', '', dtype)
