@@ -10,6 +10,7 @@ import re
 import sys
 import pdb
 import inspect
+import argparse
 if sys.platform == 'win32':
 	import ctypes
 
@@ -44,12 +45,20 @@ ConfDisks = {}
 NagiosBadDisks = {}
 NagiosGoodDisks = {}
 
-# Startup
-def print_usage():
-	print 'Usage: megaraid-status [--nagios|--debug|--notemp]'
-
 # We need root access to query
 if __name__ == '__main__':
+	# deal with command line options
+	parser = argparse.ArgumentParser()
+	group = parser.add_mutually_exclusive_group()
+	group.add_argument('--nagios', help='enable nagios support',   action='store_true')
+	group.add_argument('--debug',  help='enable debugging output', action='store_true')
+	group.add_argument('--notemp', help='disable temperature reporting', action='store_true')
+
+	args = parser.parse_args()
+	nagisomode = args.nagios
+	debugmode  = args.debug
+	notempmode = args.notemp
+
 	try:
 		root_or_admin = os.geteuid() == 0
 	except AttributeError:
@@ -58,21 +67,6 @@ if __name__ == '__main__':
 		print '# This script requires Administrator privileges'
 		sys.exit(5)
 
-# Check command line arguments to enable nagios or not
-if len(sys.argv) > 2:
-	print_usage()
-	sys.exit(1)
-
-if len(sys.argv) > 1:
-	if sys.argv[1] == '--nagios':
-		nagiosmode = True
-	elif sys.argv[1] == '--debug':
-		debugmode = True
-	elif sys.argv[1] == '--notemp':
-		notempmode = True
-	else:
-		print_usage()
-		sys.exit(1)
 # Functions
 def dbgprint(msg):
 	if (debugmode):
