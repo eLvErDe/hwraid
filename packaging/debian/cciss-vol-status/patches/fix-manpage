@@ -1,13 +1,13 @@
 Description: man does not understand LD macro
-Author: Christian Hofstaedtler <ch+debian-packages@zeha.at>
+Author: Christian Hofstaedtler <zeha@debian.org>
 Forwarded: no
 Last-Update: 2010-02-04
 
-Index: cciss-vol-status-1.06/cciss_vol_status.8
+Index: cciss-vol-status/cciss_vol_status.8
 ===================================================================
---- cciss-vol-status-1.06.orig/cciss_vol_status.8	2010-02-04 19:13:34.302683423 +0000
-+++ cciss-vol-status-1.06/cciss_vol_status.8	2010-02-04 19:14:40.797930573 +0000
-@@ -101,7 +101,7 @@
+--- cciss-vol-status.orig/cciss_vol_status.8	2014-06-06 06:18:34.121832596 +0200
++++ cciss-vol-status/cciss_vol_status.8	2014-06-06 06:18:34.117832773 +0200
+@@ -112,7 +112,7 @@
  /dev/sg node to use with cciss_vol_status:
  .PP
  .nf
@@ -16,7 +16,7 @@ Index: cciss-vol-status-1.06/cciss_vol_status.8
  wumpus:/home/scameron # ls -l /sys/class/scsi_generic/*
  lrwxrwxrwx 1 root root 0 2009-11-18 12:31 /sys/class/scsi_generic/sg0 -> ../../devices/pci0000:00/0000:00:02.0/0000:02:00.0/0000:03:03.0/host0/target0:0:0/0:0:0:0/scsi_generic/sg0
  lrwxrwxrwx 1 root root 0 2009-11-18 12:31 /sys/class/scsi_generic/sg1 -> ../../devices/pci0000:00/0000:00:1f.1/host2/target2:0:0/2:0:0:0/scsi_generic/sg1
-@@ -128,7 +128,7 @@
+@@ -139,7 +139,7 @@
  which corresponds to the HP P800 RAID controller listed in /proc/scsi/scsi.
  .SH EXAMPLE
  .nf
@@ -25,7 +25,7 @@ Index: cciss-vol-status-1.06/cciss_vol_status.8
  	[root@somehost]# cciss_vol_status -q /dev/cciss/c*d0
  	/dev/cciss/c0d0: (Smart Array P800) RAID 0 Volume 0 status: OK.
  	/dev/cciss/c0d0: (Smart Array P800) RAID 0 Volume 1 status: OK.
-@@ -206,7 +206,7 @@
+@@ -249,7 +249,7 @@
  drive status: 
  .PP
  .nf
@@ -34,7 +34,7 @@ Index: cciss-vol-status-1.06/cciss_vol_status.8
  	"At least one spare drive designated"
  	"At least one spare drive activated and currently rebuilding"
  	"At least one activated on-line spare drive is completely rebuilt on this logical drive"
-@@ -220,7 +220,7 @@
+@@ -265,7 +265,7 @@
  physical drives, if more than zero, will be reported as:
  .TP
  .nf
@@ -43,7 +43,7 @@ Index: cciss-vol-status-1.06/cciss_vol_status.8
  	"Total of n failed physical drives detected on this logical drive."
  .DE
  .fi
-@@ -231,7 +231,7 @@
+@@ -286,7 +286,7 @@
  power supplies, and temperature are reported as follows:
  .PP
  .nf
@@ -52,7 +52,7 @@ Index: cciss-vol-status-1.06/cciss_vol_status.8
  	"Fan failed"
  	"Temperature problem"
  	"Door alert"
-@@ -265,7 +265,7 @@
+@@ -324,7 +324,7 @@
  warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  .SH "SEE ALSO"
  http://cciss.sourceforge.net
@@ -61,7 +61,7 @@ Index: cciss-vol-status-1.06/cciss_vol_status.8
  The /dev/cciss/c*d0 device nodes of the cciss driver do double duty.
  They serve as an access point to both the RAID controllers, and to the
  first logical drive of each RAID controller.  Notice that a /dev/cciss/c*d0
-@@ -277,4 +277,3 @@
+@@ -336,4 +336,3 @@
  were statically allocated at compile time, and were in short supply.
  Changing this behavior at this point would break lots of userland 
  programs.

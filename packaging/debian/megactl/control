@@ -2,7 +2,7 @@ Source: megactl
 Section: admin
 Priority: optional
 Maintainer: Adam Cécile (Le_Vert) <gandalf@le-vert.net>
-Build-Depends: debhelper (>= 4), dpatch, libc6-dev-i386 [amd64], gcc-multilib [amd64] | libc6-dev-i386 (<< 2.7) [amd64]
+Build-Depends: debhelper (>= 5), dpatch, libc6-dev-i386 [amd64], gcc-multilib [amd64] | libc6-dev-i386 (<< 2.7) [amd64], lsb-release
 Standards-Version: 3.8.2
 Homepage: http://sourceforge.net/projects/megactl
 

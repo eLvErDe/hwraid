@@ -1,3 +1,16 @@
+3ware-status (0.6) unstable; urgency=medium
+
+  * Use lsb-release to generate unique distribution tag in pkgs version.
+
+ -- Adam Cecile <acecile@le-vert.net>  Tue, 02 Jul 2019 20:38:34 +0200
+
+3ware-status (0.5) unstable; urgency=medium
+
+  * Fix a nasty typo (Closes: #279).
+  * Don't treat verifying array as a failure (Closes: #273). 
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Sat, 25 Jan 2014 23:31:20 +0100
+
 3ware-status (0.4) unstable; urgency=low
 
   * Now handle different tw-cli output for 9000 series cards.

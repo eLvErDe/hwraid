@@ -1,3 +1,16 @@
+dellmgr (5.31-4) unstable; urgency=medium
+
+  * Use lsb-release to generate unique distribution tag in pkgs version.
+
+ -- Adam Cecile <acecile@le-vert.net>  Tue, 02 Jul 2019 23:01:35 +0200
+
+dellmgr (5.31-3) unstable; urgency=medium
+
+  * Bump debhelper compat level to 5 because 4 is not supported anymore
+    on Debian Stretch.
+
+ -- Adam Cecile <acecile@le-vert.net>  Wed, 02 Aug 2017 00:33:26 +0200
+
 dellmgr (5.31-2) unstable; urgency=low
 
   * Update create-devices-nodes to handle kernels 2.6.25rc2+.

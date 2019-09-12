@@ -1,14 +1,61 @@
 #!/usr/bin/make -f
-  
-include /usr/share/cdbs/1/class/makefile.mk
-include /usr/share/cdbs/1/rules/debhelper.mk
-include /usr/share/cdbs/1/rules/simple-patchsys.mk
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+include /usr/share/dpatch/dpatch.make
+
 DESTDIR = $(CURDIR)/debian/mpt-status
-DEB_MAKE_BUILD_TARGET := REDHAT=true
-DEB_DH_INSTALLINIT_ARGS = --init-script=mpt-statusd
 
-common-install-arch::
-	install -D -m 755 mpt-status $(DESTDIR)/usr/sbin/mpt-status
+# Get version from changelog as well as lsb_release
+# to compute unique build version (useful for repo mirroring systems doing file pooling)
+PKG_VERSION  := $(shell dpkg-parsechangelog | egrep '^Version:' | cut -f2 -d' ')
+DIST_NAME    := $(shell lsb_release -si)
+DIST_RELEASE := $(shell lsb_release -sc)
+DIST_VERSION := $(shell lsb_release -sr)
+PKG_VERSION_TAG := $(PKG_VERSION)+$(DIST_NAME).$(DIST_RELEASE).$(DIST_VERSION)
+SUBSTVARS_BINARY_VERSION := -Vbinary:Version="$(PKG_VERSION_TAG)"
+SUBSTVARS_SOURCE_VERSION := -Vsource:Version="$(PKG_VERSION_TAG)"
 
-common-binary-post-install-arch::
-	cd $(DESTDIR)/usr/share/doc/mpt-status && mv Changelog changelog
+
+build: build-arch build-indep
+build-indep:
+build-arch: build-stamp
+build-stamp: patch-stamp
+	dh_testdir
+	$(MAKE)
+	touch $@
+
+clean: unpatch 
+	dh_testdir
+	dh_testroot
+	dh_clean 
+	rm -f build-stamp
+	rm -f mpt-status
+
+install:
+	dh_testdir
+	dh_testroot
+	dh_clean -k 
+	dh_installdirs
+
+binary-indep: build install
+binary-arch: build install
+	dh_testdir
+	dh_testroot
+	dh_install
+	dh_installchangelogs
+	dh_installdocs
+	mv -v $(DESTDIR)/usr/share/doc/mpt-status/Changelog $(DESTDIR)/usr/share/doc/mpt-status/changelog
+	dh_installinit --init-script=mpt-statusd
+	dh_link
+	dh_strip
+	dh_compress
+	dh_fixperms
+	dh_installdeb
+	dh_shlibdeps
+	dh_gencontrol -- -v"$(PKG_VERSION_TAG)" $(SUBSTVARS_BINARY_VERSION) $(SUBSTVARS_SOURCE_VERSION)
+	dh_md5sums
+	dh_builddeb
+
+binary: binary-indep binary-arch
+.PHONY: build clean binary-indep binary-arch binary install

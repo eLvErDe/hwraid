@@ -2,7 +2,7 @@ Source: spy
 Section: admin
 Priority: optional
 Maintainer: Adam Cécile (Le_Vert) <gandalf@le-vert.net>
-Build-Depends: debhelper (>= 4)
+Build-Depends: debhelper (>= 5), lsb-release
 Standards-Version: 3.8.0
 Homepage: http://www.lsilogic.com
 

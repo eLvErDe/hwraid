@@ -6,6 +6,7 @@
 #
 ### BEGIN INIT INFO
 # Provides:          cciss-vol-statusd
+# Description:       Check cciss_vol_status values in the background.
 # Required-Start:    $remote_fs $syslog
 # Required-Stop:     $remote_fs $syslog
 # Default-Start:     2 3 4 5
@@ -15,7 +16,7 @@
 
 PATH=/sbin:/bin:/usr/sbin:/usr/bin
 DESC="cciss-vol-status monitor"
-NAME="cciss-vol-statusd"
+NAME=cciss-vol-statusd
 PIDFILE=/var/run/$NAME.pid
 STATUSFILE=/var/run/$NAME.status
 SCRIPTNAME=/etc/init.d/$NAME
@@ -102,7 +103,12 @@ EOF
                 echo "Report from $0 on $hostname"
             ) | mail -s "info: CCISS raid status change on $hostname" $MAILTO
         fi
-        sleep $PERIOD
+	sleep $PERIOD &
+	# Kill sleep if we're signaled to exit, otherwise we will stay defunct
+	# until sleep terminates.
+	trap "kill $!; exit" TERM
+	wait $!
+	trap - TERM
     done
 }
 
@@ -176,6 +182,10 @@ case "$1" in
   check_cciss)
         check_cciss
         ;;
+  status)
+	status_of_proc /usr/bin/daemon $NAME
+	exit $?
+	;;
   restart|force-reload)
         log_begin_msg "Restarting $DESC: $NAME"
         d_stop_by_restart

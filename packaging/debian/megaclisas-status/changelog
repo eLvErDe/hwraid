@@ -1,3 +1,20 @@
+megaclisas-status (0.17) unstable; urgency=medium
+
+  * CRITICAL: Output text was changed, initscript could not detect broken
+    array anymore (Closes: #99).
+  * Sync initscript with mpt-status-1.2.0-8 including a fix for defunct
+    processes.
+
+ -- Adam Cecile <acecile@le-vert.net>  Wed, 03 Jul 2019 13:38:31 +0200
+
+megaclisas-status (0.16) unstable; urgency=medium
+
+  * JBOD fixes, various minor fixes.
+  * Support for alternative tools like storcli and perccli.
+  * Add distribution tag to version using lsb-release.
+
+ -- Adam Cecile <acecile@le-vert.net>  Mon, 01 Oct 2018 10:24:39 +0200
+
 megaclisas-status (0.15) unstable; urgency=medium
 
   * CacheCade, Max LD fixes.

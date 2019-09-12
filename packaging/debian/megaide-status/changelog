@@ -1,3 +1,16 @@
+megaide-status (0.4) unstable; urgency=medium
+
+  * Use lsb-release to generate unique distribution tag in pkgs version.
+
+ -- Adam Cecile <acecile@le-vert.net>  Wed, 03 Jul 2019 10:57:27 +0200
+
+megaide-status (0.3) unstable; urgency=medium
+
+  * Bump debhelper compat to 5 because 4 is not supported anymore
+    on Debian Stretch.
+
+ -- Adam Cecile <acecile@le-vert.net>  Wed, 02 Aug 2017 00:36:03 +0200
+
 megaide-status (0.2) unstable; urgency=low
 
   * Packaging cleanup. 

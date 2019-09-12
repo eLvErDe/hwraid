@@ -1,3 +1,16 @@
+megactl (0.4.1+svn20090725.r6-7) unstable; urgency=medium
+
+  * Use lsb-release to generate unique distribution tag in pkgs version.
+
+ -- Adam Cecile <acecile@le-vert.net>  Tue, 02 Jul 2019 23:45:52 +0200
+
+megactl (0.4.1+svn20090725.r6-6) unstable; urgency=medium
+
+  * Bump debhelper compat to 5 because 4 is not supported anymore
+    on Debian Stretch.
+
+ -- Adam Cecile <acecile@le-vert.net>  Wed, 02 Aug 2017 00:34:28 +0200
+
 megactl (0.4.1+svn20090725.r6-5) unstable; urgency=medium
 
   * Update 003-Fix_disk_enumeration_loop patch (fix issues with PERC6e).

@@ -1,17 +1,27 @@
 Source: cciss-vol-status
 Section: admin
-Priority: extra
-Maintainer: Adam Cécile (Le_Vert) <gandalf@le-vert.net>
-Build-Depends: debhelper (>= 5), autotools-dev, quilt
-Standards-Version: 3.9.2
+Priority: optional
+Maintainer: Christian Hofstaedtler <zeha@debian.org>
+Build-Depends: autoconf,
+               automake,
+               debhelper (>= 5),
+               autotools-dev,
+               quilt,
+               lsb-release,
+Build-Conflicts: autoconf2.13,
+                 automake1.4
+Standards-Version: 4.0.0
 Homepage: http://cciss.sourceforge.net/
-Vcs-Browser: http://github.com/zeha/cciss-vol-status/
-Vcs-Git: git://github.com/zeha/cciss-vol-status.git
-DM-Upload-Allowed: yes
+Vcs-Browser: https://anonscm.debian.org/cgit/collab-maint/cciss-vol-status.git/
+Vcs-Git: https://anonscm.debian.org/git/collab-maint/cciss-vol-status.git
 
 Package: cciss-vol-status
 Architecture: amd64 i386
-Depends: ${shlibs:Depends}, ${misc:Depends}, lsb-base, daemon, bsd-mailx | mailx
+Depends: ${misc:Depends},
+         ${shlibs:Depends},
+         lsb-base,
+         daemon,
+         bsd-mailx | mailx,
 Description: HP SmartArray RAID Volume Status Checker
  A RAID monitor for HP SmartArray Controllers, as supported by the "cciss",
  "hpsa", "hpahcisr" kernel drivers.

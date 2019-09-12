@@ -34,7 +34,7 @@ RUN_DAEMON=yes
 test -x /usr/sbin/megaide-status || exit 0
 
 . /lib/lsb/init-functions
-. /etc/default/rcS
+[ -e /etc/default/rcS ] && . /etc/default/rcS
 
 if [ $RUN_DAEMON = "no" ] ; then
 	log_begin_msg "megaide-statusd is disabled in /etc/default/megaide-statusd, not starting."

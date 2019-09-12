@@ -1,3 +1,9 @@
+sas2ircu (16.00.00.00-2) unstable; urgency=medium
+
+  * Use lsb-release to generate unique distribution tag in pkgs version.
+
+ -- Adam Cecile <acecile@le-vert.net>  Tue, 02 Jul 2019 23:28:42 +0200
+
 sas2ircu (16.00.00.00-1) unstable; urgency=low
 
   * New upstream release.

@@ -1,0 +1,24 @@
+#! /bin/sh /usr/share/dpatch/dpatch-run
+# 
+# DP: Use hardened build flags
+# Author: Apollon Oikonomopoulos <apoikos@gmail.com>
+# Last-Update: 2013-12-17
+
+--- a/Makefile
++++ b/Makefile
+@@ -3,12 +3,12 @@
+ KERNEL_PATH	:= /usr/src/linux
+ KERNEL_PATH_B	:= /lib/modules/`uname -r`/build
+ KERNEL_PATH_S	:= /lib/modules/`uname -r`/source
+-CFLAGS		:= -Iincl -Wall -W -O2 \
++CFLAGS		:= $(shell dpkg-buildflags --get CFLAGS) \
+ 			-I${KERNEL_PATH}/drivers/message/fusion \
+ 			-I${KERNEL_PATH_B}/drivers/message/fusion \
+ 			-I${KERNEL_PATH_S}/drivers/message/fusion
+-DFLAGS		:= #-DSANITIZED_KERNEL_HEADERS
+-LDFLAGS		:=
++DFLAGS		:= $(shell dpkg-buildflags --get CPPFLAGS)
++LDFLAGS		:= $(shell dpkg-buildflags --get LDFLAGS)
+ DESTDIR		:=
+ MANDIR		:= /usr/share/man
+ CC		:= gcc

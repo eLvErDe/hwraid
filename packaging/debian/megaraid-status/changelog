@@ -1,4 +1,11 @@
+megaraid-status (0.13) unstable; urgency=medium
+
+  * Use lsb-release to generate unique distribution tag in pkgs version.
+
+ -- Adam Cecile <acecile@le-vert.net>  Wed, 03 Jul 2019 00:22:06 +0200
+
 megaraid-status (0.12) unstable; urgency=medium
+
   * Handle "ready" disk status as a good one.
 
  -- Adam Cécile <acecile@le-vert.net>  Thu, 11 Feb 2016 08:08:21 +0100

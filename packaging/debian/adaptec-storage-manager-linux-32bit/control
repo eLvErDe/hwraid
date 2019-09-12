@@ -2,7 +2,7 @@ Source: adaptec-storage-manager-linux-32bit
 Section: admin
 Priority: optional
 Maintainer: Adam Cécile (Le_Vert) <gandalf@le-vert.net>
-Build-Depends: debhelper (>= 5), libwrap0, libstdc++5, quilt
+Build-Depends: debhelper (>= 5), libwrap0, libstdc++5, quilt, lsb-release
 Homepage: http://www.adaptec.com/en-US/support/raid/sas_raid/SAS-5805Z/
 Standards-Version: 3.9.3
 
@@ -30,7 +30,7 @@ Description: Adaptec HostRaid HBAs command line tool
 
 Package: adaptec-storage-manager-common
 Architecture: i386
-Depends: ${shlibs:Depends}, ${misc:Depends}, sun-java6-jre | sun-java5-jre
+Depends: ${shlibs:Depends}, ${misc:Depends}, default-jre-headless | java8-runtime-headless | java8-runtime | sun-java6-jre | sun-java5-jre
 Description: Common files for storage-manager-gui and storage-manager-agent
  This package contains shared files between storage-manager-gui and
  storage-manager-agent.

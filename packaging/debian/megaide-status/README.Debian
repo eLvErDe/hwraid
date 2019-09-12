@@ -4,7 +4,7 @@ README.Debian for megaide-status package
 Required configuration:
 -----------------------
 
-This software uses informations from /proc/megaide/.
+This software uses information from /proc/megaide/.
 However the megaide kernel module report all disk controller ports, even if
 there are not used.
 So there is now way to figure out if a disk is not used or if it's offline.
@@ -13,7 +13,7 @@ That's why I added /etc/megaide-status.conf configuration file which should
 be filled with "in-use" disks ids.
 
 The syntaxe is 'c<controlleride>u<logicalvolid>p<physicaldiskid>'.
-In exemple, first disk on second logicial volume and third controller is:
+In example, first disk on second logicial volume and third controller is:
 c2u1p0
 
 The default configuration file is suitable for regular SATA systems with

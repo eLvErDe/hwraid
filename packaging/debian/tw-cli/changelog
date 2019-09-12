@@ -1,3 +1,9 @@
+tw-cli (2:2.00.11.020+10.2.1-2) unstable; urgency=medium
+
+  * Use lsb-release to generate unique distribution tag for pkgs version.
+
+ -- Adam Cecile <acecile@le-vert.net>  Tue, 02 Jul 2019 20:50:00 +0200
+
 tw-cli (2:2.00.11.020+10.2.1-1) unstable; urgency=low
 
   * New upstream release.
