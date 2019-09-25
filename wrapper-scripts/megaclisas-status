@@ -55,7 +55,7 @@ if __name__ == '__main__':
 	group.add_argument('--notemp', help='disable temperature reporting', action='store_true')
 
 	args = parser.parse_args()
-	nagisomode = args.nagios
+	nagiosmode = args.nagios
 	debugmode  = args.debug
 	notempmode = args.notemp
 
