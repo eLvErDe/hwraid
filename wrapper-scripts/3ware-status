@@ -1,157 +1,165 @@
 #!/usr/bin/python
 
+import json
 import os
 import re
 import sys
 
+from subprocess import check_output
+
 binarypath = "/usr/sbin/tw-cli"
+normalmode = False
+nagiosmode = False
+zabbixmode = False
+argv = list()
 
-if len(sys.argv) > 2:
-    print 'Usage: 3ware-status [--nagios]'
-    sys.exit(1)
-
-nagiosmode=False
-nagiosoutput=''
-nagiosgoodarray=0
-nagiosbadarray=0
-nagiosgooddisk=0
-nagiosbaddisk=0
-
-if len(sys.argv) > 1:
-    if sys.argv[1] == '--nagios':
-        nagiosmode=True
+if len(sys.argv) > 1 and sys.argv[1][:2] == '--':
+    if len(sys.argv) == 2 and sys.argv[1] == '--nagios':
+        nagiosmode = True
+    elif len(sys.argv) > 2 and sys.argv[1] == '--zabbix':
+        zabbixmode = True
+        argv = sys.argv[2:]
     else:
-        print 'Usage: 3ware-status [--nagios]'
+        print 'Usage: 3ware-status [--nagios|[[--zabbix] <prop> [<key>]]]'
         sys.exit(1)
+else:
+    normalmode = True
+    argv = sys.argv[1:]
 
 # Check binary exists (and +x), if not print an error message
-# or return UNKNOWN nagios error code
-if os.path.exists(binarypath) and os.access(binarypath, os.X_OK):
-        pass
-else:
-        if nagiosmode:
-                print 'UNKNOWN - Cannot find '+binarypath
-        else:
-                print 'Cannot find '+binarypath+'. Please install it.'
-        sys.exit(3)
-
+if not (os.path.exists(binarypath) and os.access(binarypath, os.X_OK)):
+    if nagiosmode:
+        print 'UNKNOWN - Cannot find %s' % binarypath
+    else:
+        print 'Cannot find %s. Please install it.' % binarypath
+    sys.exit(3)
 
 # Get command output
-def getOutput(cmd):
-    output = os.popen(cmd)
-    lines = []
-    for line in output:
-        if not re.match(r'^$',line.strip()):
-            lines.append(line.strip())
-    return lines
+def getOutput(args = ''):
+    output = check_output([binarypath] + args.split())
+    return [line for line in output.splitlines() if not re.match(r'^$', line.strip())]
+
+def getProperty(args):
+    try:
+        return getOutput('info %s' % args)[0].split(' = ')[1].strip()
+    except IndexError:
+        return 'N/A'
  
-def returnControllerList(output):
-    lines = []
-    for line in output:
-        if re.match(r'^c[0-9]+\s.*$',line.strip()):
-	    lines.append(line.split()[0])
-    return lines
+def parseControllers():
+    controllers = dict()
+    for line in getOutput('info'):
+        if re.match(r'^c[0-9]+\s.*$', line.strip()):
+            parts = line.split()
 
-def returnDiskList(output):
-    lines = []
-    for line in output:
-        if re.match(r'^[p][0-9]+\s.*$',line.strip()):
-            # Shoudl contain something like 'u0'
-            # '-' means the drive doesn't belong to any array
-            # If is NOT PRESENT too, it just means this is an empty port
-            if not line.split()[2].strip() == '-' and not line.split()[1].strip() == 'NOT-PRESENT':
-                lines.append(line.split())
-    if fake_failure:
-        lines[0][1] = 'NOT PRESENT'
-    return lines
+            id = parts[0]
+            model = getProperty('%s model' % id)
 
-def returnArrayList(output):
-    lines = []
-    for line in output:
-        if re.match(r'^[u][0-9]+\s.*$',line.strip()):
-            lines.append(line.split())
-    if fake_failure:
-        lines[0][2] = 'DEGRADED'
-    return lines
+            controllers[id] = { 'model': model }
+    return controllers
 
-# A way to force a fake failure
-fake_failure = False
-if os.path.exists('/root/fake_3ware_failure'):
-    fake_failure = True
+def parseInfo(controller):
+    arrays = dict()
+    disks = dict()
+    for line in getOutput('info %s' % controller):
+        if re.match(r'^u[0-9]+\s.*$', line.strip()):
+            parts = line.split()
 
-cmd = binarypath+' info'
-output = getOutput(cmd)
-controllerlist = returnControllerList(output)
+            id = controller + parts[0]
+            type = parts[1].replace('-', '')
+            status = parts[2]
+            size = '%sG' % parts[6].split('.')[0]
 
-bad = False
+            arrays[id] = { 'type': type, 'status': status, 'size': size }
+
+        if re.match(r'^p[0-9]+\s.*$', line.strip()):
+            parts = line.split()
+
+            if not parts[2].strip() == '-' and not parts[1].strip() == 'NOT-PRESENT':
+                array = controller + parts[2]
+                id = array + parts[0]
+                model = getProperty('%s %s model' % (controller, parts[0]))
+                status = getProperty('%s %s status' % (controller, parts[0]))
+
+                disks[id] = { 'model': model, 'status': status }
+
+    return (arrays, disks)
 
 
-# List available controller
-if not nagiosmode:
-    print '-- Controller informations --'
-    print '-- ID | Model'
-    for controller in controllerlist:
-        cmd = binarypath+' info '+controller+' model'
-        # https://github.com/eLvErDe/hwraid/issues/69
-        try:
-            model = getOutput(cmd)[0].split(' = ')[1].strip()
-        except IndexError:
-            model = 'N/A'
-        print controller+' | '+model
-    print ''
+controllers = dict()
+arrays = dict()
+disks = dict()
 
-# List arrays
-if not nagiosmode:
-    print '-- Arrays informations --'
-    print '-- ID\tType\tSize\tStatus'
-for controller in controllerlist:
-    cmd = binarypath+' info '+controller
-    output = getOutput(cmd)
-    arraylist = returnArrayList(output)
-    for array in arraylist:
-        type = array[1].replace('-','')
-        id = controller+array[0]
-        size = array[6].split('.')[0]+'G'
-        status = array[2]
-        if not status in ['OK','VERIFYING']:
-            bad = True
-            nagiosbadarray=nagiosbadarray+1
-        else:
-            nagiosgoodarray=nagiosgoodarray+1
-        if not nagiosmode:
-            print id+'\t'+type+'\t'+size+'\t'+status
-if not nagiosmode:
-    print ''
+def init():
+    controllers.update(parseControllers())
+    for controller in controllers.keys():
+        a, d = parseInfo(controller)
+        arrays.update(a)
+        disks.update(d)
 
-# List disks
-if not nagiosmode:
-    print '-- Disks informations'
-    print '-- ID\tModel\t\t\tStatus'
-for controller in controllerlist:
-    cmd = binarypath+' info '+controller
-    output = getOutput(cmd)
-    disklist = returnDiskList(output)
-    for disk in disklist:
-        id = controller+disk[2]+disk[0]
-        cmd = binarypath+' info '+controller+' '+disk[0]+' model'
-        model = getOutput(cmd)[0].split(' = ')[1].strip()
-        cmd = binarypath+' info '+controller+' '+disk[0]+' status'
-        status = getOutput(cmd)[0].split(' = ')[1].strip()
-	if not status == 'OK':
-            bad = True
-            nagiosbaddisk=nagiosbaddisk+1
-        else:
-            nagiosgooddisk=nagiosgooddisk+1
-        if not nagiosmode:
-            print id+'\t'+model+'\t'+status
+def info(args):
+    str  = '-- Controller informations --\n'
+    str += '-- ID | Model\n'
+    for c, v in controllers.items():
+        str += '%s | %s\n' % (c, v['model'])
+    str += '\n'
 
-if nagiosmode:
-    if bad:
-        print 'RAID ERROR - Arrays: OK:'+str(nagiosgoodarray)+' Bad:'+str(nagiosbadarray)+' - Disks: OK:'+str(nagiosgooddisk)+' Bad:'+str(nagiosbaddisk)
-        sys.exit(2)
+    str += '-- Arrays informations --\n'
+    str += '-- ID\tType\tSize\tStatus\n'
+    for a, v in arrays.items():
+        str += '%s\t%s\t%s\t%s\n' % (a, v['type'], v['size'], v['status'])
+    str += '\n'
+
+    str += '-- Disks informations\n'
+    str += '-- ID\tModel\t\t\tStatus\n'
+    for d, v in disks.items():
+        str += '%s\t%s\t%s\n' % (d, v['model'], v['status'])
+    return str[:-1]
+
+def discover(objs, label):
+    return lambda args: json.dumps({ 'data': [{label: o} for o in objs.keys()] })
+
+def property(objs, prop):
+    return lambda args: objs[args[0]][prop]
+
+def execute(command, args = []):
+    try:
+        init()
+        print commands[command](args)
+    except (KeyError, IndexError):
+        print 'Usage: 3ware-status [--zabbix][<prop> [<key>]]'
+        print ''
+        print 'Where prop is one of:'
+        print '\n'.join(['  %s' % command for command in commands])
+        print ''
+        print 'And key is one of the items output by <prop.discover>'
+
+if normalmode or zabbixmode:
+    commands = dict()
+    if normalmode:
+        commands['default'] = info
+    commands['controller.discover'] = discover(controllers, '{#3WCONT}')
+    commands['controller.model'] = property(controllers, 'model')
+    commands['array.discover'] = discover(arrays, '{#3WARRAY}')
+    commands['array.size'] = property(arrays, 'size')
+    commands['array.status'] = property(arrays, 'status')
+    commands['array.type'] = property(arrays, 'type')
+    commands['disk.discover'] = discover(disks, '{#3WDISK}')
+    commands['disk.model'] = property(disks, 'model')
+    commands['disk.status'] = property(disks, 'status')
+
+    if len(argv) > 0:
+        command = argv[0]
+        args = argv[1:]
+        execute(command, args)
     else:
-        print 'RAID OK - Arrays: OK:'+str(nagiosgoodarray)+' Bad:'+str(nagiosbadarray)+' - Disks: OK:'+str(nagiosgooddisk)+' Bad:'+str(nagiosbaddisk)
-else:
-    if bad:
-        print '\nThere is at least one disk/array in a NOT OPTIMAL state.'
-        sys.exit(1)
+        execute('default')
+elif nagiosmode:
+    init()
+    badarray  = len([a for a, v in arrays.items() if v['status'] not in ['OK', 'VERIFYING']])
+    goodarray = len([a for a, v in arrays.items() if v['status'] in ['OK', 'VERIFYING']])
+    baddisk   = len([d for d, v in disks.items() if v['status'] not in ['OK', 'VERIFYING']])
+    gooddisk  = len([d for d, v in disks.items() if v['status'] in ['OK', 'VERIFYING']])
+    bad = badarray or baddisk
+
+    print 'RAID %s - Arrays: OK:%s Bad:%s - Disks: OK:%s Bad:%s' % ('ERROR' if bad else 'OK', goodarray, badarray, gooddisk, baddisk)
+    sys.exit(bad)
