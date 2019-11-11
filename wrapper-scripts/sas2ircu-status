@@ -138,8 +138,8 @@ if not nagiosmode:
   print '-- Arrays informations --'
   print '-- ID | Type | Size | Status'
 for ctrl in ctrls:
-  for array in getArrayList(ctrl[0]):
-    arraymap[ctrl[0]]=array
+  arraymap[ctrl[0]]=getArrayList(ctrl[0])
+  for array in arraymap[ctrl[0]]:
     if not array[3] in ['Okay (OKY)', 'Inactive, Okay (OKY)']:
       bad=True
       nagiosbadarray=nagiosbadarray+1
@@ -156,7 +156,7 @@ if not nagiosmode:
 for ctrl in ctrls:
   for disk in getDiskList(ctrl[0]):
     # Compare disk enc/slot to array's ones
-    for array in [arraymap.get(ctrl[0])]:
+    for array in arraymap.get(ctrl[0]):
       for arraydisk in array[4]: 
         if arraydisk == disk[4]:
           if not disk[1] == 'Optimal (OPT)':
