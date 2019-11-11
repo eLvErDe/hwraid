@@ -1,0 +1,15 @@
+Source: storcli
+Section: admin
+Priority: optional
+Maintainer: txaj <txaj1@ovh.fr>
+Build-Depends: debhelper (>= 5), sharutils
+Standards-Version: 3.9.2
+Homepage: http://docs.avagotech.com/docs/1.19.04_StorCLI.zip
+
+Package: storcli
+Architecture: amd64 i386
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: MegaRAID StorCLI management tool
+ This package contains storcli, the management tool for LSI/Avago
+ RAID cards. It superseeds megacli.
+ .
