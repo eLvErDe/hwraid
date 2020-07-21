@@ -58,13 +58,13 @@ if __name__ == '__main__':
         nagiosmode = args.nagios
         debugmode  = args.debug
         notempmode = args.notemp
-	try:
-		root_or_admin = os.geteuid() == 0
-	except AttributeError:
-		root_or_admin = ctypes.windll.shell32.IsUserAnAdmin() !=0
-	if not root_or_admin:
-		print ('# This script requires Administrator privileges')
-		sys.exit(5)
+        try:
+                root_or_admin = os.geteuid() == 0
+        except AttributeError:
+                root_or_admin = ctypes.windll.shell32.IsUserAnAdmin() !=0
+        if not root_or_admin:
+                print ('# This script requires Administrator privileges')
+                sys.exit(5)
 
 # Functions
 def dbgprint(msg):
@@ -478,11 +478,11 @@ def returnDiskInfo(output,controllerid):
 
 			m = re.match(r'(\w{8})(ST\w+)(?:-(\w{6}))?(?:\s+(\w+))', model)
 			if m:
-			    if m.group(3):
-				model = '{}-{} {} {}'.format(m.group(2), m.group(3), m.group(4), m.group(1))
-			    else:
-				model = '{} {:>10} {}'.format(m.group(2), m.group(4), m.group(1))
-			    continue
+				if m.group(3):
+					model = '{}-{} {} {}'.format(m.group(2), m.group(3), m.group(4), m.group(1))
+				else:
+					model = '{} {:>10} {}'.format(m.group(2), m.group(4), m.group(1))
+				continue
 
 			# Sub code
 			manuf = re.sub(' .*', '', model)
@@ -579,11 +579,11 @@ def returnUnconfDiskInfo(output,controllerid):
 
 			m = re.match(r'(\w{8})(ST\w+)(?:-(\w{6}))?(?:\s+(\w+))', model)
 			if m:
-			    if m.group(3):
-				model = '{}-{} {} {}'.format(m.group(2), m.group(3), m.group(4), m.group(1))
-			    else:
-				model = '{} {:>10} {}'.format(m.group(2), m.group(4), m.group(1))
-			    continue
+				if m.group(3):
+					model = '{}-{} {} {}'.format(m.group(2), m.group(3), m.group(4), m.group(1))
+				else:
+					model = '{} {:>10} {}'.format(m.group(2), m.group(4), m.group(1))
+				continue
 
 			manuf = re.sub(' .*', '', model)
 			dtype = re.sub(manuf+' ', '', model)
