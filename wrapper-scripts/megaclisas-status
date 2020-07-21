@@ -976,7 +976,7 @@ if nagiosmode:
 else:
 	if bad:
 		# DO NOT MODIFY OUTPUT BELOW
-		# Scripts may relies on it
+		# Scripts may rely on its formatting
 		# https://github.com/eLvErDe/hwraid/issues/99
 		print ('\nThere is at least one disk/array in a NOT OPTIMAL state.')
 		print ('RAID ERROR - Arrays: OK:'+str(nagiosgoodarray)+' Bad:'+str(nagiosbadarray)+' - Disks: OK:'+str(nagiosgooddisk)+' Bad:'+str(nagiosbaddisk))
