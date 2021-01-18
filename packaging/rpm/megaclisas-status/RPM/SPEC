@@ -1,0 +1,55 @@
+%define	name	megaclisas-status
+%define version	0.17
+%define release	1
+
+%define extradir %{_sourcedir}/packaging/rpm/megaclisas-status
+
+Name: %{name}
+Summary: get RAID status out of LSI MegaRAID SAS HW RAID controllers
+Version: %{version}
+Release: %{release}
+License: GPL
+Group: Applications/Internet
+BuildArch: noarch
+BuildRoot: %{_builddir}/%{name}-root
+Distribution: whatever
+Vendor: Adam Cécile (Le_Vert) <gandalf@le-vert.net>
+Packager: wilde@intevation.de
+Requires: python, bash, MegaCli, daemonize
+BuildRequires: systemd
+
+%description
+The megacli-status software is a query tool to access the running
+configuration and status of LSI MegaRAID SAS HBAs.
+
+It uses LSI MegaCli proprietary command line tool.
+
+%prep
+exit 0
+
+%build
+exit 0
+
+%install
+rm -rf   %{buildroot}
+install -d %{buildroot}%{_sbindir}
+install -d %{buildroot}%{_initddir}
+install -d %{buildroot}%{_defaultdocdir}/%{name}
+
+# main package README
+install %{_sourcedir}/wrapper-scripts/megaclisas-status \
+	%{buildroot}%{_sbindir}
+install %{extradir}/megaclisas-status.megaclisas-statusd.init \
+	%{buildroot}%{_initddir}/megaclisas-statusd
+install -m 644 %{extradir}/README \
+	%{buildroot}%{_defaultdocdir}/%{name}
+
+%clean
+exit 0
+
+%files
+%{_sbindir}/megaclisas-status
+%{_initddir}/megaclisas-statusd
+%doc %{_defaultdocdir}/%{name}/README
+
+# vim: ft=spec:

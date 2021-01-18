@@ -1,0 +1,23 @@
+README.Debian for megaclisas-status package
+-------------------------------------------
+
+Possible configuration:
+----------------------
+
+If you want to change the default configuration of the init script you
+can create the file /etc/default/megaclisas-statusd and specify the following
+values.
+
+MAILTO=
+PERIOD=
+REMIND=
+
+Use MAILTO to specify which user shall get the status mails 
+(default is root).
+
+With PERIOD you can fix the seconds between each check.
+
+And REMIND specifies the seconds between each reminder.
+
+
+ -- Adam Cécile (Le_Vert) <gandalf@le-vert.net>  Tue, 11 Dec 2007 17:06:56 +0100
