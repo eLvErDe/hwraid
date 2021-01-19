@@ -15,7 +15,7 @@ BuildRoot: %{_builddir}/%{name}-root
 Distribution: whatever
 Vendor: Adam Cécile (Le_Vert) <gandalf@le-vert.net>
 Packager: wilde@intevation.de
-Requires: python, bash, daemonize, mailx
+Requires: python, bash, daemonize, mailx, sas2ircu
 BuildRequires: systemd
 
 %description
