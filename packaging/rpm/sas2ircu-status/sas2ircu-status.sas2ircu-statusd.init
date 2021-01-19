@@ -1,10 +1,16 @@
-#! /bin/sh
+#! /bin/bash
 
 # Author: Petter Reinholdtsen <pere@hungry.com>
+# Adapted for CentOS by: Sascha Wilde <wilde@intevation.de>
 # License: GNU General Public License v2 or later
+#
+# chkconfig: - 50 50
+# description: Check sas2ircu-status values in the background.
+# config: /etc/default/sas2ircu-statusd
 #
 ### BEGIN INIT INFO
 # Provides:          sas2ircu-statusd
+# Description:       Check sas2ircu-status values in the background.
 # Required-Start:    $remote_fs $syslog
 # Required-Stop:     $remote_fs $syslog
 # Default-Start:     2 3 4 5
@@ -31,12 +37,11 @@ RUN_DAEMON=yes
 # Gracefully exit if the package has been removed.
 test -x /usr/sbin/sas2ircu-status || exit 0
 
-. /lib/lsb/init-functions
-[ -e /etc/default/rcS ] && . /etc/default/rcS
+# Source function library.
+. /etc/rc.d/init.d/functions
 
 if [ $RUN_DAEMON = "no" ] ; then
-	log_begin_msg "sas2ircu-statusd is disabled in /etc/default/sas2ircu-statusd, not starting."
-    	log_end_msg 0
+	echo >&2 "sas2ircu-statusd is disabled in /etc/default/sas2ircu-statusd, not starting."
 	exit 0
 fi
 
@@ -106,7 +111,7 @@ EOF
 
 check_daemon() {
         # Let's check if there is a daemon which is really running and not timing out
-        DAEMON_RUN=`ps aux | grep "/etc/init.d/sas2ircu-statusd check_sas2ircu" | grep -v grep | grep -v daemon`
+        DAEMON_RUN=`ps aux | grep "sas2ircu-statusd check_sas2ircu" | grep -v grep | grep -v daemon`
         if [ -n "$DAEMON_RUN" ] ; then
                 return 1;
         else
@@ -120,15 +125,15 @@ check_daemon() {
 d_start() {
     [ -f $PIDFILE ] && PID="`cat $PIDFILE`"
     if [ "$PID" ] ; then
-        log_progress_msg "Daemon already running. Refusing to start another"
+        echo >&2 "Daemon already running. Refusing to start another"
         return 0
     elif check_daemon ; then
         # Use the daemon package to turn this script into a daemon
-        start-stop-daemon --start --quiet --pidfile $PIDFILE \
-                --oknodo --exec /usr/bin/daemon /usr/bin/daemon $SCRIPTNAME check_sas2ircu
+        daemon --pidfile $PIDFILE \
+               /usr/sbin/daemonize $SCRIPTNAME check_sas2ircu
 	return 0
     else
-        log_progress_msg "Daemon is already running. Refusing to start another"
+        echo >&2 "Daemon is already running. Refusing to start another"
         return 0
     fi
 }
@@ -138,14 +143,10 @@ d_start() {
 #
 d_stop() {
         if [ -f $PIDFILE ] ; then
-                # Doesn't work (kill init script instance, but not daemon...)
-             	#start-stop-daemon --stop --oknodo --quiet --pidfile $PIDFILE > /dev/null 2>&1 
-                DAEMONPID=`ps aux | grep '/usr/bin/daemon /etc/init.d/sas2ircu-statusd check_sas2ircu' | grep -v 'grep' | awk '{ print $2 }'`
-                SCRIPTPID=`cat $PIDFILE`
-                kill -9 $DAEMONPID $SCRIPTPID || true
+             	killproc -p $PIDFILE /usr/sbin/daemonize
 		rm -f $PIDFILE
         else
-                log_progress_msg "Daemon is already stopped."
+                echo >&2 "Daemon is already stopped."
                 return 0
         fi
 }
@@ -154,40 +155,35 @@ d_stop() {
 # therefore can be used by a restart
 d_stop_by_restart() {
         if [ -f $PIDFILE ] ; then
-                # Doesn't work (kill init script instance, but not daemon...)
-                #start-stop-daemon --oknodo --stop --quiet --pidfile $PIDFILE
-                DAEMONPID=`ps aux | grep '/usr/bin/daemon /etc/init.d/sas2ircu-statusd check_sas2ircu' | grep -v 'grep' | awk '{ print $2 }'`
-                SCRIPTPID=`cat $PIDFILE`
-                kill -9 $DAEMONPID $SCRIPTPID || true
+             	killproc -p $PIDFILE /usr/sbin/daemonize
                 rm -f $PIDFILE
-                log_end_msg 0
         else
-                log_progress_msg "Daemon is already stopped."
-                log_end_msg 0
+                echo >&2 "Daemon is already stopped."
         fi
 }
 
 case "$1" in
   start)
         echo -n ""
-        log_begin_msg "Starting $DESC: $NAME"
+        echo >&2 "Starting $DESC: $NAME"
         d_start ; CODE=$?
-        log_end_msg $CODE
         ;;
   stop)
-        log_begin_msg "Stopping $DESC: $NAME"
+        echo >&2 "Stopping $DESC: $NAME"
         d_stop ; CODE=$?
-        log_end_msg $CODE
         ;;
   check_sas2ircu)
         check_sas2ircu
         ;;
+  status)
+	status -p $PIDFILE /usr/sbin/daemonize
+	exit $?
+	;;
   restart|force-reload)
-        log_begin_msg "Restarting $DESC: $NAME"
+        echo >&2 "Restarting $DESC: $NAME"
         d_stop_by_restart
         sleep 1
         d_start || CODE=$?
-        log_end_msg $CODE
         ;;
   *)
         # echo "Usage: $SCRIPTNAME {start|stop|restart|reload|force-reload}" >&2
