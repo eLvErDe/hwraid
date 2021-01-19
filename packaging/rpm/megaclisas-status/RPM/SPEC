@@ -1,6 +1,6 @@
 %define	name	megaclisas-status
 %define version	0.17
-%define release	1
+%define release	2
 
 %define extradir %{_sourcedir}/packaging/rpm/megaclisas-status
 
