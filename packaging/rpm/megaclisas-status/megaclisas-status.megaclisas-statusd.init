@@ -1,0 +1,200 @@
+#! /bin/bash
+
+# Author: Petter Reinholdtsen <pere@hungry.com>
+# Adapted for CentOS by: Sascha Wilde <wilde@intevation.de>
+# License: GNU General Public License v2 or later
+#
+# chkconfig: - 50 50
+# description: Check megaclisas-status values in the background.
+# config: /etc/default/megaclisas-statusd
+#
+### BEGIN INIT INFO
+# Provides:          megaclisas-statusd
+# Description:       Check megaclisas-status values in the background.
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Check megaclisas-status values in the background.
+### END INIT INFO
+
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+DESC="megaclisas-status monitor"
+NAME=megaclisas-statusd
+PIDFILE=/var/run/$NAME.pid
+STATUSFILE=/var/run/$NAME.status
+SCRIPTNAME=/etc/init.d/$NAME
+
+
+# Do not touch you can configure this in /etc/default/megaclisas-statusd
+MAILTO=root   # Where to report problems
+PERIOD=600    # Seconds between each check    (default 10 minutes)
+REMIND=7200   # Seconds between each reminder (default 2 hours)
+RUN_DAEMON=yes
+
+[ -e /etc/default/megaclisas-statusd ] && . /etc/default/megaclisas-statusd
+
+# Gracefully exit if the package has been removed.
+test -x /usr/sbin/megaclisas-status || exit 0
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+if [ $RUN_DAEMON = "no" ] ; then
+	echo >&2 "megaclisas-statusd is disabled in /etc/default/megaclisas-statusd, not starting."
+	exit 0
+fi
+
+check_megaclisas() {
+    echo $$ > $PIDFILE.new && mv $PIDFILE.new $PIDFILE
+    while true ; do
+        # Check ever $PERIOD seconds, send email on every status
+        # change and repeat ever $REMIND seconds if the raid is still
+        # bad.
+        if (megaclisas-status --notemp); then
+            BADRAID=false
+        else
+            BADRAID=true
+            logger -t megaclisas-statusd "detected non-optimal RAID status"
+        fi
+        STATUSCHANGE=false
+        if [ true = "$BADRAID" ] ; then
+            # RAID not OK
+            (megaclisas-status --notemp) > $STATUSFILE.new
+            if [ ! -f $STATUSFILE ] ; then # RAID just became broken
+                STATUSCHANGE=true
+                mv $STATUSFILE.new $STATUSFILE
+            elif cmp -s $STATUSFILE $STATUSFILE.new ; then
+                # No change.  Should we send reminder?
+                LASTTIME="`stat -c '%Z' $STATUSFILE`"
+                NOW="`date +%s`"
+                SINCELAST="`expr $NOW - $LASTTIME`"
+                if [ $REMIND -le "$SINCELAST" ]; then
+                    # Time to send reminder
+                    STATUSCHANGE=true
+                    mv $STATUSFILE.new $STATUSFILE
+                else
+                    rm $STATUSFILE.new
+                fi
+            else
+                STATUSCHANGE=true
+                mv $STATUSFILE.new $STATUSFILE
+            fi
+        else
+            # RAID OK
+            if [ -f $STATUSFILE ] ; then
+                rm $STATUSFILE
+                STATUSCHANGE=true
+            fi
+        fi
+                
+        if [ true = "$STATUSCHANGE" ]; then
+            hostname="`uname -n`"
+            (
+                cat <<EOF 
+This is a RAID status update from megaclisas-statusd.  The megaclisas-status
+program reports that one of the RAIDs changed state:
+
+EOF
+                if [ -f $STATUSFILE ] ; then
+                    cat $STATUSFILE
+                else
+                    (megaclisas-status --notemp)
+                fi
+                echo
+                echo "Report from $0 on $hostname"
+            ) | mail -s "info: MegaRAID raid status change on $hostname" $MAILTO
+        fi
+	sleep $PERIOD &
+	# Kill sleep if we're signaled to exit, otherwise we will stay defunct
+	# until sleep terminates.
+	trap "kill $!; exit" TERM
+	wait $!
+	trap - TERM
+    done
+}
+
+check_daemon() {
+        # Let's check if there is a daemon which is really running and not timing out
+        DAEMON_RUN=`ps aux | grep "megaclisas-statusd check_megaclisas" | grep -v grep | grep -v daemon`
+        if [ -n "$DAEMON_RUN" ] ; then
+                return 1;
+        else
+                return 0;
+        fi
+}
+
+#
+#       Function that starts the daemon/service.
+#
+d_start() {
+    [ -f $PIDFILE ] && PID="`cat $PIDFILE`"
+    if [ "$PID" ] ; then
+        echo >&2 "Daemon already running. Refusing to start another"
+        return 0
+    elif check_daemon ; then
+        # Use the daemon package to turn this script into a daemon
+        daemon --pidfile $PIDFILE \
+               /usr/sbin/daemonize $SCRIPTNAME check_megaclisas
+	return 0
+    else
+        echo >&2 "Daemon is already running. Refusing to start another"
+        return 0
+    fi
+}
+
+#
+#       Function that stops the daemon/service.
+#
+d_stop() {
+        if [ -f $PIDFILE ] ; then
+             	killproc -p $PIDFILE /usr/sbin/daemonize
+		rm -f $PIDFILE
+        else
+                echo >&2 "Daemon is already stopped."
+                return 0
+        fi
+}
+
+# This is a workaround function which does not directly exit and
+# therefore can be used by a restart
+d_stop_by_restart() {
+        if [ -f $PIDFILE ] ; then
+             	killproc -p $PIDFILE /usr/sbin/daemonize
+                rm -f $PIDFILE
+        else
+                echo >&2 "Daemon is already stopped."
+        fi
+}
+
+case "$1" in
+  start)
+        echo -n ""
+        echo >&2 "Starting $DESC: $NAME"
+        d_start ; CODE=$?
+        ;;
+  stop)
+        echo >&2 "Stopping $DESC: $NAME"
+        d_stop ; CODE=$?
+        ;;
+  check_megaclisas)
+        check_megaclisas
+        ;;
+  status)
+	status -p $PIDFILE /usr/sbin/daemonize
+	exit $?
+	;;
+  restart|force-reload)
+        echo >&2 "Restarting $DESC: $NAME"
+        d_stop_by_restart
+        sleep 1
+        d_start || CODE=$?
+        ;;
+  *)
+        # echo "Usage: $SCRIPTNAME {start|stop|restart|reload|force-reload}" >&2
+        echo "Usage: $SCRIPTNAME {start|stop|restart|force-reload}" >&2
+        exit 1
+        ;;
+esac
+
+exit 0

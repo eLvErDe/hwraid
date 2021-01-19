@@ -1,0 +1,68 @@
+.\"                                      Hey, EMACS: -*- nroff -*-
+.\" (C) Copyright 2013 Adam Cécile (Le_Vert) <gandalf@le-vert.net>,
+.\"
+.TH SAS2IRCU-STATUS 8 "2014-01-26"
+.\" Please adjust this date whenever revising the manpage.
+.\"
+.\" Some roff macros, for reference:
+.\" .nh        disable hyphenation
+.\" .hy        enable hyphenation
+.\" .ad l      left justify
+.\" .ad b      justify to both left and right margins
+.\" .nf        disable filling
+.\" .fi        enable filling
+.\" .br        insert line break
+.\" .sp <n>    insert n+1 empty lines
+.\" for manpage-specific macros, see man(7)
+.SH NAME
+sas2ircu-status \- display RAID status of LSI FusionMPT2 adapters in a human-readable way
+.SH SYNOPSIS
+.B sas2ircu-status
+.RI [ --nagios ]
+.SH DESCRIPTION
+This wrapper will call LSI proprietary "sas2ircu" command-line tool to display
+status of all your
+.B disks/arrays connected
+to an 
+.B LSI FusionMPT2 adapter.
+.br
+It will also run
+.B periodic checks
+and notify the
+.B root user (by mail)
+if anything goes wrong. Reminders will be sent every two hours until the
+status goes back to normal.
+.sp
+Here is an output example:
+.sp
+.br
+-- Controller informations --
+.br
+-- ID | Model
+.br
+c0 | SAS2008
+.sp
+-- Arrays informations --
+.br
+-- ID | Type | Size | Status
+.br
+c0u0 | RAID1 | 1800G | Okay (OKY)
+.sp
+-- Disks informations
+.br
+-- ID | Model | Status
+.br
+c0u0p0 | Hitachi HUA72202 (JK1151YAHUYAZZ) | Optimal (OPT)
+.br
+c0u0p1 | Hitachi HUA72202 (JK1151YAHUW1DZ) | Optimal (OPT)
+.SH OPTIONS
+.TP
+.B \-\-nagios
+Use nagios compatible output (and return code for OK/WARNING/CRITICAL states)
+.sp
+Example:
+.br
+RAID OK - Arrays: OK:1 Bad:0 - Disks: OK:2 Bad:0
+.SH SEE ALSO
+More information about this adapters family:
+.B http://hwraid.le-vert.net/wiki/LSIFusionMPTSAS2
