@@ -1,0 +1,41 @@
+%define	name	sas2ircu
+%define version	20.00.00.00
+%define release	1
+
+Name: %{name}
+Summary: LSI Logic Fusion MPT SAS2 command line management tool
+Version: %{version}
+Release: %{release}
+License: LSI Corporation, All Rights Reserved.
+Group: Applications/Internet
+BuildArch: x86_64
+BuildRoot: %{_builddir}/%{name}-root
+Distribution: whatever
+Vendor: LSI Corporation
+Packager: wilde@intevation.de
+
+%description
+Tool to read and setup LSI Logic Fusion MTP SAS2 HW RAID HBAs (mpt2sas
+driver).
+
+%prep
+exit 0
+
+%build
+exit 0
+
+%install
+rm -rf   %{buildroot}
+install -d %{buildroot}%{_sbindir}
+
+# main package
+install %{_sourcedir}/SAS2IRCU_P20/sas2ircu_linux_x86_rel/sas2ircu \
+	%{buildroot}%{_sbindir}
+
+%clean
+exit 0
+
+%files
+%{_sbindir}/sas2ircu
+
+# vim: ft=spec:
