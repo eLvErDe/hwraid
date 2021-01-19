@@ -1,0 +1,58 @@
+%define	name	sas2ircu-status
+%define version	0.8
+%define release	1
+
+%define extradir %{_sourcedir}/packaging/rpm/sas2ircu-status
+
+Name: %{name}
+Summary: get RAID status out of LSI Fusion MPT SAS2 HW RAID controllers
+Version: %{version}
+Release: %{release}
+License: GPL
+Group: Applications/Internet
+BuildArch: noarch
+BuildRoot: %{_builddir}/%{name}-root
+Distribution: whatever
+Vendor: Adam Cécile (Le_Vert) <gandalf@le-vert.net>
+Packager: wilde@intevation.de
+Requires: python, bash, daemonize, mailx
+BuildRequires: systemd
+
+%description
+The sas2ircu-status software is a query tool to access the running
+configuration and status of LSI Fusion MPT SAS2 HBAs. sas2ircu-status allows
+you to monitor the health and status of your RAID setup.
+
+%prep
+exit 0
+
+%build
+exit 0
+
+%install
+rm -rf   %{buildroot}
+install -d %{buildroot}%{_sbindir}
+install -d %{buildroot}%{_initddir}
+install -d %{buildroot}%{_mandir}/man8
+install -d %{buildroot}%{_defaultdocdir}/%{name}
+
+# main package README
+install %{_sourcedir}/wrapper-scripts/sas2ircu-status \
+	%{buildroot}%{_sbindir}
+install %{extradir}/sas2ircu-status.sas2ircu-statusd.init \
+	%{buildroot}%{_initddir}/sas2ircu-statusd
+install -m 644 %{extradir}/sas2ircu-status.8 \
+	%{buildroot}%{_mandir}/man8
+install -m 644 %{extradir}/README \
+	%{buildroot}%{_defaultdocdir}/%{name}
+
+%clean
+exit 0
+
+%files
+%{_sbindir}/sas2ircu-status
+%{_initddir}/sas2ircu-statusd
+%doc %{_mandir}/man8/sas2ircu-status.8.gz
+%doc %{_defaultdocdir}/%{name}/README
+
+# vim: ft=spec:
