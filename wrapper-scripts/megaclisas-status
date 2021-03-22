@@ -485,11 +485,11 @@ def returnDiskInfo(output,controllerid):
 
 			m = re.match(r'(\w{8})(ST\w+)(?:-(\w{6}))?(?:\s+(\w+))', model)
 			if m:
-			    if m.group(3):
-				model = '{}-{} {} {}'.format(m.group(2), m.group(3), m.group(4), m.group(1))
-			    else:
-				model = '{} {:>10} {}'.format(m.group(2), m.group(4), m.group(1))
-			    continue
+				if m.group(3):
+					model = '{0}-{1} {2} {3}'.format(m.group(2), m.group(3), m.group(4), m.group(1))
+				else:
+					model = '{0} {1:>10} {2}'.format(m.group(2), m.group(4), m.group(1))
+				continue
 
 			# Sub code
 			manuf = re.sub(' .*', '', model)
@@ -586,11 +586,11 @@ def returnUnconfDiskInfo(output,controllerid):
 
 			m = re.match(r'(\w{8})(ST\w+)(?:-(\w{6}))?(?:\s+(\w+))', model)
 			if m:
-			    if m.group(3):
-				model = '{}-{} {} {}'.format(m.group(2), m.group(3), m.group(4), m.group(1))
-			    else:
-				model = '{} {:>10} {}'.format(m.group(2), m.group(4), m.group(1))
-			    continue
+				if m.group(3):
+					model = '{0}-{1} {2} {3}'.format(m.group(2), m.group(3), m.group(4), m.group(1))
+				else:
+					model = '{0} {1:>10} {2}'.format(m.group(2), m.group(4), m.group(1))
+				continue
 
 			manuf = re.sub(' .*', '', model)
 			dtype = re.sub(manuf+' ', '', model)
