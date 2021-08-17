@@ -151,14 +151,28 @@ for controller in controllerlist:
 
 if nagiosmode:
     if bad:
-        print("RAID ERROR - Arrays: OK:" + str(nagiosgoodarray) + " Bad:" + str(nagiosbadarray) + " - Disks: OK:" + str(nagiosgooddisk) + " Bad:" + str(
-            nagiosbaddisk
-        ))
+        print(
+            "RAID ERROR - Arrays: OK:"
+            + str(nagiosgoodarray)
+            + " Bad:"
+            + str(nagiosbadarray)
+            + " - Disks: OK:"
+            + str(nagiosgooddisk)
+            + " Bad:"
+            + str(nagiosbaddisk)
+        )
         sys.exit(2)
     else:
-        print("RAID OK - Arrays: OK:" + str(nagiosgoodarray) + " Bad:" + str(nagiosbadarray) + " - Disks: OK:" + str(nagiosgooddisk) + " Bad:" + str(
-            nagiosbaddisk
-        ))
+        print(
+            "RAID OK - Arrays: OK:"
+            + str(nagiosgoodarray)
+            + " Bad:"
+            + str(nagiosbadarray)
+            + " - Disks: OK:"
+            + str(nagiosgooddisk)
+            + " Bad:"
+            + str(nagiosbaddisk)
+        )
 else:
     if bad:
         print("\nThere is at least one disk/array in a NOT OPTIMAL state.")

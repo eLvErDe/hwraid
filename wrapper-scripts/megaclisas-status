@@ -770,18 +770,21 @@ if printarray:
                 if not nagiosmode:
                     print(ldfmt % ("-- ID", "Type", "Size", "Strpsz", "Flags", "DskCache", "Status", "OS Path", "CacheCade", "InProgress"))
             if not nagiosmode:
-                print(ldfmt % (
-                    arrayinfo[0],
-                    arrayinfo[1],
-                    arrayinfo[2],
-                    arrayinfo[3],
-                    arrayinfo[4],
-                    arrayinfo[5],
-                    arrayinfo[6],
-                    arrayinfo[7],
-                    arrayinfo[8],
-                    arrayinfo[9],
-                ))
+                print(
+                    ldfmt
+                    % (
+                        arrayinfo[0],
+                        arrayinfo[1],
+                        arrayinfo[2],
+                        arrayinfo[3],
+                        arrayinfo[4],
+                        arrayinfo[5],
+                        arrayinfo[6],
+                        arrayinfo[7],
+                        arrayinfo[8],
+                        arrayinfo[9],
+                    )
+                )
             dbgprint("Array state : LD " + arrayinfo[0] + ", status : " + arrayinfo[6])
             if arrayinfo[6] not in ["Optimal", "N/A"]:
                 bad = True
@@ -862,17 +865,20 @@ if totaldrivenumber:
                     print(drvfmt % ("-- ID", "Type", "Drive Model", "Size", "Status", "Speed", "Temp", "Slot ID", "LSI ID"))
             # Drive information
             if not nagiosmode:
-                print(drvfmt % (
-                    str("c" + str(controllerid) + "u" + array[0] + "p" + array[1]),  # c0p0
-                    array[2],  # HDD/SDD
-                    array[3],  # Model Information (Variable len)
-                    array[4],  # Size
-                    array[5],  # Status (Variable len)
-                    array[6],  # Speed
-                    array[7],  # Temp
-                    str("[" + array[8] + ":" + array[9] + "]"),  # Slot ID
-                    array[10],
-                ))  # LSI ID
+                print(
+                    drvfmt
+                    % (
+                        str("c" + str(controllerid) + "u" + array[0] + "p" + array[1]),  # c0p0
+                        array[2],  # HDD/SDD
+                        array[3],  # Model Information (Variable len)
+                        array[4],  # Size
+                        array[5],  # Status (Variable len)
+                        array[6],  # Speed
+                        array[7],  # Temp
+                        str("[" + array[8] + ":" + array[9] + "]"),  # Slot ID
+                        array[10],
+                    )
+                )  # LSI ID
             i = i + 1
         controllerid += 1
     if not nagiosmode:
@@ -969,18 +975,21 @@ if totalunconfdrivenumber:
                     print(drvfmt % ("-- ID", "Type", "Drive Model", "Size", "Status", "Speed", "Temp", "Slot ID", "LSI ID", "Path"))
             # Drive information
             if not nagiosmode:
-                print(drvfmt % (
-                    str("c" + str(controllerid) + "uXpY"),  # cXpY
-                    array[0],  # HDD/SDD
-                    array[1],  # Model Information (Variable len)
-                    array[2],  # Size
-                    array[3],  # Status (Variable len)
-                    array[4],  # Speed
-                    array[5],  # Temp
-                    str("[" + array[6] + ":" + array[7] + "]"),  # Slot ID
-                    array[8],  # LSI ID
-                    array[9],
-                ))  # OS path, if any
+                print(
+                    drvfmt
+                    % (
+                        str("c" + str(controllerid) + "uXpY"),  # cXpY
+                        array[0],  # HDD/SDD
+                        array[1],  # Model Information (Variable len)
+                        array[2],  # Size
+                        array[3],  # Status (Variable len)
+                        array[4],  # Speed
+                        array[5],  # Temp
+                        str("[" + array[6] + ":" + array[7] + "]"),  # Slot ID
+                        array[8],  # LSI ID
+                        array[9],
+                    )
+                )  # OS path, if any
             i += 1
         controllerid += 1
     if not nagiosmode:
@@ -1002,21 +1011,42 @@ if debugmode:
 
 if nagiosmode:
     if bad:
-        print("RAID ERROR - Arrays: OK:" + str(nagiosgoodarray) + " Bad:" + str(nagiosbadarray) + " - Disks: OK:" + str(nagiosgooddisk) + " Bad:" + str(
-            nagiosbaddisk
-        ))
+        print(
+            "RAID ERROR - Arrays: OK:"
+            + str(nagiosgoodarray)
+            + " Bad:"
+            + str(nagiosbadarray)
+            + " - Disks: OK:"
+            + str(nagiosgooddisk)
+            + " Bad:"
+            + str(nagiosbaddisk)
+        )
         sys.exit(2)
     else:
-        print("RAID OK - Arrays: OK:" + str(nagiosgoodarray) + " Bad:" + str(nagiosbadarray) + " - Disks: OK:" + str(nagiosgooddisk) + " Bad:" + str(
-            nagiosbaddisk
-        ))
+        print(
+            "RAID OK - Arrays: OK:"
+            + str(nagiosgoodarray)
+            + " Bad:"
+            + str(nagiosbadarray)
+            + " - Disks: OK:"
+            + str(nagiosgooddisk)
+            + " Bad:"
+            + str(nagiosbaddisk)
+        )
 else:
     if bad:
         # DO NOT MODIFY OUTPUT BELOW
         # Scripts may relies on it
         # https://github.com/eLvErDe/hwraid/issues/99
         print("\nThere is at least one disk/array in a NOT OPTIMAL state.")
-        print("RAID ERROR - Arrays: OK:" + str(nagiosgoodarray) + " Bad:" + str(nagiosbadarray) + " - Disks: OK:" + str(nagiosgooddisk) + " Bad:" + str(
-            nagiosbaddisk
-        ))
+        print(
+            "RAID ERROR - Arrays: OK:"
+            + str(nagiosgoodarray)
+            + " Bad:"
+            + str(nagiosbadarray)
+            + " - Disks: OK:"
+            + str(nagiosgooddisk)
+            + " Bad:"
+            + str(nagiosbaddisk)
+        )
         sys.exit(1)

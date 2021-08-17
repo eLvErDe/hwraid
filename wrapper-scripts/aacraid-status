@@ -297,9 +297,23 @@ if printarray:
             for tasks in tasksinfo:
                 if int(tasks[0]) == int(arrayid):
                     if not config.nagios:
-                        print("c" + str(controllerid - 1) + "u" + str(arrayid) + " | " + raidtype + " | " + arrayinfo[2] + "G | " + arrayinfo[
-                            1
-                        ] + " | " + tasks[1] + " | " + tasks[2] + "%")
+                        print(
+                            "c"
+                            + str(controllerid - 1)
+                            + "u"
+                            + str(arrayid)
+                            + " | "
+                            + raidtype
+                            + " | "
+                            + arrayinfo[2]
+                            + "G | "
+                            + arrayinfo[1]
+                            + " | "
+                            + tasks[1]
+                            + " | "
+                            + tasks[2]
+                            + "%"
+                        )
                     done = True
                     break
             if done == False:
@@ -346,9 +360,22 @@ while controllerid <= controllernumber:
                 # Matched in members of this array
                 if disk[0] == member:
                     if not config.nagios:
-                        print("c" + str(controllerid - 1) + "u" + str(arrayid) + "d" + str(memberid) + " | " + disk[2] + " " + disk[3] + " " + disk[
-                            4
-                        ] + " | " + disk[1])
+                        print(
+                            "c"
+                            + str(controllerid - 1)
+                            + "u"
+                            + str(arrayid)
+                            + "d"
+                            + str(memberid)
+                            + " | "
+                            + disk[2]
+                            + " "
+                            + disk[3]
+                            + " "
+                            + disk[4]
+                            + " | "
+                            + disk[1]
+                        )
                     array_member = True
                     memberid += 1
 
@@ -362,16 +389,20 @@ while controllerid <= controllernumber:
 
 if config.nagios:
     if bad:
-        print((
-            "RAID ERROR - Controllers OK:%d Bad:%d - Arrays OK:%d Bad:%d - Disks OK:%d Bad:%d"
-            % (nagiosgoodctrl, nagiosbadctrl, nagiosgoodarray, nagiosbadarray, nagiosgooddisk, nagiosbaddisk)
-        ))
+        print(
+            (
+                "RAID ERROR - Controllers OK:%d Bad:%d - Arrays OK:%d Bad:%d - Disks OK:%d Bad:%d"
+                % (nagiosgoodctrl, nagiosbadctrl, nagiosgoodarray, nagiosbadarray, nagiosgooddisk, nagiosbaddisk)
+            )
+        )
         sys.exit(2)
     else:
-        print((
-            "RAID OK - Controllers OK:%d Bad:%d - Arrays OK:%d Bad:%d - Disks OK:%d Bad:%d"
-            % (nagiosgoodctrl, nagiosbadctrl, nagiosgoodarray, nagiosbadarray, nagiosgooddisk, nagiosbaddisk)
-        ))
+        print(
+            (
+                "RAID OK - Controllers OK:%d Bad:%d - Arrays OK:%d Bad:%d - Disks OK:%d Bad:%d"
+                % (nagiosgoodctrl, nagiosbadctrl, nagiosgoodarray, nagiosbadarray, nagiosgooddisk, nagiosbaddisk)
+            )
+        )
 else:
     if bad:
         print("\nThere is at least one disk/array in a NOT OPTIMAL state.")
