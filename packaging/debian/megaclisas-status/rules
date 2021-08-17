@@ -13,6 +13,18 @@ PKG_VERSION_TAG := $(PKG_VERSION)+$(DIST_NAME).$(DIST_RELEASE).$(DIST_VERSION)
 SUBSTVARS_BINARY_VERSION := -Vbinary:Version="$(PKG_VERSION_TAG)"
 SUBSTVARS_SOURCE_VERSION := -Vsource:Version="$(PKG_VERSION_TAG)"
 
+# Detect Python interpreter
+ifneq (, $(shell which python3))
+	INTERPRETER_NAME := python3
+	INTERPRETER_PATH := $(shell which python3)
+else ifneq (, $(shell which python))
+	INTERPRETER_NAME := python
+	INTERPRETER_PATH := $(shell which python)
+else ifneq (, $(shell which python))
+	INTERPRETER_NAME := python2
+	INTERPRETER_PATH := $(shell which python2)
+endif
+SUBSTVARS_PYTHON_CUSTOM := -VpythonCustom:Depends="$(INTERPRETER_NAME)"
 
 build: build-arch build-indep
 build-arch:
@@ -24,6 +36,9 @@ clean:
 	dh_clean 
 
 install:
+ifeq (, $(INTERPRETER_PATH))
+	$(error Python interpreter could not be detected)
+endif
 	dh_testdir
 	dh_testroot
 	dh_clean -k 
@@ -36,6 +51,7 @@ binary-indep: build install
 	dh_installchangelogs -i
 	dh_installdocs -i
 	dh_install -i
+	sed -i 's|^#!.*python.*|#!$(INTERPRETER_PATH)|' debian/*/usr/sbin/*
 	dh_installinit -i --name megaclisas-statusd
 	dh_link -i
 	dh_strip -i
@@ -43,7 +59,7 @@ binary-indep: build install
 	dh_fixperms -i
 	dh_installdeb -i
 	dh_shlibdeps -i
-	dh_gencontrol -i -- -v"$(PKG_VERSION_TAG)" $(SUBSTVARS_BINARY_VERSION) $(SUBSTVARS_SOURCE_VERSION)
+	dh_gencontrol -i -- -v"$(PKG_VERSION_TAG)" $(SUBSTVARS_BINARY_VERSION) $(SUBSTVARS_SOURCE_VERSION) $(SUBSTVARS_PYTHON_CUSTOM)
 	dh_md5sums -i
 	dh_builddeb -i
 
