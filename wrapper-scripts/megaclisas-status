@@ -49,10 +49,9 @@ NagiosGoodDisks = {}
 if __name__ == '__main__':
 	# deal with command line options
 	parser = argparse.ArgumentParser()
-	group = parser.add_mutually_exclusive_group()
-	group.add_argument('--nagios', help='enable nagios support',   action='store_true')
-	group.add_argument('--debug',  help='enable debugging output', action='store_true')
-	group.add_argument('--notemp', help='disable temperature reporting', action='store_true')
+	parser.add_argument('--nagios', help='enable nagios support',   action='store_true')
+	parser.add_argument('--debug',  help='enable debugging output', action='store_true')
+	parser.add_argument('--notemp', help='disable temperature reporting', action='store_true')
 
 	args = parser.parse_args()
 	nagiosmode = args.nagios
