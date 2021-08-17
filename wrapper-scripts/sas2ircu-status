@@ -6,11 +6,11 @@ import sys
 
 binarypath = "/usr/sbin/sas2ircu"
 if not os.path.isfile(binarypath):
-    print "sas2ircu is not available in expected location: {}".format(binarypath)
+    print("sas2ircu is not available in expected location: {}".format(binarypath))
     sys.exit(1)
 
 if len(sys.argv) > 2:
-    print "Usage: sas2ircu-status [--nagios]"
+    print("Usage: sas2ircu-status [--nagios]")
     sys.exit(1)
 
 nagiosmode = False
@@ -24,7 +24,7 @@ if len(sys.argv) > 1:
     if sys.argv[1] == "--nagios":
         nagiosmode = True
     else:
-        print "Usage: sas2ircu-status [--nagios]"
+        print("Usage: sas2ircu-status [--nagios]")
         sys.exit(1)
 
 bad = False
@@ -136,15 +136,15 @@ def getDiskList(ctrlnmbr):
 ctrls = getCtrlList()
 arraymap = {}
 if not nagiosmode:
-    print "-- Controller informations --"
-    print "-- ID | Model"
+    print("-- Controller informations --")
+    print("-- ID | Model")
     for ctrl in ctrls:
-        print "c" + str(ctrl[0]) + " | " + ctrl[1]
-    print ""
+        print("c" + str(ctrl[0]) + " | " + ctrl[1])
+    print("")
 
 if not nagiosmode:
-    print "-- Arrays informations --"
-    print "-- ID | Type | Size | Status"
+    print("-- Arrays informations --")
+    print("-- ID | Type | Size | Status")
 for ctrl in ctrls:
     for array in getArrayList(ctrl[0]):
         arraymap[ctrl[0]] = array
@@ -154,13 +154,13 @@ for ctrl in ctrls:
         else:
             nagiosgoodarray = nagiosgoodarray + 1
         if not nagiosmode:
-            print "c" + str(ctrl[0]) + "u" + str(array[0]) + " | " + array[1] + " | " + array[2] + " | " + array[3]
+            print("c" + str(ctrl[0]) + "u" + str(array[0]) + " | " + array[1] + " | " + array[2] + " | " + array[3])
 if not nagiosmode:
-    print ""
+    print("")
 
 if not nagiosmode:
-    print "-- Disks informations"
-    print "-- ID | Model | Status"
+    print("-- Disks informations")
+    print("-- ID | Model | Status")
 for ctrl in ctrls:
     for disk in getDiskList(ctrl[0]):
         # Compare disk enc/slot to array's ones
@@ -173,19 +173,19 @@ for ctrl in ctrls:
                     else:
                         nagiosgooddisk = nagiosgooddisk + 1
                     if not nagiosmode:
-                        print "c" + str(ctrl[0]) + "u" + str(array[0]) + "p" + str(disk[0]) + " | " + disk[2] + " (" + disk[3] + ") | " + disk[1]
+                        print("c" + str(ctrl[0]) + "u" + str(array[0]) + "p" + str(disk[0]) + " | " + disk[2] + " (" + disk[3] + ") | " + disk[1])
 
 if nagiosmode:
     if bad:
-        print "RAID ERROR - Arrays: OK:" + str(nagiosgoodarray) + " Bad:" + str(nagiosbadarray) + " - Disks: OK:" + str(nagiosgooddisk) + " Bad:" + str(
+        print("RAID ERROR - Arrays: OK:" + str(nagiosgoodarray) + " Bad:" + str(nagiosbadarray) + " - Disks: OK:" + str(nagiosgooddisk) + " Bad:" + str(
             nagiosbaddisk
-        )
+        ))
         sys.exit(2)
     else:
-        print "RAID OK - Arrays: OK:" + str(nagiosgoodarray) + " Bad:" + str(nagiosbadarray) + " - Disks: OK:" + str(nagiosgooddisk) + " Bad:" + str(
+        print("RAID OK - Arrays: OK:" + str(nagiosgoodarray) + " Bad:" + str(nagiosbadarray) + " - Disks: OK:" + str(nagiosgooddisk) + " Bad:" + str(
             nagiosbaddisk
-        )
+        ))
 else:
     if bad:
-        print "\nThere is at least one disk/array in a NOT OPTIMAL state."
+        print("\nThere is at least one disk/array in a NOT OPTIMAL state.")
         sys.exit(1)

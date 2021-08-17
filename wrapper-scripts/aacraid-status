@@ -225,12 +225,12 @@ if arcconfpath != None:
         pass
     else:
         if config.nagios:
-            print "UNKNOWN - Cannot find " + arcconfpath
+            print("UNKNOWN - Cannot find " + arcconfpath)
         else:
-            print "Cannot find " + arcconfpath + "in your PATH. Please install it."
+            print("Cannot find " + arcconfpath + "in your PATH. Please install it.")
         sys.exit(3)
 else:
-    print 'Cannot find "arcconf, "arcconf.exe" in your PATH. Please install it.'
+    print('Cannot find "arcconf, "arcconf.exe" in your PATH. Please install it.')
     sys.exit(3)
 
 
@@ -238,14 +238,14 @@ cmd = '"%s" GETVERSION' % arcconfpath
 output = getOutput(cmd)
 controllernumber = returnControllerNumber(output)
 if not controllernumber:
-    print '"arcconf" returned no controller, are you sure to have an Adaptec adapter?'
+    print('"arcconf" returned no controller, are you sure to have an Adaptec adapter?')
     sys.exit(3)
 
 # List controllers
 if printcontroller:
     if not config.nagios:
-        print "-- Controller informations --"
-        print "-- ID | Model | Status"
+        print("-- Controller informations --")
+        print("-- ID | Model | Status")
     controllerid = 1
     while controllerid <= controllernumber:
         cmd = '"%s" GETCONFIG %d' % (arcconfpath, controllerid)
@@ -258,17 +258,17 @@ if printcontroller:
         else:
             nagiosgoodctrl += 1
         if not config.nagios:
-            print "c" + str(controllerid - 1) + " | " + controllermodel + " | " + controllerstatus
+            print("c" + str(controllerid - 1) + " | " + controllermodel + " | " + controllerstatus)
         controllerid += 1
         if not config.nagios:
-            print ""
+            print("")
 
 # List arrays
 if printarray:
     controllerid = 1
     if not config.nagios:
-        print "-- Arrays informations --"
-        print "-- ID | Type | Size | Status | Task | Progress"
+        print("-- Arrays informations --")
+        print("-- ID | Type | Size | Status | Task | Progress")
     while controllerid <= controllernumber:
         arrayid = 0
         cmd = '"%s" GETCONFIG %s' % (arcconfpath, controllerid)
@@ -297,23 +297,23 @@ if printarray:
             for tasks in tasksinfo:
                 if int(tasks[0]) == int(arrayid):
                     if not config.nagios:
-                        print "c" + str(controllerid - 1) + "u" + str(arrayid) + " | " + raidtype + " | " + arrayinfo[2] + "G | " + arrayinfo[
+                        print("c" + str(controllerid - 1) + "u" + str(arrayid) + " | " + raidtype + " | " + arrayinfo[2] + "G | " + arrayinfo[
                             1
-                        ] + " | " + tasks[1] + " | " + tasks[2] + "%"
+                        ] + " | " + tasks[1] + " | " + tasks[2] + "%")
                     done = True
                     break
             if done == False:
                 if not config.nagios:
-                    print "c" + str(controllerid - 1) + "u" + str(arrayid) + " | " + raidtype + " | " + arrayinfo[2] + "G | " + arrayinfo[1]
+                    print("c" + str(controllerid - 1) + "u" + str(arrayid) + " | " + raidtype + " | " + arrayinfo[2] + "G | " + arrayinfo[1])
         controllerid += 1
     if not config.nagios:
-        print ""
+        print("")
 
 # List disks
 controllerid = 1
 if not config.nagios:
-    print "-- Disks informations"
-    print "-- ID | Model | Status"
+    print("-- Disks informations")
+    print("-- ID | Model | Status")
 while controllerid <= controllernumber:
     arrayid = 0
     cmd = '"%s" GETCONFIG %s' % (arcconfpath, controllerid)
@@ -346,34 +346,34 @@ while controllerid <= controllernumber:
                 # Matched in members of this array
                 if disk[0] == member:
                     if not config.nagios:
-                        print "c" + str(controllerid - 1) + "u" + str(arrayid) + "d" + str(memberid) + " | " + disk[2] + " " + disk[3] + " " + disk[
+                        print("c" + str(controllerid - 1) + "u" + str(arrayid) + "d" + str(memberid) + " | " + disk[2] + " " + disk[3] + " " + disk[
                             4
-                        ] + " | " + disk[1]
+                        ] + " | " + disk[1])
                     array_member = True
                     memberid += 1
 
         # Some disks may not be attached to any array (ie: global hot spare)
         if not array_member:
             if not config.nagios:
-                print "c" + str(controllerid - 1) + "uX" + "d" + str(no_array_disk_id) + " | " + disk[2] + " " + disk[3] + " " + disk[4] + " | " + disk[1]
+                print("c" + str(controllerid - 1) + "uX" + "d" + str(no_array_disk_id) + " | " + disk[2] + " " + disk[3] + " " + disk[4] + " | " + disk[1])
             no_array_disk_id += 1
 
     controllerid += 1
 
 if config.nagios:
     if bad:
-        print (
+        print((
             "RAID ERROR - Controllers OK:%d Bad:%d - Arrays OK:%d Bad:%d - Disks OK:%d Bad:%d"
             % (nagiosgoodctrl, nagiosbadctrl, nagiosgoodarray, nagiosbadarray, nagiosgooddisk, nagiosbaddisk)
-        )
+        ))
         sys.exit(2)
     else:
-        print (
+        print((
             "RAID OK - Controllers OK:%d Bad:%d - Arrays OK:%d Bad:%d - Disks OK:%d Bad:%d"
             % (nagiosgoodctrl, nagiosbadctrl, nagiosgoodarray, nagiosbadarray, nagiosgooddisk, nagiosbaddisk)
-        )
+        ))
 else:
     if bad:
-        print "\nThere is at least one disk/array in a NOT OPTIMAL state."
-        print '\nUse "arcconf GETCONFIG [1-9]" to get details.'
+        print("\nThere is at least one disk/array in a NOT OPTIMAL state.")
+        print('\nUse "arcconf GETCONFIG [1-9]" to get details.')
         sys.exit(1)

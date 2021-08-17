@@ -5,7 +5,7 @@ import re
 import sys
 
 if len(sys.argv) > 2:
-    print "Usage: megaide-status [-d]"
+    print("Usage: megaide-status [-d]")
     sys.exit(1)
 
 printarray = True
@@ -15,7 +15,7 @@ if len(sys.argv) > 1:
         printarray = False
         printcontroller = False
     else:
-        print "Usage: megaide-status [-d]"
+        print("Usage: megaide-status [-d]")
         sys.exit(1)
 
 
@@ -88,32 +88,32 @@ bad = False
 
 if printarray:
     controllerid = 0
-    print "-- Arrays informations --"
-    print "-- ID | Type | Size | Status"
+    print("-- Arrays informations --")
+    print("-- ID | Type | Size | Status")
     while controllerid <= controllernumber:
         arrayid = 0
         arraynumber = returnArrayNumber(controllerid)
         while arrayid <= arraynumber:
             arrayinfo = returnArrayInfo(controllerid, arrayid)
-            print arrayinfo[0] + " | " + arrayinfo[1] + " | " + arrayinfo[2] + " | " + arrayinfo[3]
+            print(arrayinfo[0] + " | " + arrayinfo[1] + " | " + arrayinfo[2] + " | " + arrayinfo[3])
             arrayid += 1
             if not arrayinfo[3] == "ONLINE":
                 bad = True
         controllerid += 1
-    print ""
+    print("")
 
-print "-- Disks informations"
-print "-- ID | Model | Status"
+print("-- Disks informations")
+print("-- ID | Model | Status")
 
 controllerid = 0
 while controllerid <= controllernumber:
     diskinfo = returnDiskInfo()
     for disk in diskinfo:
-        print disk[0] + " | " + disk[2] + " | " + disk[1]
+        print(disk[0] + " | " + disk[2] + " | " + disk[1])
         if not disk[1] == "ONLINE":
             bad = True
     controllerid += 1
 
 if bad:
-    print "\nThere is at least one disk/array in a NOT OPTIMAL state."
+    print("\nThere is at least one disk/array in a NOT OPTIMAL state.")
     sys.exit(1)

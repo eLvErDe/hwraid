@@ -64,7 +64,7 @@ if __name__ == "__main__":
     except AttributeError:
         root_or_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0
     if not root_or_admin:
-        print "# This script requires Administrator privileges"
+        print("# This script requires Administrator privileges")
         sys.exit(5)
 
 # Functions
@@ -116,12 +116,12 @@ if megaclipath != None:
         pass
     else:
         if nagiosmode:
-            print "UNKNOWN - Cannot find " + megaclipath
+            print("UNKNOWN - Cannot find " + megaclipath)
         else:
-            print "Cannot find " + megaclipath + "in your PATH. Please install it."
+            print("Cannot find " + megaclipath + "in your PATH. Please install it.")
         sys.exit(3)
 else:
-    print 'Cannot find "MegaCli{64,}", "megacli{64,}", "perccli{64,}" or "storcli{64,}" in your PATH. Please install one of them.'
+    print('Cannot find "MegaCli{64,}", "megacli{64,}", "perccli{64,}" or "storcli{64,}" in your PATH. Please install one of them.')
     sys.exit(3)
 
 
@@ -139,7 +139,7 @@ def returnWdthFromArrayCol(glarray, idx):
 # Get and cache command output
 def getOutput(cmd):
     lines = []
-    if Outputs.has_key(cmd):
+    if cmd in Outputs:
         dbgprint("Got Cached value: " + str(cmd))
         lines = Outputs[cmd]
     else:
@@ -155,7 +155,7 @@ def getOutput(cmd):
 # Get and cache disks, make sure we don't count the same disk twice
 def AddDisk(mytable, disk):
     lines = []
-    if mytable.has_key(disk):
+    if disk in mytable:
         dbgprint("Disk: " + str(disk) + " Already present in Disk Table")
         return False
     else:
@@ -649,7 +649,7 @@ bad = False
 if printcontroller:
     if controllernumber:
         if not nagiosmode:
-            print "-- Controller information --"
+            print("-- Controller information --")
 
         i = 0
         controllerid = 0
@@ -668,19 +668,19 @@ if printcontroller:
             # Header
             if i == 0:
                 if not nagiosmode:
-                    print hbafmt % ("-- ID", "H/W Model", "RAM", "Temp", "BBU", "Firmware")
+                    print(hbafmt % ("-- ID", "H/W Model", "RAM", "Temp", "BBU", "Firmware"))
             if not nagiosmode:
-                print hbafmt % (hba[0], hba[1], hba[2], hba[3], hba[4], hba[5])
+                print(hbafmt % (hba[0], hba[1], hba[2], hba[3], hba[4], hba[5]))
             i += 1
         if not nagiosmode:
-            print ""
+            print("")
     else:
-        print "No MegaRAID or PERC adapter detected on your system!"
+        print("No MegaRAID or PERC adapter detected on your system!")
         exit(1)
 
 if printarray:
     if not nagiosmode:
-        print "-- Array information --"
+        print("-- Array information --")
 
     controllerid = 0
     pcipath = ""
@@ -768,9 +768,9 @@ if printarray:
             # Header
             if i == 0:
                 if not nagiosmode:
-                    print ldfmt % ("-- ID", "Type", "Size", "Strpsz", "Flags", "DskCache", "Status", "OS Path", "CacheCade", "InProgress")
+                    print(ldfmt % ("-- ID", "Type", "Size", "Strpsz", "Flags", "DskCache", "Status", "OS Path", "CacheCade", "InProgress"))
             if not nagiosmode:
-                print ldfmt % (
+                print(ldfmt % (
                     arrayinfo[0],
                     arrayinfo[1],
                     arrayinfo[2],
@@ -781,7 +781,7 @@ if printarray:
                     arrayinfo[7],
                     arrayinfo[8],
                     arrayinfo[9],
-                )
+                ))
             dbgprint("Array state : LD " + arrayinfo[0] + ", status : " + arrayinfo[6])
             if arrayinfo[6] not in ["Optimal", "N/A"]:
                 bad = True
@@ -792,7 +792,7 @@ if printarray:
             i += 1
         controllerid += 1
     if not nagiosmode:
-        print ""
+        print("")
 
 controllerid = 0
 while controllerid < controllernumber:
@@ -803,7 +803,7 @@ while controllerid < controllernumber:
 
 if totaldrivenumber:
     if not nagiosmode:
-        print "-- Disk information --"
+        print("-- Disk information --")
 
     i = 0
     dlen = 0
@@ -859,10 +859,10 @@ if totaldrivenumber:
             # Header
             if i == 0:
                 if not nagiosmode:
-                    print drvfmt % ("-- ID", "Type", "Drive Model", "Size", "Status", "Speed", "Temp", "Slot ID", "LSI ID")
+                    print(drvfmt % ("-- ID", "Type", "Drive Model", "Size", "Status", "Speed", "Temp", "Slot ID", "LSI ID"))
             # Drive information
             if not nagiosmode:
-                print drvfmt % (
+                print(drvfmt % (
                     str("c" + str(controllerid) + "u" + array[0] + "p" + array[1]),  # c0p0
                     array[2],  # HDD/SDD
                     array[3],  # Model Information (Variable len)
@@ -872,11 +872,11 @@ if totaldrivenumber:
                     array[7],  # Temp
                     str("[" + array[8] + ":" + array[9] + "]"),  # Slot ID
                     array[10],
-                )  # LSI ID
+                ))  # LSI ID
             i = i + 1
         controllerid += 1
     if not nagiosmode:
-        print ""
+        print("")
 
 controllerid = 0
 totalconfdrivenumber = 0
@@ -906,7 +906,7 @@ dbgprint("Total Unconfigured Drives : " + str(totalunconfdrivenumber))
 
 if totalunconfdrivenumber:
     if not nagiosmode:
-        print "-- Unconfigured Disk information --"
+        print("-- Unconfigured Disk information --")
 
     controllerid = 0
     pcipath = ""
@@ -966,10 +966,10 @@ if totalunconfdrivenumber:
             # Header
             if i == 0:
                 if not nagiosmode:
-                    print drvfmt % ("-- ID", "Type", "Drive Model", "Size", "Status", "Speed", "Temp", "Slot ID", "LSI ID", "Path")
+                    print(drvfmt % ("-- ID", "Type", "Drive Model", "Size", "Status", "Speed", "Temp", "Slot ID", "LSI ID", "Path"))
             # Drive information
             if not nagiosmode:
-                print drvfmt % (
+                print(drvfmt % (
                     str("c" + str(controllerid) + "uXpY"),  # cXpY
                     array[0],  # HDD/SDD
                     array[1],  # Model Information (Variable len)
@@ -980,11 +980,11 @@ if totalunconfdrivenumber:
                     str("[" + array[6] + ":" + array[7] + "]"),  # Slot ID
                     array[8],  # LSI ID
                     array[9],
-                )  # OS path, if any
+                ))  # OS path, if any
             i += 1
         controllerid += 1
     if not nagiosmode:
-        print ""
+        print("")
 
 if debugmode:
     dbgprint("Printing Outputs[][]")
@@ -1002,21 +1002,21 @@ if debugmode:
 
 if nagiosmode:
     if bad:
-        print "RAID ERROR - Arrays: OK:" + str(nagiosgoodarray) + " Bad:" + str(nagiosbadarray) + " - Disks: OK:" + str(nagiosgooddisk) + " Bad:" + str(
+        print("RAID ERROR - Arrays: OK:" + str(nagiosgoodarray) + " Bad:" + str(nagiosbadarray) + " - Disks: OK:" + str(nagiosgooddisk) + " Bad:" + str(
             nagiosbaddisk
-        )
+        ))
         sys.exit(2)
     else:
-        print "RAID OK - Arrays: OK:" + str(nagiosgoodarray) + " Bad:" + str(nagiosbadarray) + " - Disks: OK:" + str(nagiosgooddisk) + " Bad:" + str(
+        print("RAID OK - Arrays: OK:" + str(nagiosgoodarray) + " Bad:" + str(nagiosbadarray) + " - Disks: OK:" + str(nagiosgooddisk) + " Bad:" + str(
             nagiosbaddisk
-        )
+        ))
 else:
     if bad:
         # DO NOT MODIFY OUTPUT BELOW
         # Scripts may relies on it
         # https://github.com/eLvErDe/hwraid/issues/99
-        print "\nThere is at least one disk/array in a NOT OPTIMAL state."
-        print "RAID ERROR - Arrays: OK:" + str(nagiosgoodarray) + " Bad:" + str(nagiosbadarray) + " - Disks: OK:" + str(nagiosgooddisk) + " Bad:" + str(
+        print("\nThere is at least one disk/array in a NOT OPTIMAL state.")
+        print("RAID ERROR - Arrays: OK:" + str(nagiosgoodarray) + " Bad:" + str(nagiosbadarray) + " - Disks: OK:" + str(nagiosgooddisk) + " Bad:" + str(
             nagiosbaddisk
-        )
+        ))
         sys.exit(1)

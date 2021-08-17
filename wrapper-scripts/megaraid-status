@@ -7,7 +7,7 @@ import sys
 binarypath = "/usr/sbin/megactl"
 
 if len(sys.argv) > 2:
-    print "Usage: megaraid-status [-d]"
+    print("Usage: megaraid-status [-d]")
     sys.exit(1)
 
 printarray = True
@@ -15,7 +15,7 @@ if len(sys.argv) > 1:
     if sys.argv[1] == "-d":
         printarray = False
     else:
-        print "Usage: megaraid-status [-d]"
+        print("Usage: megaraid-status [-d]")
         sys.exit(1)
 
 # Check binary exists (and +x), if not print an error message
@@ -77,21 +77,21 @@ disklist = returnDiskList(output)
 arraylist = returnArrayList(output)
 
 if printarray:
-    print "-- Arrays informations --"
-    print "-- ID | Type | Size | Status"
+    print("-- Arrays informations --")
+    print("-- ID | Type | Size | Status")
     for array in arraylist:
-        print array[0] + " | " + array[2] + " " + array[3] + " | " + array[1] + " | " + array[-1]
-    print ""
+        print(array[0] + " | " + array[2] + " " + array[3] + " | " + array[1] + " | " + array[-1])
+    print("")
 
-print "-- Disks informations"
-print "-- ID | Model | Status | Warnings"
+print("-- Disks informations")
+print("-- ID | Model | Status | Warnings")
 for disk in disklist:
     # Check if there's some smart non critical warnings
     if re.match(r"^errs:.*$", disk[-2]):
         # Some disk may have vendor or model containing spaces
-        print disk[0] + " | " + " ".join(disk[1:-3]) + " | " + disk[-1] + " | " + disk[-2]
+        print(disk[0] + " | " + " ".join(disk[1:-3]) + " | " + disk[-1] + " | " + disk[-2])
     else:
-        print disk[0] + " | " + " ".join(disk[1:-2]) + " | " + disk[-1]
+        print(disk[0] + " | " + " ".join(disk[1:-2]) + " | " + disk[-1])
 
 # Check if there's a bad disk
 bad = False
@@ -104,5 +104,5 @@ for disk in disklist:
         bad = True
 
 if bad:
-    print "\nThere is at least one disk/array in a NOT OPTIMAL state."
+    print("\nThere is at least one disk/array in a NOT OPTIMAL state.")
     sys.exit(1)

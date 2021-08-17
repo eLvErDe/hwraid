@@ -7,7 +7,7 @@ import sys
 binarypath = "/usr/sbin/tw-cli"
 
 if len(sys.argv) > 2:
-    print "Usage: 3ware-status [--nagios]"
+    print("Usage: 3ware-status [--nagios]")
     sys.exit(1)
 
 nagiosmode = False
@@ -21,7 +21,7 @@ if len(sys.argv) > 1:
     if sys.argv[1] == "--nagios":
         nagiosmode = True
     else:
-        print "Usage: 3ware-status [--nagios]"
+        print("Usage: 3ware-status [--nagios]")
         sys.exit(1)
 
 # Check binary exists (and +x), if not print an error message
@@ -30,9 +30,9 @@ if os.path.exists(binarypath) and os.access(binarypath, os.X_OK):
     pass
 else:
     if nagiosmode:
-        print "UNKNOWN - Cannot find " + binarypath
+        print("UNKNOWN - Cannot find " + binarypath)
     else:
-        print "Cannot find " + binarypath + ". Please install it."
+        print("Cannot find " + binarypath + ". Please install it.")
     sys.exit(3)
 
 
@@ -92,8 +92,8 @@ bad = False
 
 # List available controller
 if not nagiosmode:
-    print "-- Controller informations --"
-    print "-- ID | Model"
+    print("-- Controller informations --")
+    print("-- ID | Model")
     for controller in controllerlist:
         cmd = binarypath + " info " + controller + " model"
         # https://github.com/eLvErDe/hwraid/issues/69
@@ -101,13 +101,13 @@ if not nagiosmode:
             model = getOutput(cmd)[0].split(" = ")[1].strip()
         except IndexError:
             model = "N/A"
-        print controller + " | " + model
-    print ""
+        print(controller + " | " + model)
+    print("")
 
 # List arrays
 if not nagiosmode:
-    print "-- Arrays informations --"
-    print "-- ID\tType\tSize\tStatus"
+    print("-- Arrays informations --")
+    print("-- ID\tType\tSize\tStatus")
 for controller in controllerlist:
     cmd = binarypath + " info " + controller
     output = getOutput(cmd)
@@ -123,14 +123,14 @@ for controller in controllerlist:
         else:
             nagiosgoodarray = nagiosgoodarray + 1
         if not nagiosmode:
-            print id + "\t" + type + "\t" + size + "\t" + status
+            print(id + "\t" + type + "\t" + size + "\t" + status)
 if not nagiosmode:
-    print ""
+    print("")
 
 # List disks
 if not nagiosmode:
-    print "-- Disks informations"
-    print "-- ID\tModel\t\t\tStatus"
+    print("-- Disks informations")
+    print("-- ID\tModel\t\t\tStatus")
 for controller in controllerlist:
     cmd = binarypath + " info " + controller
     output = getOutput(cmd)
@@ -147,19 +147,19 @@ for controller in controllerlist:
         else:
             nagiosgooddisk = nagiosgooddisk + 1
         if not nagiosmode:
-            print id + "\t" + model + "\t" + status
+            print(id + "\t" + model + "\t" + status)
 
 if nagiosmode:
     if bad:
-        print "RAID ERROR - Arrays: OK:" + str(nagiosgoodarray) + " Bad:" + str(nagiosbadarray) + " - Disks: OK:" + str(nagiosgooddisk) + " Bad:" + str(
+        print("RAID ERROR - Arrays: OK:" + str(nagiosgoodarray) + " Bad:" + str(nagiosbadarray) + " - Disks: OK:" + str(nagiosgooddisk) + " Bad:" + str(
             nagiosbaddisk
-        )
+        ))
         sys.exit(2)
     else:
-        print "RAID OK - Arrays: OK:" + str(nagiosgoodarray) + " Bad:" + str(nagiosbadarray) + " - Disks: OK:" + str(nagiosgooddisk) + " Bad:" + str(
+        print("RAID OK - Arrays: OK:" + str(nagiosgoodarray) + " Bad:" + str(nagiosbadarray) + " - Disks: OK:" + str(nagiosgooddisk) + " Bad:" + str(
             nagiosbaddisk
-        )
+        ))
 else:
     if bad:
-        print "\nThere is at least one disk/array in a NOT OPTIMAL state."
+        print("\nThere is at least one disk/array in a NOT OPTIMAL state.")
         sys.exit(1)
