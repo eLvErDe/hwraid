@@ -9,14 +9,16 @@ from argparse import ArgumentParser
 # My own ArgumentParser with single-line stdout output and unknown state Nagios retcode
 class NagiosArgumentParser(ArgumentParser):
     def error(self, message):
-        sys.stdout.write('UNKNOWN: Bad arguments (see --help): %s\n' % message)
+        sys.stdout.write("UNKNOWN: Bad arguments (see --help): %s\n" % message)
         sys.exit(3)
 
+
 def parse_args():
-    parser = NagiosArgumentParser(description='Adaptec AACRAID status script')
-    parser.add_argument('-d', '--disks-only', action="store_true", help='Only disply disk statuses')
-    parser.add_argument('-n', '--nagios',     action="store_true", help='Use Nagios-like output and return code')
+    parser = NagiosArgumentParser(description="Adaptec AACRAID status script")
+    parser.add_argument("-d", "--disks-only", action="store_true", help="Only disply disk statuses")
+    parser.add_argument("-n", "--nagios", action="store_true", help="Use Nagios-like output and return code")
     return parser.parse_args()
+
 
 def which(program):
     fpath, fname = os.path.split(program)
@@ -25,7 +27,7 @@ def which(program):
             return program
     else:
         # Add some defaults
-        os.environ["PATH"] += os.pathsep + '/usr/StorMan/arcconf'
+        os.environ["PATH"] += os.pathsep + "/usr/StorMan/arcconf"
         os.environ["PATH"] += os.pathsep + os.path.dirname(os.path.realpath(sys.argv[0]))
         for path in os.environ["PATH"].split(os.pathsep):
             path = path.strip('"')
@@ -34,58 +36,65 @@ def which(program):
                 return exe_file
     return None
 
+
 def is_exe(fpath):
     return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
 
+
 # Get command output
 def getOutput(cmd):
-    output = os.popen('%s 2>%s' % (cmd, os.devnull))
+    output = os.popen("%s 2>%s" % (cmd, os.devnull))
     lines = []
     for line in output:
-        if not re.match(r'^$',line.strip()):
+        if not re.match(r"^$", line.strip()):
             lines.append(line.strip())
     return lines
 
+
 def returnControllerNumber(output):
     for line in output:
-        if re.match(r'^Controllers found: [0-9]+$',line.strip()):
-            return int(line.split(':')[1].strip().strip('.'))
+        if re.match(r"^Controllers found: [0-9]+$", line.strip()):
+            return int(line.split(":")[1].strip().strip("."))
+
 
 def returnControllerModel(output):
     for line in output:
-        if re.match(r'^Controller Model.*$',line.strip()):
-            return line.split(':')[1].strip()
+        if re.match(r"^Controller Model.*$", line.strip()):
+            return line.split(":")[1].strip()
+
 
 def returnControllerStatus(output):
     for line in output:
-        if re.match(r'^Controller Status.*$',line.strip()):
-            return line.split(':')[1].strip()
+        if re.match(r"^Controller Status.*$", line.strip()):
+            return line.split(":")[1].strip()
+
 
 def returnArrayIds(output):
     ids = []
     for line in output:
-        if re.match(r'^Logical [Dd]evice number [0-9]+$',line.strip()):
-            ids.append(re.sub(r'^Logical [Dd]evice number', '', line).strip())
+        if re.match(r"^Logical [Dd]evice number [0-9]+$", line.strip()):
+            ids.append(re.sub(r"^Logical [Dd]evice number", "", line).strip())
     return ids
 
-def returnArrayInfo(output, ctrl_id='?'):
+
+def returnArrayInfo(output, ctrl_id="?"):
 
     # For testing purpose
-    #with open('/tmp/output') as f:
+    # with open('/tmp/output') as f:
     #    output = f.read().splitlines()
 
     members = []
     for line in output:
         # RAID level may be either N or Simple_Volume
         # (a disk connected to the card, not hotspare, not part of any array)
-        if re.match(r'^RAID level\s+: .+$',line.strip()):
-            type = line.split(':')[1].strip()
-        if re.match(r'^Status of [Ll]ogical [Dd]evice\s+: .*$',line.strip()):
-            status = line.split(':')[1].strip()
-        if re.match(r'^Size\s+: [0-9]+ MB$',line.strip()):
-            size = str(int(line.strip('MB').split(':')[1].strip()) / 1000)
+        if re.match(r"^RAID level\s+: .+$", line.strip()):
+            type = line.split(":")[1].strip()
+        if re.match(r"^Status of [Ll]ogical [Dd]evice\s+: .*$", line.strip()):
+            status = line.split(":")[1].strip()
+        if re.match(r"^Size\s+: [0-9]+ MB$", line.strip()):
+            size = str(int(line.strip("MB").split(":")[1].strip()) / 1000)
 
-        if re.match(r'^(Group\s[0-9]+,\s)?Segment\s[0-9]+\s+: .*$',line.strip()):
+        if re.match(r"^(Group\s[0-9]+,\s)?Segment\s[0-9]+\s+: .*$", line.strip()):
 
             # The line can be either (arcconf 1.x)
             # Group 0, Segment 0 : Present (Controller:1,Enclosure:0,Slot:0) JPW9J0N00RWMUV
@@ -96,43 +105,44 @@ def returnArrayInfo(output, ctrl_id='?'):
             # Group 0, Segment 0 : Present (953869MB, SATA, HDD, Connector:1, Device:1)       JPW9K0HZ216NJL'
 
             # Cut on : and re-join everything except first part
-            line = ':'.join(line.split(':')[1:]).strip()
+            line = ":".join(line.split(":")[1:]).strip()
             # Extract everything between ()
-            device_state = re.search('\s+\((.*)\)\s+', line).group(1)
+            device_state = re.search("\s+\((.*)\)\s+", line).group(1)
             # Coma separated
-            device_attrs = device_state.split(',')
-            device_attrs = [ x.strip() for x in device_attrs ]
+            device_attrs = device_state.split(",")
+            device_attrs = [x.strip() for x in device_attrs]
             # Some magic here...
             # Strip out from the list element not matching Xyz:12
             # Split on column: now we have and array of arrays like [['Controller', '1'], ['Connector', '1'], ['Device', '0']]
             # Casting to dict will turn Controller as key and 1 as value
-            device_attrs = dict([ x.split(':') for x in device_attrs if re.match('\w+:\d+', x) ])
+            device_attrs = dict([x.split(":") for x in device_attrs if re.match("\w+:\d+", x)])
 
             # Extract id for this device
-            if 'Controller' in device_attrs:
-                controller_id = device_attrs['Controller']
+            if "Controller" in device_attrs:
+                controller_id = device_attrs["Controller"]
             else:
                 controller_id = ctrl_id
 
-            if 'Channel' in device_attrs:
-                channel_id = device_attrs['Channel']
-            elif 'Enclosure' in device_attrs:
-                channel_id = device_attrs['Enclosure']
-            elif 'Connector' in device_attrs:
-                channel_id = device_attrs['Connector']
+            if "Channel" in device_attrs:
+                channel_id = device_attrs["Channel"]
+            elif "Enclosure" in device_attrs:
+                channel_id = device_attrs["Enclosure"]
+            elif "Connector" in device_attrs:
+                channel_id = device_attrs["Connector"]
             else:
-                channel_id = '?'
+                channel_id = "?"
 
-            if 'Device' in device_attrs:
-                device_id = device_attrs['Device']
-            elif 'Slot' in device_attrs:
-                device_id = device_attrs['Slot']
+            if "Device" in device_attrs:
+                device_id = device_attrs["Device"]
+            elif "Slot" in device_attrs:
+                device_id = device_attrs["Slot"]
             else:
-                device_id = '?'
+                device_id = "?"
 
-            members.append('%s,%s,%s' % (controller_id, channel_id, device_id))
+            members.append("%s,%s,%s" % (controller_id, channel_id, device_id))
 
-    return [type,status,size,members]
+    return [type, status, size, members]
+
 
 def returnControllerTasks(output):
     arrayid = False
@@ -140,20 +150,21 @@ def returnControllerTasks(output):
     state = False
     tasks = []
     for line in output:
-        if re.match(r'^Logical device\s+: [0-9]+$',line.strip()):
-            arrayid = line.split(':')[1].strip()
-        if re.match(r'^Current operation\s+: .*$',line.strip()):
-            type = line.split(':')[1].strip()
-        if re.match(r'^Percentage complete\s+: [0-9]+$',line.strip()):
-            state = line.split(':')[1].strip()
+        if re.match(r"^Logical device\s+: [0-9]+$", line.strip()):
+            arrayid = line.split(":")[1].strip()
+        if re.match(r"^Current operation\s+: .*$", line.strip()):
+            type = line.split(":")[1].strip()
+        if re.match(r"^Percentage complete\s+: [0-9]+$", line.strip()):
+            state = line.split(":")[1].strip()
         if arrayid != False and type != False and state != False:
-            tasks.append([arrayid,type,state])
+            tasks.append([arrayid, type, state])
             arrayid = False
             type = False
             state = False
     return tasks
 
-def returnDisksInfo(output,controllerid):
+
+def returnDisksInfo(output, controllerid):
     diskid = False
     vendor = False
     model = False
@@ -161,18 +172,18 @@ def returnDisksInfo(output,controllerid):
     serial = False
     disks = []
     for line in output:
-        if re.match(r'^Reported Channel,Device(\(T:L\))?\s+: [0-9]+,[0-9]+(\([0-9]+:[0-9]+\))?$',line.strip()):
-            diskid = re.split('\s:\s',line)[1].strip()
-            diskid = re.sub('\(.*\)','',diskid)
-            diskid = str(controllerid)+','+diskid
-        if re.match(r'^State\s+:.*$',line.strip()):
-            state = line.split(':')[1].strip()
-        if re.match(r'^Vendor\s+:.*$',line.strip()):
-            vendor = line.split(':')[1].strip()
-        if re.match(r'^Model\s+:.*$',line.strip()):
-            model = line.split(':')[1].strip()
-        if re.match(r'^Serial number\s+:.*$',line.strip()):
-            serial = line.split(':')[1].strip()
+        if re.match(r"^Reported Channel,Device(\(T:L\))?\s+: [0-9]+,[0-9]+(\([0-9]+:[0-9]+\))?$", line.strip()):
+            diskid = re.split("\s:\s", line)[1].strip()
+            diskid = re.sub("\(.*\)", "", diskid)
+            diskid = str(controllerid) + "," + diskid
+        if re.match(r"^State\s+:.*$", line.strip()):
+            state = line.split(":")[1].strip()
+        if re.match(r"^Vendor\s+:.*$", line.strip()):
+            vendor = line.split(":")[1].strip()
+        if re.match(r"^Model\s+:.*$", line.strip()):
+            model = line.split(":")[1].strip()
+        if re.match(r"^Serial number\s+:.*$", line.strip()):
+            serial = line.split(":")[1].strip()
         if diskid != False and vendor != False and model != False and state != False and serial != False:
             disks.append([diskid, state, vendor, model, serial])
             diskid = False
@@ -182,6 +193,7 @@ def returnDisksInfo(output,controllerid):
             serial = False
     return disks
 
+
 config = parse_args()
 if config.disks_only:
     printarray = False
@@ -190,7 +202,7 @@ else:
     printarray = True
     printcontroller = True
 
-nagiosoutput=''
+nagiosoutput = ""
 nagiosgoodctrl = 0
 nagiosbadctrl = 0
 nagiosctrlbadarray = 0
@@ -202,20 +214,20 @@ nagiosbaddisk = 0
 bad = False
 
 # Find arcconf
-for arcconfbin in "arcconf","arcconf.exe":
+for arcconfbin in "arcconf", "arcconf.exe":
     arcconfpath = which(arcconfbin)
-    if (arcconfpath != None):
+    if arcconfpath != None:
         break
 
 # Check binary exists (and +x), if not print an error message
-if (arcconfpath != None):
+if arcconfpath != None:
     if is_exe(arcconfpath):
         pass
     else:
         if config.nagios:
-            print 'UNKNOWN - Cannot find '+arcconfpath
+            print "UNKNOWN - Cannot find " + arcconfpath
         else:
-            print 'Cannot find ' + arcconfpath + 'in your PATH. Please install it.'
+            print "Cannot find " + arcconfpath + "in your PATH. Please install it."
         sys.exit(3)
 else:
     print 'Cannot find "arcconf, "arcconf.exe" in your PATH. Please install it.'
@@ -232,31 +244,31 @@ if not controllernumber:
 # List controllers
 if printcontroller:
     if not config.nagios:
-        print '-- Controller informations --'
-        print '-- ID | Model | Status'
+        print "-- Controller informations --"
+        print "-- ID | Model | Status"
     controllerid = 1
     while controllerid <= controllernumber:
         cmd = '"%s" GETCONFIG %d' % (arcconfpath, controllerid)
         output = getOutput(cmd)
         controllermodel = returnControllerModel(output)
         controllerstatus = returnControllerStatus(output)
-        if controllerstatus != 'Optimal':
+        if controllerstatus != "Optimal":
             bad = True
             nagiosbadctrl += 1
         else:
             nagiosgoodctrl += 1
         if not config.nagios:
-            print 'c'+str(controllerid-1)+' | '+controllermodel+' | '+controllerstatus
+            print "c" + str(controllerid - 1) + " | " + controllermodel + " | " + controllerstatus
         controllerid += 1
         if not config.nagios:
-            print ''
+            print ""
 
 # List arrays
 if printarray:
     controllerid = 1
     if not config.nagios:
-        print '-- Arrays informations --'
-        print '-- ID | Type | Size | Status | Task | Progress'
+        print "-- Arrays informations --"
+        print "-- ID | Type | Size | Status | Task | Progress"
     while controllerid <= controllernumber:
         arrayid = 0
         cmd = '"%s" GETCONFIG %s' % (arcconfpath, controllerid)
@@ -266,7 +278,7 @@ if printarray:
             cmd = '"%s" GETCONFIG %s LD %s' % (arcconfpath, controllerid, arrayid)
             output = getOutput(cmd)
             arrayinfo = returnArrayInfo(output, ctrl_id=controllerid)
-            if arrayinfo[1] != 'Optimal':
+            if arrayinfo[1] != "Optimal":
                 nagiosbadarray += 1
                 bad = True
             else:
@@ -278,43 +290,44 @@ if printarray:
             # Usually it should return either [0-9] or Simple_Volume but...
             # It can also return "6 Reed-Solomon" so we need to handle this too...
             # So let's match [0-9] followed by a space or EOL.
-            if re.match('^[0-9]+(\s|$)',arrayinfo[0]):
-                raidtype = re.sub('^','RAID',arrayinfo[0])
+            if re.match("^[0-9]+(\s|$)", arrayinfo[0]):
+                raidtype = re.sub("^", "RAID", arrayinfo[0])
             else:
                 raidtype = arrayinfo[0]
             for tasks in tasksinfo:
                 if int(tasks[0]) == int(arrayid):
                     if not config.nagios:
-                        print 'c'+str(controllerid-1)+'u'+str(arrayid)+' | '+raidtype+' | '+arrayinfo[2]+'G | '+arrayinfo[1]+' | '+tasks[1]+' | '+tasks[2]+'%'
+                        print "c" + str(controllerid - 1) + "u" + str(arrayid) + " | " + raidtype + " | " + arrayinfo[2] + "G | " + arrayinfo[
+                            1
+                        ] + " | " + tasks[1] + " | " + tasks[2] + "%"
                     done = True
                     break
             if done == False:
                 if not config.nagios:
-                    print 'c'+str(controllerid-1)+'u'+str(arrayid)+' | '+raidtype+' | '+arrayinfo[2]+'G | '+arrayinfo[1]
+                    print "c" + str(controllerid - 1) + "u" + str(arrayid) + " | " + raidtype + " | " + arrayinfo[2] + "G | " + arrayinfo[1]
         controllerid += 1
     if not config.nagios:
-        print ''
+        print ""
 
 # List disks
 controllerid = 1
 if not config.nagios:
-    print '-- Disks informations'
-    print '-- ID | Model | Status'
+    print "-- Disks informations"
+    print "-- ID | Model | Status"
 while controllerid <= controllernumber:
     arrayid = 0
     cmd = '"%s" GETCONFIG %s' % (arcconfpath, controllerid)
     output = getOutput(cmd)
     arrayids = returnArrayIds(output)
 
-
     cmd = '"%s" GETCONFIG %d PD' % (arcconfpath, controllerid)
     output = getOutput(cmd)
-    diskinfo = returnDisksInfo(output,controllerid)
+    diskinfo = returnDisksInfo(output, controllerid)
     no_array_disk_id = 0
     for disk in diskinfo:
 
         # Generic verification no matter is the disk is member of an array or not
-        if disk[1] not in [ 'Online', 'Online (JBOD)', 'Hot Spare', 'Ready', 'Global Hot-Spare', 'Dedicated Hot-Spare' ]:
+        if disk[1] not in ["Online", "Online (JBOD)", "Hot Spare", "Ready", "Global Hot-Spare", "Dedicated Hot-Spare"]:
             bad = True
             nagiosbaddisk += 1
         else:
@@ -333,26 +346,34 @@ while controllerid <= controllernumber:
                 # Matched in members of this array
                 if disk[0] == member:
                     if not config.nagios:
-                        print 'c'+str(controllerid-1)+'u'+str(arrayid)+'d'+str(memberid)+' | '+disk[2]+' '+disk[3]+' '+disk[4]+' | '+disk[1]
+                        print "c" + str(controllerid - 1) + "u" + str(arrayid) + "d" + str(memberid) + " | " + disk[2] + " " + disk[3] + " " + disk[
+                            4
+                        ] + " | " + disk[1]
                     array_member = True
                     memberid += 1
 
         # Some disks may not be attached to any array (ie: global hot spare)
         if not array_member:
             if not config.nagios:
-                print 'c'+str(controllerid-1)+'uX'+'d'+str(no_array_disk_id)+' | '+disk[2]+' '+disk[3]+' '+disk[4]+' | '+disk[1]
+                print "c" + str(controllerid - 1) + "uX" + "d" + str(no_array_disk_id) + " | " + disk[2] + " " + disk[3] + " " + disk[4] + " | " + disk[1]
             no_array_disk_id += 1
 
     controllerid += 1
 
 if config.nagios:
     if bad:
-        print('RAID ERROR - Controllers OK:%d Bad:%d - Arrays OK:%d Bad:%d - Disks OK:%d Bad:%d' % (nagiosgoodctrl, nagiosbadctrl, nagiosgoodarray, nagiosbadarray, nagiosgooddisk, nagiosbaddisk))
+        print (
+            "RAID ERROR - Controllers OK:%d Bad:%d - Arrays OK:%d Bad:%d - Disks OK:%d Bad:%d"
+            % (nagiosgoodctrl, nagiosbadctrl, nagiosgoodarray, nagiosbadarray, nagiosgooddisk, nagiosbaddisk)
+        )
         sys.exit(2)
     else:
-        print('RAID OK - Controllers OK:%d Bad:%d - Arrays OK:%d Bad:%d - Disks OK:%d Bad:%d' % (nagiosgoodctrl, nagiosbadctrl, nagiosgoodarray, nagiosbadarray, nagiosgooddisk, nagiosbaddisk))
+        print (
+            "RAID OK - Controllers OK:%d Bad:%d - Arrays OK:%d Bad:%d - Disks OK:%d Bad:%d"
+            % (nagiosgoodctrl, nagiosbadctrl, nagiosgoodarray, nagiosbadarray, nagiosgooddisk, nagiosbaddisk)
+        )
 else:
     if bad:
-        print '\nThere is at least one disk/array in a NOT OPTIMAL state.'
+        print "\nThere is at least one disk/array in a NOT OPTIMAL state."
         print '\nUse "arcconf GETCONFIG [1-9]" to get details.'
         sys.exit(1)

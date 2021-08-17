@@ -5,46 +5,50 @@ import re
 import sys
 
 if len(sys.argv) > 2:
-    print 'Usage: megaide-status [-d]'
+    print "Usage: megaide-status [-d]"
     sys.exit(1)
 
 printarray = True
 printcontroller = True
 if len(sys.argv) > 1:
-    if sys.argv[1] == '-d':
+    if sys.argv[1] == "-d":
         printarray = False
         printcontroller = False
     else:
-        print 'Usage: megaide-status [-d]'
+        print "Usage: megaide-status [-d]"
         sys.exit(1)
 
+
 def returnControllerNumber():
-    for dir in os.listdir('/proc/megaide/'):
+    for dir in os.listdir("/proc/megaide/"):
         # We don't really care about how many entries are
-	# First is 0, last one is number
-        number=dir
+        # First is 0, last one is number
+        number = dir
     return int(number)
+
 
 def returnArrayNumber(controllerid):
     list()
-    for array in os.listdir('/proc/megaide/'+str(controllerid)+'/logicaldrives/'):
-        absopath='/proc/megaide/'+str(controllerid)+'/logicaldrives/'+array
-	if os.system('grep -q "This logical drive is not present" '+absopath):
-            return int(array.strip('_info').strip('log_drv_'))
+    for array in os.listdir("/proc/megaide/" + str(controllerid) + "/logicaldrives/"):
+        absopath = "/proc/megaide/" + str(controllerid) + "/logicaldrives/" + array
+        if os.system('grep -q "This logical drive is not present" ' + absopath):
+            return int(array.strip("_info").strip("log_drv_"))
 
-def returnArrayInfo(controllerid,arrayid):
-    id = 'c'+str(controllerid)+'u'+str(arrayid)
-    f = open('/proc/megaide/'+str(controllerid)+'/logicaldrives/'+'log_drv_'+str(arrayid)+'_info')
+
+def returnArrayInfo(controllerid, arrayid):
+    id = "c" + str(controllerid) + "u" + str(arrayid)
+    f = open("/proc/megaide/" + str(controllerid) + "/logicaldrives/" + "log_drv_" + str(arrayid) + "_info")
     for line in f:
-        if re.match(r'^RAID Level :.*$',line.strip()):
-            type = 'RAID'+line.split('Status')[0].strip().split()[4]
-        if re.match(r'^Sectors :.*$',line.strip()):
-            size = line.split('Stripe Size')[0].split(':')[1].strip()
-	    size = str(int(round(float(size) * 512 / 1000 / 1000 / 1000)))+'G'
-        if re.match(r'^.*Status :.*$',line.strip()):
-            state = line.split('Status')[1].split(':')[1].strip()
+        if re.match(r"^RAID Level :.*$", line.strip()):
+            type = "RAID" + line.split("Status")[0].strip().split()[4]
+        if re.match(r"^Sectors :.*$", line.strip()):
+            size = line.split("Stripe Size")[0].split(":")[1].strip()
+            size = str(int(round(float(size) * 512 / 1000 / 1000 / 1000))) + "G"
+        if re.match(r"^.*Status :.*$", line.strip()):
+            state = line.split("Status")[1].split(":")[1].strip()
     f.close()
-    return [id,type,size,state]
+    return [id, type, size, state]
+
 
 def returnDiskInfo():
     # Megaide module report all available port, even there's no disk on it
@@ -55,27 +59,28 @@ def returnDiskInfo():
     # c0u0d0
     # c0u0d2
     # If logical drive 0 uses disk 0 and disk 2 (chan0 disk0, chan1 disk 0)
-    f = open('/etc/megaide-status.conf')
+    f = open("/etc/megaide-status.conf")
     table = []
     for line in f:
-        if re.match('^c[0-9]+u[0-9]+p[0-9]+$',line.strip()):
+        if re.match("^c[0-9]+u[0-9]+p[0-9]+$", line.strip()):
             # Valid disk entry
-            controllerid=line.split('u')[0].strip().strip('c')
-            diskid=line.split('p')[1].strip()
-	    id=line.strip()
-            f2 = open('/proc/megaide/'+controllerid+'/physicaldrives/phy_drv_'+diskid+'_info')
+            controllerid = line.split("u")[0].strip().strip("c")
+            diskid = line.split("p")[1].strip()
+            id = line.strip()
+            f2 = open("/proc/megaide/" + controllerid + "/physicaldrives/phy_drv_" + diskid + "_info")
             for line in f2:
-                if re.match('^Model No :.*$',line.strip()):
-                    model=line.split(':')[1].strip()
-                if re.match('^Status :.*$',line.strip()):
-                    state=line.split()[2].strip()
-                if re.match('^Drive is Not Present.*$',line.strip()):
-		    model='Unknown'
-                    state='OFFLINE'
-	    f2.close()
+                if re.match("^Model No :.*$", line.strip()):
+                    model = line.split(":")[1].strip()
+                if re.match("^Status :.*$", line.strip()):
+                    state = line.split()[2].strip()
+                if re.match("^Drive is Not Present.*$", line.strip()):
+                    model = "Unknown"
+                    state = "OFFLINE"
+            f2.close()
             table.append([id, state, model])
     f.close()
     return table
+
 
 controllernumber = returnControllerNumber()
 
@@ -83,32 +88,32 @@ bad = False
 
 if printarray:
     controllerid = 0
-    print '-- Arrays informations --'
-    print '-- ID | Type | Size | Status'
+    print "-- Arrays informations --"
+    print "-- ID | Type | Size | Status"
     while controllerid <= controllernumber:
         arrayid = 0
-    	arraynumber = returnArrayNumber(controllerid)
+        arraynumber = returnArrayNumber(controllerid)
         while arrayid <= arraynumber:
-            arrayinfo = returnArrayInfo(controllerid,arrayid)
-	    print arrayinfo[0]+' | '+arrayinfo[1]+' | '+arrayinfo[2]+' | '+arrayinfo[3]
-	    arrayid += 1
-            if not arrayinfo[3] == 'ONLINE':
-                bad=True
+            arrayinfo = returnArrayInfo(controllerid, arrayid)
+            print arrayinfo[0] + " | " + arrayinfo[1] + " | " + arrayinfo[2] + " | " + arrayinfo[3]
+            arrayid += 1
+            if not arrayinfo[3] == "ONLINE":
+                bad = True
         controllerid += 1
-    print ''
+    print ""
 
-print '-- Disks informations'
-print '-- ID | Model | Status'
+print "-- Disks informations"
+print "-- ID | Model | Status"
 
 controllerid = 0
 while controllerid <= controllernumber:
     diskinfo = returnDiskInfo()
     for disk in diskinfo:
-        print disk[0]+' | '+disk[2]+' | '+disk[1]
-        if not disk[1] == 'ONLINE':
-            bad=True
+        print disk[0] + " | " + disk[2] + " | " + disk[1]
+        if not disk[1] == "ONLINE":
+            bad = True
     controllerid += 1
 
 if bad:
-    print '\nThere is at least one disk/array in a NOT OPTIMAL state.'
+    print "\nThere is at least one disk/array in a NOT OPTIMAL state."
     sys.exit(1)

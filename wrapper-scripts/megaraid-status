@@ -7,99 +7,102 @@ import sys
 binarypath = "/usr/sbin/megactl"
 
 if len(sys.argv) > 2:
-    print 'Usage: megaraid-status [-d]'
+    print "Usage: megaraid-status [-d]"
     sys.exit(1)
 
 printarray = True
 if len(sys.argv) > 1:
-    if sys.argv[1] == '-d':
+    if sys.argv[1] == "-d":
         printarray = False
     else:
-        print 'Usage: megaraid-status [-d]'
+        print "Usage: megaraid-status [-d]"
         sys.exit(1)
 
 # Check binary exists (and +x), if not print an error message
 if os.path.exists(binarypath) and os.access(binarypath, os.X_OK):
-	pass
+    pass
 else:
-	sys.exit(3)
+    sys.exit(3)
 
 # Get command output
 def getOutput(cmd):
     output = os.popen(cmd)
     lines = []
     for line in output:
-        if not re.match(r'^$',line.strip()):
+        if not re.match(r"^$", line.strip()):
             lines.append(line.strip())
     return lines
-    
+
+
 def returnDiskList(output):
     lines = []
     for line in output:
-        if re.match(r'^[a-z][0-9]+[a-z][0-9\*]+[a-z][0-9]+\s.*$',line.strip()):
+        if re.match(r"^[a-z][0-9]+[a-z][0-9\*]+[a-z][0-9]+\s.*$", line.strip()):
             list = line.split()
             # Let's hack... Some disk may report smart error after status
             # Get theses errors, join them into one list item and place it
             # before status
             errindex = False
             try:
-                errindex = list.index('errs:')
+                errindex = list.index("errs:")
             except ValueError:
                 pass
             if errindex:
-                list.insert(errindex-1, ' '.join(list[errindex:]))
-                list = list[:errindex+1]
+                list.insert(errindex - 1, " ".join(list[errindex:]))
+                list = list[: errindex + 1]
             lines.append(list)
     if fake_failure:
-        lines[0][-1] = 'BAD'
+        lines[0][-1] = "BAD"
     return lines
+
 
 def returnArrayList(output):
     lines = []
     for line in output:
-        if re.match(r'^[a-z][0-9]+[a-z][0-9]+\s.*$',line.strip()):
+        if re.match(r"^[a-z][0-9]+[a-z][0-9]+\s.*$", line.strip()):
             lines.append(line.split())
     if fake_failure:
-        lines[0][-1] = 'DEGRADED'
+        lines[0][-1] = "DEGRADED"
     return lines
+
 
 # A way to force a fake failure
 fake_failure = False
-if os.path.exists('/root/fake_megaraid_failure'):
+if os.path.exists("/root/fake_megaraid_failure"):
     fake_failure = True
 
-cmd = binarypath+' -v'
+cmd = binarypath + " -v"
 output = getOutput(cmd)
 disklist = returnDiskList(output)
 arraylist = returnArrayList(output)
 
 if printarray:
-    print '-- Arrays informations --'
-    print '-- ID | Type | Size | Status'
+    print "-- Arrays informations --"
+    print "-- ID | Type | Size | Status"
     for array in arraylist:
-        print array[0]+' | '+array[2]+' '+array[3]+' | '+array[1]+' | '+array[-1]
-    print ''
+        print array[0] + " | " + array[2] + " " + array[3] + " | " + array[1] + " | " + array[-1]
+    print ""
 
-print '-- Disks informations'
-print '-- ID | Model | Status | Warnings'
+print "-- Disks informations"
+print "-- ID | Model | Status | Warnings"
 for disk in disklist:
     # Check if there's some smart non critical warnings
-    if re.match(r'^errs:.*$', disk[-2]):
+    if re.match(r"^errs:.*$", disk[-2]):
         # Some disk may have vendor or model containing spaces
-        print disk[0]+' | '+' '.join(disk[1:-3])+' | '+disk[-1]+' | '+disk[-2]
+        print disk[0] + " | " + " ".join(disk[1:-3]) + " | " + disk[-1] + " | " + disk[-2]
     else:
-        print disk[0]+' | '+' '.join(disk[1:-2])+' | '+disk[-1]
+        print disk[0] + " | " + " ".join(disk[1:-2]) + " | " + disk[-1]
 
 # Check if there's a bad disk
 bad = False
 for array in arraylist:
-    if not array[-1] == 'optimal':
+    if not array[-1] == "optimal":
         bad = True
 
 for disk in disklist:
-    if disk[-1] not in [ 'online', 'hotspare', 'ready' ]:
+    if disk[-1] not in ["online", "hotspare", "ready"]:
         bad = True
 
 if bad:
-    print '\nThere is at least one disk/array in a NOT OPTIMAL state.'
+    print "\nThere is at least one disk/array in a NOT OPTIMAL state."
     sys.exit(1)

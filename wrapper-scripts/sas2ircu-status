@@ -6,174 +6,186 @@ import sys
 
 binarypath = "/usr/sbin/sas2ircu"
 if not os.path.isfile(binarypath):
-  print 'sas2ircu is not available in expected location: {}'.format(binarypath)
-  sys.exit(1)
-
-if len(sys.argv) > 2:
-  print 'Usage: sas2ircu-status [--nagios]'
-  sys.exit(1)
-
-nagiosmode=False
-nagiosoutput=''
-nagiosgoodarray=0
-nagiosbadarray=0
-nagiosgooddisk=0
-nagiosbaddisk=0
-
-if len(sys.argv) > 1:
-  if sys.argv[1] == '--nagios':
-    nagiosmode=True
-  else:
-    print 'Usage: sas2ircu-status [--nagios]'
+    print "sas2ircu is not available in expected location: {}".format(binarypath)
     sys.exit(1)
 
-bad=False
+if len(sys.argv) > 2:
+    print "Usage: sas2ircu-status [--nagios]"
+    sys.exit(1)
+
+nagiosmode = False
+nagiosoutput = ""
+nagiosgoodarray = 0
+nagiosbadarray = 0
+nagiosgooddisk = 0
+nagiosbaddisk = 0
+
+if len(sys.argv) > 1:
+    if sys.argv[1] == "--nagios":
+        nagiosmode = True
+    else:
+        print "Usage: sas2ircu-status [--nagios]"
+        sys.exit(1)
+
+bad = False
 
 # Get command output
 def getOutput(cmd):
-  output=os.popen(cmd+' 2>/dev/null')
-  lines=[]
-  for line in output:
-    if not re.match(r'^$',line.strip()):
-      lines.append(line.strip())
-  return lines
+    output = os.popen(cmd + " 2>/dev/null")
+    lines = []
+    for line in output:
+        if not re.match(r"^$", line.strip()):
+            lines.append(line.strip())
+    return lines
+
 
 def getCtrlList():
-  cmd=binarypath+' LIST'
-  res=getOutput(cmd)
-  list = []
-  for line in res:
-    if re.match('^[0-9]+.*$',line):
-      ctrlnmbr,ctrlname=int(line.split()[0]),line.split()[1]
-      # Check if it's a RAID controller and a volume exists
-      cmd=binarypath+' '+str(ctrlnmbr)+' DISPLAY'
-      res=getOutput(cmd)
-      raid=False
-      validarray=False
-      for line in res:
-        if re.match('^RAID Support\s+:\s+Yes$',line):
-          raid=True
-        if re.match('^IR volume [0-9]+.*$',line):
-          validarray=True
-      if raid and validarray:
-        list.append([ctrlnmbr,ctrlname])
-  # ie: [['0', 'SAS2008']]
-  return list
+    cmd = binarypath + " LIST"
+    res = getOutput(cmd)
+    list = []
+    for line in res:
+        if re.match("^[0-9]+.*$", line):
+            ctrlnmbr, ctrlname = int(line.split()[0]), line.split()[1]
+            # Check if it's a RAID controller and a volume exists
+            cmd = binarypath + " " + str(ctrlnmbr) + " DISPLAY"
+            res = getOutput(cmd)
+            raid = False
+            validarray = False
+            for line in res:
+                if re.match("^RAID Support\s+:\s+Yes$", line):
+                    raid = True
+                if re.match("^IR volume [0-9]+.*$", line):
+                    validarray = True
+            if raid and validarray:
+                list.append([ctrlnmbr, ctrlname])
+    # ie: [['0', 'SAS2008']]
+    return list
+
 
 def getArrayList(ctrlnmbr):
-  cmd=binarypath+' '+str(ctrlnmbr)+' DISPLAY'
-  res=getOutput(cmd)
-  list=[]
-  disklist=[]
-  arrayid=-1
-  arraystatus=''
-  raidlevel=''
-  size=''
-  for line in res:
-    if re.match('^IR volume [0-9]+.*$',line):
-      if arrayid == -1:
-        arrayid=arrayid+1
-      else:
-        list.append([arrayid,raidlevel,size,arraystatus,disklist])
-        arrayid=arrayid+1
-        disklist=[]
-    if re.match('Status of volume.*$',line):
-      arraystatus=line.split(':')[1].strip()
-    if re.match('RAID level.*$',line):
-      raidlevel=line.split(':')[1].strip()
-    if re.match('Size \(in MB\)\s+.*$',line):
-      size=line.split(':')[1].strip()
-      size=str(int(round((float(size) / 1000))))+'G'
-    if re.match('^PHY\[[0-9]+\] Enclosure#/Slot#.*$',line):
-      disksid=':'.join(line.split(':')[1:]).strip()
-      disksid=disksid.split(':')
-      disklist.append(disksid)
-  list.append([arrayid,raidlevel,size,arraystatus,disklist])
-  # ie: [0, 'Okay (OKY)', 'RAID1', '1800G', [['1', '0'], ['1', '1']]]
-  return list
+    cmd = binarypath + " " + str(ctrlnmbr) + " DISPLAY"
+    res = getOutput(cmd)
+    list = []
+    disklist = []
+    arrayid = -1
+    arraystatus = ""
+    raidlevel = ""
+    size = ""
+    for line in res:
+        if re.match("^IR volume [0-9]+.*$", line):
+            if arrayid == -1:
+                arrayid = arrayid + 1
+            else:
+                list.append([arrayid, raidlevel, size, arraystatus, disklist])
+                arrayid = arrayid + 1
+                disklist = []
+        if re.match("Status of volume.*$", line):
+            arraystatus = line.split(":")[1].strip()
+        if re.match("RAID level.*$", line):
+            raidlevel = line.split(":")[1].strip()
+        if re.match("Size \(in MB\)\s+.*$", line):
+            size = line.split(":")[1].strip()
+            size = str(int(round((float(size) / 1000)))) + "G"
+        if re.match("^PHY\[[0-9]+\] Enclosure#/Slot#.*$", line):
+            disksid = ":".join(line.split(":")[1:]).strip()
+            disksid = disksid.split(":")
+            disklist.append(disksid)
+    list.append([arrayid, raidlevel, size, arraystatus, disklist])
+    # ie: [0, 'Okay (OKY)', 'RAID1', '1800G', [['1', '0'], ['1', '1']]]
+    return list
+
 
 def getDiskList(ctrlnmbr):
-  cmd=binarypath+' '+str(ctrlnmbr)+' DISPLAY'
-  res=getOutput(cmd)
-  list=[]
-  diskid=-1
-  diskstatus=''
-  diskmodel=''
-  diskserial=''
-  enclid=''
-  slotid=''
-  realid=['','']
-  for line in res:
-    if re.match('^Device is a Hard disk.*$',line) or re.match('^Device is a Enclosure services device.*$',line) or re.match('^Device is a unknown device.*$',line):
-      if diskid == -1:
-        diskid=diskid+1
-      else:
-        list.append([diskid,diskstatus,diskmodel,diskserial,realid])
-        diskid=diskid+1
-    if re.match('Enclosure #.*$',line):
-      enclid=line.split(':')[1].strip()
-    if re.match('Slot #.*$',line):
-      slotid=line.split(':')[1].strip()
-      realid=[enclid,slotid]
-    if re.match('^State.*$',line):
-      diskstatus=line.split(':')[1].strip()
-    if re.match('^Model Number.*$',line):
-      diskmodel=line.split(':')[1].strip()
-    if re.match('^Serial No.*$',line):
-      diskserial=line.split(':')[1].strip()
-  # ie: [[0, 'Optimal (OPT)', 'Hitachi HUA72202', 'JK1151YAHUYAZZ', ['1', '0']], [1, 'Optimal (OPT)', 'Hitachi HUA72202', 'JK1151YAHUW1DZ', ['1', '1']]]
-  list.append([diskid,diskstatus,diskmodel,diskserial,realid])
-  return list
+    cmd = binarypath + " " + str(ctrlnmbr) + " DISPLAY"
+    res = getOutput(cmd)
+    list = []
+    diskid = -1
+    diskstatus = ""
+    diskmodel = ""
+    diskserial = ""
+    enclid = ""
+    slotid = ""
+    realid = ["", ""]
+    for line in res:
+        if (
+            re.match("^Device is a Hard disk.*$", line)
+            or re.match("^Device is a Enclosure services device.*$", line)
+            or re.match("^Device is a unknown device.*$", line)
+        ):
+            if diskid == -1:
+                diskid = diskid + 1
+            else:
+                list.append([diskid, diskstatus, diskmodel, diskserial, realid])
+                diskid = diskid + 1
+        if re.match("Enclosure #.*$", line):
+            enclid = line.split(":")[1].strip()
+        if re.match("Slot #.*$", line):
+            slotid = line.split(":")[1].strip()
+            realid = [enclid, slotid]
+        if re.match("^State.*$", line):
+            diskstatus = line.split(":")[1].strip()
+        if re.match("^Model Number.*$", line):
+            diskmodel = line.split(":")[1].strip()
+        if re.match("^Serial No.*$", line):
+            diskserial = line.split(":")[1].strip()
+    # ie: [[0, 'Optimal (OPT)', 'Hitachi HUA72202', 'JK1151YAHUYAZZ', ['1', '0']], [1, 'Optimal (OPT)', 'Hitachi HUA72202', 'JK1151YAHUW1DZ', ['1', '1']]]
+    list.append([diskid, diskstatus, diskmodel, diskserial, realid])
+    return list
 
-ctrls=getCtrlList()
-arraymap={}
+
+ctrls = getCtrlList()
+arraymap = {}
 if not nagiosmode:
-  print '-- Controller informations --'
-  print '-- ID | Model'
-  for ctrl in ctrls:
-    print 'c'+str(ctrl[0])+' | '+ctrl[1]
-  print ''
+    print "-- Controller informations --"
+    print "-- ID | Model"
+    for ctrl in ctrls:
+        print "c" + str(ctrl[0]) + " | " + ctrl[1]
+    print ""
 
 if not nagiosmode:
-  print '-- Arrays informations --'
-  print '-- ID | Type | Size | Status'
+    print "-- Arrays informations --"
+    print "-- ID | Type | Size | Status"
 for ctrl in ctrls:
-  for array in getArrayList(ctrl[0]):
-    arraymap[ctrl[0]]=array
-    if not array[3] in ['Okay (OKY)', 'Inactive, Okay (OKY)']:
-      bad=True
-      nagiosbadarray=nagiosbadarray+1
-    else:
-      nagiosgoodarray=nagiosgoodarray+1
-    if not nagiosmode:
-      print 'c'+str(ctrl[0])+'u'+str(array[0])+' | '+array[1]+' | '+array[2]+' | '+array[3]
+    for array in getArrayList(ctrl[0]):
+        arraymap[ctrl[0]] = array
+        if not array[3] in ["Okay (OKY)", "Inactive, Okay (OKY)"]:
+            bad = True
+            nagiosbadarray = nagiosbadarray + 1
+        else:
+            nagiosgoodarray = nagiosgoodarray + 1
+        if not nagiosmode:
+            print "c" + str(ctrl[0]) + "u" + str(array[0]) + " | " + array[1] + " | " + array[2] + " | " + array[3]
 if not nagiosmode:
-  print ''
+    print ""
 
 if not nagiosmode:
-  print '-- Disks informations'
-  print '-- ID | Model | Status'
+    print "-- Disks informations"
+    print "-- ID | Model | Status"
 for ctrl in ctrls:
-  for disk in getDiskList(ctrl[0]):
-    # Compare disk enc/slot to array's ones
-    for array in [arraymap.get(ctrl[0])]:
-      for arraydisk in array[4]: 
-        if arraydisk == disk[4]:
-          if not disk[1] == 'Optimal (OPT)':
-            bad=True
-            nagiosbaddisk=nagiosbaddisk+1
-          else:
-            nagiosgooddisk=nagiosgooddisk+1
-          if not nagiosmode:
-            print 'c'+str(ctrl[0])+'u'+str(array[0])+'p'+str(disk[0])+' | '+disk[2]+' ('+disk[3]+') | '+disk[1]
+    for disk in getDiskList(ctrl[0]):
+        # Compare disk enc/slot to array's ones
+        for array in [arraymap.get(ctrl[0])]:
+            for arraydisk in array[4]:
+                if arraydisk == disk[4]:
+                    if not disk[1] == "Optimal (OPT)":
+                        bad = True
+                        nagiosbaddisk = nagiosbaddisk + 1
+                    else:
+                        nagiosgooddisk = nagiosgooddisk + 1
+                    if not nagiosmode:
+                        print "c" + str(ctrl[0]) + "u" + str(array[0]) + "p" + str(disk[0]) + " | " + disk[2] + " (" + disk[3] + ") | " + disk[1]
 
 if nagiosmode:
-  if bad:
-    print 'RAID ERROR - Arrays: OK:'+str(nagiosgoodarray)+' Bad:'+str(nagiosbadarray)+' - Disks: OK:'+str(nagiosgooddisk)+' Bad:'+str(nagiosbaddisk)
-    sys.exit(2)
-  else:
-    print 'RAID OK - Arrays: OK:'+str(nagiosgoodarray)+' Bad:'+str(nagiosbadarray)+' - Disks: OK:'+str(nagiosgooddisk)+' Bad:'+str(nagiosbaddisk)
+    if bad:
+        print "RAID ERROR - Arrays: OK:" + str(nagiosgoodarray) + " Bad:" + str(nagiosbadarray) + " - Disks: OK:" + str(nagiosgooddisk) + " Bad:" + str(
+            nagiosbaddisk
+        )
+        sys.exit(2)
+    else:
+        print "RAID OK - Arrays: OK:" + str(nagiosgoodarray) + " Bad:" + str(nagiosbadarray) + " - Disks: OK:" + str(nagiosgooddisk) + " Bad:" + str(
+            nagiosbaddisk
+        )
 else:
-  if bad:
-    print '\nThere is at least one disk/array in a NOT OPTIMAL state.'
-    sys.exit(1)
+    if bad:
+        print "\nThere is at least one disk/array in a NOT OPTIMAL state."
+        sys.exit(1)
