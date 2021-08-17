@@ -9,7 +9,7 @@ PKG_VERSION  := $(shell dpkg-parsechangelog | grep -E '^Version:' | cut -d' ' -f
 DIST_NAME    := $(shell lsb_release -si)
 DIST_RELEASE := $(shell lsb_release -sc)
 DIST_VERSION := $(shell lsb_release -sr)
-PKG_VERSION_TAG := $(PKG_VERSION)+$(DIST_NAME).$(DIST_RELEASE).$(DIST_VERSION)
+PKG_VERSION_TAG := $(PKG_VERSION)+$(DIST_NAME).$(DIST_VERSION).$(DIST_RELEASE)
 SUBSTVARS_BINARY_VERSION := -Vbinary:Version="$(PKG_VERSION_TAG)"
 SUBSTVARS_SOURCE_VERSION := -Vsource:Version="$(PKG_VERSION_TAG)"
 
