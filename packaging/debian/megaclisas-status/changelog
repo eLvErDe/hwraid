@@ -1,3 +1,12 @@
+megaclisas-status (0.18) unstable; urgency=medium
+
+  * Better handling of Seagate drives serial numbers.
+  * Move to Python3 to support newer distributions.
+  * Packaging is now able to detect default interpreter and use it.
+  * Change distribution tag in version to ease dist upgrades.
+
+ -- Adam Cecile <acecile@le-vert.net>  Tue, 17 Aug 2021 09:56:33 +0200
+
 megaclisas-status (0.17) unstable; urgency=medium
 
   * CRITICAL: Output text was changed, initscript could not detect broken
