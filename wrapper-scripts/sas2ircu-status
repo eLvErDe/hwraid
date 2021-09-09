@@ -29,6 +29,16 @@ if len(sys.argv) > 1:
 
 bad = False
 
+# We need root access to query
+if __name__ == '__main__':
+	try:
+		root_or_admin = os.geteuid() == 0
+	except AttributeError:
+		root_or_admin = ctypes.windll.shell32.IsUserAnAdmin() !=0
+	if not root_or_admin:
+		print '# This script requires Administrator privileges'
+		sys.exit(5)
+
 # Get command output
 def getOutput(cmd):
     output = os.popen(cmd + " 2>/dev/null")
