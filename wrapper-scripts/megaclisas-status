@@ -1,14 +1,16 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 # $Id: megaclisas-status,v 1.78 2018/10/01 03:52:57 root Exp root $
 #
 # Written by Adam Cecile <gandalf@NOSPAM.le-vert.net>
 # Modified by Vincent S. Cojot <vincent@NOSPAM.cojot.name>
+# Added influxdb output by Miguel Erill <miguel@NOSPAM.doymer.com>
 #
 
 import os
 import re
 import sys
 import pdb
+import time
 import inspect
 import argparse
 
@@ -24,6 +26,10 @@ nagiosgoodarray = 0
 nagiosbadarray = 0
 nagiosgooddisk = 0
 nagiosbaddisk = 0
+
+# Non-Influx Mode defaults
+influxmode = False
+printdisk  = True
 
 # Sane defaults
 printarray = True
@@ -51,13 +57,21 @@ if __name__ == "__main__":
     # deal with command line options
     parser = argparse.ArgumentParser()
     parser.add_argument("--nagios", help="enable nagios support", action="store_true")
+    parser.add_argument("--influxdb", help="enable influxdb support", action="store_true")
     parser.add_argument("--debug", help="enable debugging output", action="store_true")
     parser.add_argument("--notemp", help="disable temperature reporting", action="store_true")
+    parser.add_argument("--nocontroller", help="omit controller info", action="store_false")
+    parser.add_argument("--noarray", help="omit array info", action="store_false")
+    parser.add_argument("--nodisk", help="omit disks info", action="store_false")
 
     args = parser.parse_args()
     nagiosmode = args.nagios
+    influxmode = args.influxdb
     debugmode = args.debug
     notempmode = args.notemp
+    printcontroller = args.nocontroller
+    printarray      = args.noarray
+    printdisk       = args.nodisk
 
     try:
         root_or_admin = os.geteuid() == 0
@@ -117,6 +131,8 @@ if megaclipath != None:
     else:
         if nagiosmode:
             print("UNKNOWN - Cannot find " + megaclipath)
+#        elif influxmode:
+#            print ("megacli_raid,host=" + serverName)
         else:
             print("Cannot find " + megaclipath + "in your PATH. Please install it.")
         sys.exit(3)
@@ -284,6 +300,15 @@ def returnArrayNumber(output):
     return i
 
 
+def returnVDInfo(output):
+    i = 0
+    for line in output:
+#        if re.match(r"^Virtual Drives.*:.*$", line.strip()):
+            i += 1
+#    return i
+    return ""
+
+
 def returnHBAPCIInfo(output):
     busprefix = "0000"
     busid = ""
@@ -304,7 +329,6 @@ def returnHBAPCIInfo(output):
     else:
         return None
 
-
 def returnHBAInfo(table, output, controllerid):
     controllermodel = "Unknown"
     controllerram = "Unknown"
@@ -315,13 +339,14 @@ def returnHBAInfo(table, output, controllerid):
     controllerrev = returnFirmwareVersion(output)
     controllertemp = returnROCTemp(output)
     controllerbbu = returnBBUPresence(output)
+#    controllerVD = returnVDInfo(output)
     if controllerbbu == "Present":
         cmd = "%s -AdpBbuCmd -GetBbuStatus -a%d -NoLog" % (megaclipath, controllerid)
         output = getOutput(cmd)
         controllerbbu = returnBBUStatus(output)
 
     if controllermodel != "Unknown":
-        table.append(["c" + str(controllerid), controllermodel, controllerram, str(controllertemp), str(controllerbbu), str("FW: " + controllerrev)])
+        table.append(["c" + str(controllerid), controllermodel, controllerram, str(controllertemp), str(controllerbbu), str(controllerrev)])
 
 
 def returnArrayInfo(output, controllerid, arrayid, arrayindex):
@@ -369,7 +394,7 @@ def returnArrayInfo(output, controllerid, arrayid, arrayindex):
         elif re.match(r"^State.*?:.*$", line.strip()):
             state = line.strip().split(":")[1].strip()
         elif re.match(r"^Strip Size.*?:.*$", line.strip()):
-            strpsz = line.strip().split(":")[1].strip()
+            strpsz = line.strip().split(":")[1].strip().replace(" ", "")
         elif re.match(r"^Number Of Drives per span.*:.*$", line.strip()):
             diskperspan = int(line.strip().split(":")[1].strip())
         elif re.match(r"^Current Cache Policy.*?:.*$", line.strip()):
@@ -472,8 +497,8 @@ def returnDiskInfo(output, controllerid):
                 lsidid = "Unknown"
         elif re.match(r"^Coerced Size: ", line.strip()):
             dsize = line.split(":")[1].strip()
-            dsize = re.sub(" \[.*\.*$", "", dsize)
-            dsize = re.sub("[0-9][0-9] GB", " Gb", dsize)
+            dsize = re.sub(" \[.*\.*$", "", dsize).replace(" ","")
+            dsize = re.sub("[0-9][0-9]GB", "Gb", dsize)
         elif re.match(r"^(CacheCade )?Virtual (Disk|Drive): [0-9]+.*$", line.strip()):
             arrayindex += 1
             arrayid = line.split("(")[0].split(":")[1].strip()
@@ -542,7 +567,7 @@ def returnDiskInfo(output, controllerid):
                     sarrayid = str(arrayid) + "s" + spanid
                 else:
                     sarrayid = str(arrayid)
-                table.append([sarrayid, str(diskid), mtype, model, dsize, fstate, speed, temp, enclid, slotid, lsidid])
+                table.append([sarrayid, str(diskid), mtype, model, dsize, fstate, speed, temp, enclid, slotid, lsidid, manuf, hwserial])
     return table
 
 
@@ -579,7 +604,7 @@ def returnUnconfDiskInfo(output, controllerid):
         elif re.match(r"^Coerced Size: ", line.strip()):
             dsize = line.split(":")[1].strip()
             dsize = re.sub(" \[.*\.*$", "", dsize)
-            dsize = re.sub("[0-9][0-9] GB", " Gb", dsize)
+            dsize = re.sub("[0-9][0-9]GB", "Gb", dsize)
         elif re.match(r"^Drive.s posi*tion: DiskGroup: [0-9]+,.*$", line.strip()):
             arrayid = line.split(",")[1].split(":")[1].strip()
         elif re.match(r"^Device Id: [0-9]+.*$", line.strip()):
@@ -648,7 +673,7 @@ bad = False
 # List available controller
 if printcontroller:
     if controllernumber:
-        if not nagiosmode:
+        if not (nagiosmode or influxmode):
             print("-- Controller information --")
 
         i = 0
@@ -663,23 +688,28 @@ if printcontroller:
         mlen = returnWdthFromArrayCol(hbainfo, 1)
 
         controllerid = 0
-        for hba in hbainfo:
+        if influxmode:
+            hbafmt = 'megaraid_controller,host='+os.uname().nodename+',model="%s",firmware="%s" memory=%s,temp=%s,bbu=%s,controller=%si %s'
+        elif not nagiosmode:
             hbafmt = str("%-5s | %-" + str(mlen) + "s | %-6s | %-4s | %-6s | %-12s ")
-            # Header
-            if i == 0:
-                if not nagiosmode:
+
+        for hba in hbainfo:
+            if influxmode:
+               print (hbafmt % ( hba[1], hba[5], hba[2], hba[3], hba[4], hba[0][1:], time.time_ns()))
+            elif not nagiosmode:
+                # Header
+                if i == 0:
                     print(hbafmt % ("-- ID", "H/W Model", "RAM", "Temp", "BBU", "Firmware"))
-            if not nagiosmode:
                 print(hbafmt % (hba[0], hba[1], hba[2], hba[3], hba[4], hba[5]))
             i += 1
-        if not nagiosmode:
+        if not (nagiosmode or influxmode):
             print("")
     else:
         print("No MegaRAID or PERC adapter detected on your system!")
         exit(1)
 
 if printarray:
-    if not nagiosmode:
+    if not (nagiosmode or influxmode):
         print("-- Array information --")
 
     controllerid = 0
@@ -764,12 +794,28 @@ if printarray:
             if clen < len("CacheCade"):
                 clen = len("CacheCade")
 
-            ldfmt = str("%-5s | %-" + str(rlen) + "s | %7s | %7s | %" + str(mlen) + "s | %8s | %8s | %8s | %-" + str(clen) + "s |%-12s ")
+            if influxmode:
+                ldfmt = "megaraid_array,host="+os.uname().nodename+',status=%s array_id="%s",raid_type="%s",size="%s",stripsz="%s",flags="%s",cache="%s",task="%s" %s'
+            elif not nagiosmode:
+                ldfmt = str("%-5s | %-" + str(rlen) + "s | %7s | %7s | %" + str(mlen) + "s | %8s | %8s | %8s | %-" + str(clen) + "s |%-12s ")
             # Header
             if i == 0:
-                if not nagiosmode:
+                if not (nagiosmode or influxmode):
                     print(ldfmt % ("-- ID", "Type", "Size", "Strpsz", "Flags", "DskCache", "Status", "OS Path", "CacheCade", "InProgress"))
-            if not nagiosmode:
+            if influxmode:
+                print (ldfmt
+                       %(
+                           arrayinfo[6], # Status
+                           arrayinfo[0], # ID
+                           arrayinfo[1], # Type
+                           arrayinfo[2], # Size
+                           arrayinfo[3], # StripSz
+                           arrayinfo[4].replace(',','+'), # Flags
+                           arrayinfo[5], # Cache
+                           arrayinfo[9], # Task InProgress
+                           time.time_ns())
+                      )
+            elif not nagiosmode:
                 print(
                     ldfmt
                     % (
@@ -794,206 +840,246 @@ if printarray:
             arrayindex += 1
             i += 1
         controllerid += 1
-    if not nagiosmode:
+    if not (nagiosmode or influxmode):
         print("")
 
-controllerid = 0
-while controllerid < controllernumber:
-    cmd = "%s -PDGetNum -a%d -NoLog" % (megaclipath, controllerid)
-    output = getOutput(cmd)
-    totaldrivenumber += returnTotalDriveNumber(output)
-    controllerid += 1
-
-if totaldrivenumber:
-    if not nagiosmode:
-        print("-- Disk information --")
-
-    i = 0
-    dlen = 0
-    mlen = 0
-    flen = 0
+#if printdisk:
+if True:
     controllerid = 0
     while controllerid < controllernumber:
-        arrayid = 0
-        cmd = "%s -LDInfo -lall -a%d -NoLog" % (megaclipath, controllerid)
+        cmd = "%s -PDGetNum -a%d -NoLog" % (megaclipath, controllerid)
         output = getOutput(cmd)
-        arraynumber = returnArrayNumber(output)
-        #### BUG: -LdPdInfo shows all PD on the adapter, not just for the LD we wanted..
-        #### while arrayid <= arraynumber:
-        cmd = "%s -LdPdInfo -a%d -NoLog" % (megaclipath, controllerid)
-        output = getOutput(cmd)
-        arraydisk = returnDiskInfo(output, controllerid)
-        for array in arraydisk:
-            diskname = str(controllerid) + array[8] + array[9]
-            dbgprint("Disk c" + diskname + " status : " + array[5])
-            if re.match("|".join(["^Online$", "^Online, Spun Up$", "^Rebuilding \(.*"]), array[5]):
-                if AddDisk(NagiosGoodDisks, diskname):
-                    nagiosgooddisk += 1
-            else:
-                bad = True
-                if AddDisk(NagiosBadDisks, diskname):
-                    nagiosbaddisk += 1
-
-        if returnWdthFromArrayCol(arraydisk, 0) > dlen:
-            dlen = returnWdthFromArrayCol(arraydisk, 0)
-        if returnWdthFromArrayCol(arraydisk, 3) > mlen:
-            mlen = returnWdthFromArrayCol(arraydisk, 3)
-        if returnWdthFromArrayCol(arraydisk, 5) > flen:
-            flen = returnWdthFromArrayCol(arraydisk, 5)
+        totaldrivenumber += returnTotalDriveNumber(output)
         controllerid += 1
 
-    controllerid = 0
-    while controllerid < controllernumber:
-        arrayid = 0
+    if totaldrivenumber:
+        if not (nagiosmode or influxmode) and printdisk:
+            print("-- Disk information --")
 
-        cmd = "%s -LDInfo -lall -a%d -NoLog" % (megaclipath, controllerid)
-        output = getOutput(cmd)
-        arraynumber = returnArrayNumber(output)
-        #### BUG: -LdPdInfo shows all PD on the adapter, not just for said LD..
-        #### while arrayid <= arraynumber:
+        i = 0
+        dlen = 0
+        mlen = 0
+        flen = 0
+        controllerid = 0
+        while controllerid < controllernumber:
+            arrayid = 0
+            cmd = "%s -LDInfo -lall -a%d -NoLog" % (megaclipath, controllerid)
+            output = getOutput(cmd)
+            arraynumber = returnArrayNumber(output)
+            #### BUG: -LdPdInfo shows all PD on the adapter, not just for the LD we wanted..
+            #### while arrayid <= arraynumber:
+            cmd = "%s -LdPdInfo -a%d -NoLog" % (megaclipath, controllerid)
+            output = getOutput(cmd)
+            arraydisk = returnDiskInfo(output, controllerid)
+            for array in arraydisk:
+                diskname = str(controllerid) + array[8] + array[9]
+                dbgprint("Disk c" + diskname + " status : " + array[5])
+                if re.match("|".join(["^Online$", "^Online, Spun Up$", "^Rebuilding \(.*"]), array[5]):
+                    if AddDisk(NagiosGoodDisks, diskname):
+                        nagiosgooddisk += 1
+                else:
+                    bad = True
+                    if AddDisk(NagiosBadDisks, diskname):
+                        nagiosbaddisk += 1
 
-        cmd = "%s -LdPdInfo -a%d -NoLog" % (megaclipath, controllerid)
-        output = getOutput(cmd)
-        arraydisk = returnDiskInfo(output, controllerid)
+            if returnWdthFromArrayCol(arraydisk, 0) > dlen:
+                dlen = returnWdthFromArrayCol(arraydisk, 0)
+            if returnWdthFromArrayCol(arraydisk, 3) > mlen:
+                mlen = returnWdthFromArrayCol(arraydisk, 3)
+            if returnWdthFromArrayCol(arraydisk, 5) > flen:
+                flen = returnWdthFromArrayCol(arraydisk, 5)
+            controllerid += 1
 
-        # Adjust print format with width computed above
-        drvfmt = "%-" + str(dlen + 6) + "s | %-4s | %-" + str(mlen) + "s | %-8s | %-" + str(flen) + "s | %-8s | %-4s | %-8s | %-8s"
-        for array in arraydisk:
-            # Header
-            if i == 0:
-                if not nagiosmode:
-                    print(drvfmt % ("-- ID", "Type", "Drive Model", "Size", "Status", "Speed", "Temp", "Slot ID", "LSI ID"))
-            # Drive information
-            if not nagiosmode:
-                print(
-                    drvfmt
-                    % (
-                        str("c" + str(controllerid) + "u" + array[0] + "p" + array[1]),  # c0p0
-                        array[2],  # HDD/SDD
-                        array[3],  # Model Information (Variable len)
-                        array[4],  # Size
-                        array[5],  # Status (Variable len)
-                        array[6],  # Speed
-                        array[7],  # Temp
-                        str("[" + array[8] + ":" + array[9] + "]"),  # Slot ID
-                        array[10],
+    if printdisk:
+        controllerid = 0
+        while controllerid < controllernumber:
+            arrayid = 0
+
+            cmd = "%s -LDInfo -lall -a%d -NoLog" % (megaclipath, controllerid)
+            output = getOutput(cmd)
+            arraynumber = returnArrayNumber(output)
+            #### BUG: -LdPdInfo shows all PD on the adapter, not just for said LD..
+            #### while arrayid <= arraynumber:
+
+            cmd = "%s -LdPdInfo -a%d -NoLog" % (megaclipath, controllerid)
+            output = getOutput(cmd)
+            arraydisk = returnDiskInfo(output, controllerid)
+
+            # Adjust print format with width computed above
+            if influxmode:
+                drvfmt = 'megaraid_disk,host='+os.uname().nodename+',status=%s,serial=%s,disk_id=%s model="%s",disk_type="%s",size="%s",speed="%s",temp=%si %s'
+            elif not nagiosmode:
+                drvfmt = "%-" + str(dlen + 6) + "s | %-4s | %-" + str(mlen) + "s | %-8s | %-" + str(flen) + "s | %-8s | %-4s | %-8s | %-8s"
+            for array in arraydisk:
+                # Header
+                if i == 0:
+                    if not (nagiosmode or influxmode):
+                        print(drvfmt % ("-- ID", "Type", "Drive Model", "Size", "Status", "Speed", "Temp", "Slot ID", "LSI ID"))
+                # Drive information
+                if influxmode:
+                    print(
+                        drvfmt
+                        % (
+                            array[5].replace(" ","").replace(",","+"), # Status
+                            array[11], # Serial
+                            str("c" + str(controllerid) + "u" + array[0] + "p" + array[1]),  # c0u0p0
+                            array[12], # Model
+                            array[2],  # HDD/SDD
+                            array[4],  # Size
+                            array[6],  # Speed
+                            array[7][:-1],  # Temp
+                            time.time_ns()
+                        )
                     )
-                )  # LSI ID
-            i = i + 1
-        controllerid += 1
-    if not nagiosmode:
-        print("")
-
-controllerid = 0
-totalconfdrivenumber = 0
-totalunconfdrivenumber = 0
-totaldrivenumber = 0
-while controllerid < controllernumber:
-    cmd = "%s -LdPdInfo -a%d -NoLog" % (megaclipath, controllerid)
-    output = getOutput(cmd)
-    totalconfdrivenumber += returnConfDriveNumber(controllerid, output)
-
-    cmd = "%s -PDGetNum -a%d -NoLog" % (megaclipath, controllerid)
-    output = getOutput(cmd)
-    totaldrivenumber += returnTotalDriveNumber(output)
-
-    cmd = "%s -PDList -a%d -NoLog" % (megaclipath, controllerid)
-    output = getOutput(cmd)
-    # Sometimes a drive will be reconfiguring without any info on that it is going through a rebuild process.
-    # This happens when expanding an R{5,6,50,60} array, for example. In that case, totaldrivenumber will still be
-    # greater than totalconfdrivenumber while returnUnConfDriveNumber(output) will be zero. The math below attempts to solve this.
-    totalunconfdrivenumber += max(returnUnConfDriveNumber(output), totaldrivenumber - totalconfdrivenumber)
-
-    controllerid += 1
-
-dbgprint("Total Drives in system : " + str(totaldrivenumber))
-dbgprint("Total Configured Drives : " + str(totalconfdrivenumber))
-dbgprint("Total Unconfigured Drives : " + str(totalunconfdrivenumber))
-
-if totalunconfdrivenumber:
-    if not nagiosmode:
-        print("-- Unconfigured Disk information --")
+                elif not nagiosmode:
+                    print(
+                        drvfmt
+                        % (
+                            str("c" + str(controllerid) + "u" + array[0] + "p" + array[1]),  # c0p0
+                            array[2],  # HDD/SDD
+                            array[3],  # Model Information (Variable len)
+                            array[4],  # Size
+                            array[5],  # Status (Variable len)
+                            array[6],  # Speed
+                            array[7],  # Temp
+                            str("[" + array[8] + ":" + array[9] + "]"),  # Slot ID
+                            array[10]  # LSI ID
+                        )
+                    )
+                i = i + 1
+            controllerid += 1
+        if not (nagiosmode or influxmode):
+            print("")
 
     controllerid = 0
-    pcipath = ""
+    totalconfdrivenumber = 0
+    totalunconfdrivenumber = 0
+    totaldrivenumber = 0
     while controllerid < controllernumber:
-        arrayid = 0
+        cmd = "%s -LdPdInfo -a%d -NoLog" % (megaclipath, controllerid)
+        output = getOutput(cmd)
+        totalconfdrivenumber += returnConfDriveNumber(controllerid, output)
 
-        cmd = "%s -LDInfo -lall -a%d -NoLog" % (megaclipath, controllerid)
+        cmd = "%s -PDGetNum -a%d -NoLog" % (megaclipath, controllerid)
         output = getOutput(cmd)
-        arraynumber = returnArrayNumber(output)
-        cmd = "%s -AdpGetPciInfo -a%d -NoLog" % (megaclipath, controllerid)
-        output = getOutput(cmd)
-        pcipath = returnHBAPCIInfo(output)
-        #### BUG: -LdPdInfo shows all PD on the adapter, not just for given LD..
-        #### while arrayid <= arraynumber:
+        totaldrivenumber += returnTotalDriveNumber(output)
 
         cmd = "%s -PDList -a%d -NoLog" % (megaclipath, controllerid)
         output = getOutput(cmd)
-        arraydisk = returnUnconfDiskInfo(output, controllerid)
-        for array in arraydisk:
-            dbgprint("Unconfed " + str(nagiosgooddisk) + "/" + str(nagiosbaddisk) + " Disk c" + str(controllerid) + "uXpY status : " + array[3])
-            if array[3] in [
-                "Online",
-                "Unconfigured(good), Spun Up",
-                "Unconfigured(good), Spun down",
-                "JBOD",
-                "Hotspare, Spun Up",
-                "Hotspare, Spun down",
-                "Online, Spun Up",
-            ]:
-                nagiosgooddisk += 1
-            else:
-                bad = True
-                nagiosbaddisk += 1
+        # Sometimes a drive will be reconfiguring without any info on that it is going through a rebuild process.
+        # This happens when expanding an R{5,6,50,60} array, for example. In that case, totaldrivenumber will still be
+        # greater than totalconfdrivenumber while returnUnConfDriveNumber(output) will be zero. The math below attempts to solve this.
+        totalunconfdrivenumber += max(returnUnConfDriveNumber(output), totaldrivenumber - totalconfdrivenumber)
 
-            # JBOD disks has a real device path and are not masked. Try to find a device name here, if possible.
-            if pcipath:
-                if array[3] in ["JBOD"]:
-                    diskprefix = str("/dev/disk/by-path/pci-" + pcipath + "-scsi-0:0:")
-                    dbgprint("Will look for DISKprefix : " + diskprefix)
-                    # RAID disks are usually with a channel of '2', JBOD disks with a channel of '0'
-                    diskpath = diskprefix + str(array[8]) + ":0"
-                    dbgprint("Looking for DISKpath : " + diskpath)
-                    if os.path.exists(diskpath):
-                        dbgprint("Found DISK match: " + diskpath + " -> " + array[9])
-                        array[9] = os.path.realpath(diskpath)
-                    else:
-                        dbgprint("DISK NOT present: " + diskpath)
-                        array[9] = "N/A"
-
-        mlen = returnWdthFromArrayCol(arraydisk, 1)
-        flen = returnWdthFromArrayCol(arraydisk, 3)
-
-        # Adjust print format with widths computed above
-        drvfmt = "%-7s | %-4s | %-" + str(mlen) + "s | %-8s | %-" + str(flen + 2) + "s | %-8s | %-4s | %-8s | %-6s | %-8s"
-        i = 0
-        for array in arraydisk:
-            # Header
-            if i == 0:
-                if not nagiosmode:
-                    print(drvfmt % ("-- ID", "Type", "Drive Model", "Size", "Status", "Speed", "Temp", "Slot ID", "LSI ID", "Path"))
-            # Drive information
-            if not nagiosmode:
-                print(
-                    drvfmt
-                    % (
-                        str("c" + str(controllerid) + "uXpY"),  # cXpY
-                        array[0],  # HDD/SDD
-                        array[1],  # Model Information (Variable len)
-                        array[2],  # Size
-                        array[3],  # Status (Variable len)
-                        array[4],  # Speed
-                        array[5],  # Temp
-                        str("[" + array[6] + ":" + array[7] + "]"),  # Slot ID
-                        array[8],  # LSI ID
-                        array[9],
-                    )
-                )  # OS path, if any
-            i += 1
         controllerid += 1
-    if not nagiosmode:
-        print("")
+
+    dbgprint("Total Drives in system : " + str(totaldrivenumber))
+    dbgprint("Total Configured Drives : " + str(totalconfdrivenumber))
+    dbgprint("Total Unconfigured Drives : " + str(totalunconfdrivenumber))
+
+    if totalunconfdrivenumber:
+        if not( nagiosmode or influxmode) and printdisk:
+            print("-- Unconfigured Disk information --")
+
+        controllerid = 0
+        pcipath = ""
+        while controllerid < controllernumber:
+            arrayid = 0
+
+            cmd = "%s -LDInfo -lall -a%d -NoLog" % (megaclipath, controllerid)
+            output = getOutput(cmd)
+            arraynumber = returnArrayNumber(output)
+            cmd = "%s -AdpGetPciInfo -a%d -NoLog" % (megaclipath, controllerid)
+            output = getOutput(cmd)
+            pcipath = returnHBAPCIInfo(output)
+            #### BUG: -LdPdInfo shows all PD on the adapter, not just for given LD..
+            #### while arrayid <= arraynumber:
+
+            cmd = "%s -PDList -a%d -NoLog" % (megaclipath, controllerid)
+            output = getOutput(cmd)
+            arraydisk = returnUnconfDiskInfo(output, controllerid)
+            for array in arraydisk:
+                dbgprint("Unconfed " + str(nagiosgooddisk) + "/" + str(nagiosbaddisk) + " Disk c" + str(controllerid) + "uXpY status : " + array[3])
+                if array[3] in [
+                    "Online",
+                    "Unconfigured(good), Spun Up",
+                    "Unconfigured(good), Spun down",
+                    "JBOD",
+                    "Hotspare, Spun Up",
+                    "Hotspare, Spun down",
+                    "Online, Spun Up",
+                ]:
+                    nagiosgooddisk += 1
+                else:
+                    bad = True
+                    nagiosbaddisk += 1
+
+                # JBOD disks has a real device path and are not masked. Try to find a device name here, if possible.
+                if pcipath:
+                    if array[3] in ["JBOD"]:
+                        diskprefix = str("/dev/disk/by-path/pci-" + pcipath + "-scsi-0:0:")
+                        dbgprint("Will look for DISKprefix : " + diskprefix)
+                        # RAID disks are usually with a channel of '2', JBOD disks with a channel of '0'
+                        diskpath = diskprefix + str(array[8]) + ":0"
+                        dbgprint("Looking for DISKpath : " + diskpath)
+                        if os.path.exists(diskpath):
+                            dbgprint("Found DISK match: " + diskpath + " -> " + array[9])
+                            array[9] = os.path.realpath(diskpath)
+                        else:
+                            dbgprint("DISK NOT present: " + diskpath)
+                            array[9] = "N/A"
+
+            mlen = returnWdthFromArrayCol(arraydisk, 1)
+            flen = returnWdthFromArrayCol(arraydisk, 3)
+
+            if printdisk:
+                # Adjust print format with widths computed above
+                if influxmode:
+                    drvfmt = 'megaraid_disk,host='+os.uname().nodename+',status=%s,serial=%s,disk_id=%s model="%s",disk_type="%s",size="%s",speed="%s",temp=%si %s'
+                else:
+                    drvfmt = "%-7s | %-4s | %-" + str(mlen) + "s | %-8s | %-" + str(flen + 2) + "s | %-8s | %-4s | %-8s | %-6s | %-8s"
+                i = 0
+                for array in arraydisk:
+                    # Header
+                    if i == 0:
+                        if not (nagiosmode or influxmode):
+                            print(drvfmt % ("-- ID", "Type", "Drive Model", "Size", "Status", "Speed", "Temp", "Slot ID", "LSI ID", "Path"))
+                    # Drive information
+                    if influxmode:
+                        print(
+                            drvfmt
+                            % (
+                                array[3],  # Status
+                                array[12], # Serial
+                                str("c" + str(controllerid) + "uXpY"),  # cXpY
+                                array[11], # Model
+                                array[0],  # HDD/SDD
+                                array[2],  # Size
+                                array[4],  # Speed
+                                array[5][:-1],  # Temp
+                                time.time_ns()
+                            )
+                    )
+                    elif not nagiosmode:
+                        print(
+                            drvfmt
+                            % (
+                                str("c" + str(controllerid) + "uXpY"),  # cXpY
+                                array[0],  # HDD/SDD
+                                array[1],  # Model Information (Variable len)
+                                array[2],  # Size
+                                array[3],  # Status (Variable len)
+                                array[4],  # Speed
+                                array[5],  # Temp
+                                str("[" + array[6] + ":" + array[7] + "]"),  # Slot ID
+                                array[8],  # LSI ID
+                                array[9],  # OS path, if any
+                            )
+                        )
+                    i += 1
+                controllerid += 1
+                if not (nagiosmode or influxmode):
+                    print("")
 
 if debugmode:
     dbgprint("Printing Outputs[][]")
@@ -1009,7 +1095,11 @@ if debugmode:
     dbgprint("Printing NagiosBadDisks[]")
     sys.stderr.write("\n".join("".join(map(str, myd)) for myd in NagiosBadDisks) + "\n")
 
-if nagiosmode:
+if influxmode:
+    if printarray:
+        finalfmt = "megaraid_global,host=" + os.uname().nodename + ",raid_global=%s raid_ok=%si,raid_bad=%si,disks_ok=%si,disks_bad=%si %s"
+        print(finalfmt %("ERROR" if bad else "OK", nagiosgoodarray, nagiosbadarray, nagiosgooddisk, nagiosbaddisk, time.time_ns()))
+elif nagiosmode:
     if bad:
         print(
             "RAID ERROR - Arrays: OK:"
@@ -1050,3 +1140,4 @@ else:
             + str(nagiosbaddisk)
         )
         sys.exit(1)
+        
