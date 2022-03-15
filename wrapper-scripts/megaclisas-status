@@ -638,6 +638,17 @@ def returnUnconfDiskInfo(output, controllerid):
                 table.append([mtype, model, dsize, fstate, speed, temp, enclid, slotid, diskid, ospath])
     return table
 
+def returnForeignDisks(controllerid):
+    cmd = "%s -CfgForeign -Dsply -a%d" % (megaclipath, controllerid)
+    foreignout = getOutput(cmd)
+    foreigndisks = []
+    for line in foreignout:
+        result = re.search(r"Slot Number: (.*)",line)
+        if result:
+            matches = result.groups()
+            foreigndisks.append(matches[0])
+
+    return foreigndisks
 
 cmd = "%s -adpCount -NoLog" % (megaclipath)
 output = getOutput(cmd)
@@ -917,6 +928,7 @@ if totalunconfdrivenumber:
     controllerid = 0
     pcipath = ""
     while controllerid < controllernumber:
+        foreigndisks = returnForeignDisks(controllerid)
         arrayid = 0
 
         cmd = "%s -LDInfo -lall -a%d -NoLog" % (megaclipath, controllerid)
@@ -946,6 +958,8 @@ if totalunconfdrivenumber:
             else:
                 bad = True
                 nagiosbaddisk += 1
+            if array[7] in foreigndisks:
+                array[3] = array[3] + " (Foreign)"
 
             # JBOD disks has a real device path and are not masked. Try to find a device name here, if possible.
             if pcipath:
