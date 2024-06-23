@@ -62,18 +62,18 @@ def returnDiskInfo():
     f = open("/etc/megaide-status.conf")
     table = []
     for line in f:
-        if re.match("^c[0-9]+u[0-9]+p[0-9]+$", line.strip()):
+        if re.match(r"^c[0-9]+u[0-9]+p[0-9]+$", line.strip()):
             # Valid disk entry
             controllerid = line.split("u")[0].strip().strip("c")
             diskid = line.split("p")[1].strip()
             id = line.strip()
             f2 = open("/proc/megaide/" + controllerid + "/physicaldrives/phy_drv_" + diskid + "_info")
             for line in f2:
-                if re.match("^Model No :.*$", line.strip()):
+                if re.match(r"^Model No :.*$", line.strip()):
                     model = line.split(":")[1].strip()
-                if re.match("^Status :.*$", line.strip()):
+                if re.match(r"^Status :.*$", line.strip()):
                     state = line.split()[2].strip()
-                if re.match("^Drive is Not Present.*$", line.strip()):
+                if re.match(r"^Drive is Not Present.*$", line.strip()):
                     model = "Unknown"
                     state = "OFFLINE"
             f2.close()

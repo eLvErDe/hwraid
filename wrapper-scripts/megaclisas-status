@@ -241,7 +241,7 @@ def returnROCTemp(output):
         for line in output:
             if re.match(r"^ROC temperature :.*$", line.strip()):
                 tmpstr = line.split(":")[1].strip()
-                ROCtemp = re.sub(" +.*$", "", tmpstr)
+                ROCtemp = re.sub(r" +.*$", "", tmpstr)
         if ROCtemp != "":
             return str(str(ROCtemp) + "C")
         else:
@@ -254,7 +254,7 @@ def returnBBUPresence(output):
     for line in output:
         if re.match(r"^BBU +:.*$", line.strip()):
             tmpstr = line.split(":")[1].strip()
-            BBU = re.sub(" +.*$", "", tmpstr)
+            BBU = re.sub(r" +.*$", "", tmpstr)
             break
     if BBU != "":
         return str(BBU)
@@ -268,7 +268,7 @@ def returnBBUStatus(output):
     for line in output:
         if re.match(r"^ *Battery Replacement required +:.*$", line.strip()):
             tmpstr = line.split(":")[1].strip()
-            BBUStatus = re.sub(" +.*$", "", tmpstr)
+            BBUStatus = re.sub(r" +.*$", "", tmpstr)
             break
     if BBUStatus == "Yes":
         return str("REPL")
@@ -374,23 +374,23 @@ def returnArrayInfo(output, controllerid, arrayid, arrayindex):
             diskperspan = int(line.strip().split(":")[1].strip())
         elif re.match(r"^Current Cache Policy.*?:.*$", line.strip()):
             props = line.strip().split(":")[1].strip()
-            if re.search("ReadAdaptive", props):
+            if re.search(r"ReadAdaptive", props):
                 properties += "ADRA"
-            if re.search("ReadAhead", props):
+            if re.search(r"ReadAhead", props):
                 properties += "RA"
-            if re.match("ReadAheadNone", props):
+            if re.match(r"ReadAheadNone", props):
                 properties += "NORA"
-            if re.search("WriteBack", props):
+            if re.search(r"WriteBack", props):
                 properties += ",WB"
-            if re.match("WriteThrough", props):
+            if re.match(r"WriteThrough", props):
                 properties += ",WT"
         elif re.match(r"^Disk Cache Policy.*?:.*$", line.strip()):
             props = line.strip().split(":")[1].strip()
-            if re.search("Disabled", props):
+            if re.search(r"Disabled", props):
                 dskcache = "Disabled"
-            if re.search("Disk.s Default", props):
+            if re.search(r"Disk.s Default", props):
                 dskcache = "Default"
-            if re.search("Enabled", props):
+            if re.search(r"Enabled", props):
                 dskcache = "Enabled"
         elif re.match(r"^Ongoing Progresses.*?:.*$", line.strip()):
             operationlinennumber = linenumber
@@ -458,7 +458,7 @@ def returnDiskInfo(output, controllerid):
     for line in output:
         if re.match(r"^Span: [0-9]+ - Number of PDs:", line.strip()):
             spanid = line.split(":")[1].strip()
-            spanid = re.sub(" - Number of PDs.*", "", spanid)
+            spanid = re.sub(r" - Number of PDs.*", "", spanid)
         elif re.match(r"Enclosure Device ID: .*$", line.strip()):
             # We match here early in the analysis so reset the vars if this is a new disk we're reading..
             oldenclid = enclid
@@ -472,8 +472,8 @@ def returnDiskInfo(output, controllerid):
                 lsidid = "Unknown"
         elif re.match(r"^Coerced Size: ", line.strip()):
             dsize = line.split(":")[1].strip()
-            dsize = re.sub(" \[.*\.*$", "", dsize)
-            dsize = re.sub("[0-9][0-9] GB", " Gb", dsize)
+            dsize = re.sub(r" \[.*\.*$", "", dsize)
+            dsize = re.sub(r"[0-9][0-9] GB", " Gb", dsize)
         elif re.match(r"^(CacheCade )?Virtual (Disk|Drive): [0-9]+.*$", line.strip()):
             arrayindex += 1
             arrayid = line.split("(")[0].split(":")[1].strip()
@@ -487,11 +487,11 @@ def returnDiskInfo(output, controllerid):
             slotid = line.split(":")[1].strip()
         elif re.match(r"Firmware state: .*$", line.strip()):
             fstate = line.split(":")[1].strip()
-            subfstate = re.sub("\(.*", "", fstate)
+            subfstate = re.sub(r"\(.*", "", fstate)
             dbgprint("Firmware State: " + str(fstate) + " " + str(subfstate))
         elif re.match(r"Inquiry Data: .*$", line.strip()):
             model = line.split(":")[1].strip()
-            model = re.sub(" +", " ", model)
+            model = re.sub(r" +", " ", model)
 
             # re-define our "sub-code"
             # our seagate drives have an ID string of
@@ -508,10 +508,10 @@ def returnDiskInfo(output, controllerid):
                 continue
 
             # Sub code
-            manuf = re.sub(" .*", "", model)
-            dtype = re.sub(manuf + " ", "", model)
-            dtype = re.sub(" .*", "", dtype)
-            hwserial = re.sub(".*" + dtype + " *", "", model)
+            manuf = re.sub(r" .*", "", model)
+            dtype = re.sub(manuf + r" ", "", model)
+            dtype = re.sub(r" .*", "", dtype)
+            hwserial = re.sub(r".*" + dtype + r" *", "", model)
         elif re.match(r"^Media Type: .*$", line.strip()):
             mtype = line.split(":")[1].strip()
             if mtype == "Hard Disk Device":
@@ -529,11 +529,11 @@ def returnDiskInfo(output, controllerid):
             else:
                 # Drive temp is amongst the last few lines matched, decide here if we add information to the table..
                 temp = line.split(":")[1].strip()
-                temp = re.sub(" \(.*\)", "", temp)
+                temp = re.sub(r" \(.*\)", "", temp)
             if model != "Unknown":
                 dbgprint("Disk Info: " + str(arrayid) + " " + str(diskid) + " " + str(oldenclid))
                 if subfstate == "Rebuild":
-                    cmd = "%s pdrbld -showprog -physdrv\[%s:%s\] -a%d -NoLog" % (megaclipath, enclid, slotid, controllerid)
+                    cmd = "%s pdrbld -showprog -physdrv\\[%s:%s\\] -a%d -NoLog" % (megaclipath, enclid, slotid, controllerid)
                     output = getOutput(cmd)
                     percent = returnRebuildProgress(output)
                     fstate = str("Rebuilding (%d%%)" % (percent))
@@ -578,8 +578,8 @@ def returnUnconfDiskInfo(output, controllerid):
 
         elif re.match(r"^Coerced Size: ", line.strip()):
             dsize = line.split(":")[1].strip()
-            dsize = re.sub(" \[.*\.*$", "", dsize)
-            dsize = re.sub("[0-9][0-9] GB", " Gb", dsize)
+            dsize = re.sub(r" \[.*\.*$", "", dsize)
+            dsize = re.sub(r"[0-9][0-9] GB", " Gb", dsize)
         elif re.match(r"^Drive.s posi*tion: DiskGroup: [0-9]+,.*$", line.strip()):
             arrayid = line.split(",")[1].split(":")[1].strip()
         elif re.match(r"^Device Id: [0-9]+.*$", line.strip()):
@@ -588,11 +588,11 @@ def returnUnconfDiskInfo(output, controllerid):
             slotid = line.split(":")[1].strip()
         elif re.match(r"Firmware state: .*$", line.strip()):
             fstate = line.split(":")[1].strip()
-            subfstate = re.sub("\(.*", "", fstate)
+            subfstate = re.sub(r"\(.*", "", fstate)
             dbgprint("Firmware State: " + str(fstate) + " " + str(subfstate))
         elif re.match(r"Inquiry Data: .*$", line.strip()):
             model = line.split(":")[1].strip()
-            model = re.sub(" +", " ", model)
+            model = re.sub(r" +", " ", model)
 
             # re-define our "sub-code"
             # our seagate drives have an ID string of
@@ -608,10 +608,10 @@ def returnUnconfDiskInfo(output, controllerid):
                     model = "{0} {1:>10} {2}".format(m.group(2), m.group(4), m.group(1))
                 continue
 
-            manuf = re.sub(" .*", "", model)
-            dtype = re.sub(manuf + " ", "", model)
-            dtype = re.sub(" .*", "", dtype)
-            hwserial = re.sub(".*" + dtype + " *", "", model)
+            manuf = re.sub(r" .*", "", model)
+            dtype = re.sub(manuf + r" ", "", model)
+            dtype = re.sub(r" .*", "", dtype)
+            hwserial = re.sub(r".*" + dtype + r" *", "", model)
         elif re.match(r"^Media Type: .*$", line.strip()):
             mtype = line.split(":")[1].strip()
             if mtype == "Hard Disk Device":
@@ -629,7 +629,7 @@ def returnUnconfDiskInfo(output, controllerid):
                 temp = "N/A"
             else:
                 temp = line.split(":")[1].strip()
-                temp = re.sub("\(.*\)", "", temp)
+                temp = re.sub(r"\(.*\)", "", temp)
             if arrayid == False:
                 if subfstate == "Unconfigured":
                     dbgprint("Unconfigured Disk: Arrayid: " + str(arrayid) + " DiskId: " + str(diskid) + " " + str(olddiskid) + " " + str(fstate))
@@ -826,7 +826,7 @@ if totaldrivenumber:
         for array in arraydisk:
             diskname = str(controllerid) + array[8] + array[9]
             dbgprint("Disk c" + diskname + " status : " + array[5])
-            if re.match("|".join(["^Online$", "^Online, Spun Up$", "^Rebuilding \(.*"]), array[5]):
+            if re.match(r"|".join([r"^Online$", r"^Online, Spun Up$", r"^Rebuilding \(.*"]), array[5]):
                 if AddDisk(NagiosGoodDisks, diskname):
                     nagiosgooddisk += 1
             else:

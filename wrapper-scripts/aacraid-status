@@ -107,7 +107,7 @@ def returnArrayInfo(output, ctrl_id="?"):
             # Cut on : and re-join everything except first part
             line = ":".join(line.split(":")[1:]).strip()
             # Extract everything between ()
-            device_state = re.search("\s+\((.*)\)\s+", line).group(1)
+            device_state = re.search(r"\s+\((.*)\)\s+", line).group(1)
             # Coma separated
             device_attrs = device_state.split(",")
             device_attrs = [x.strip() for x in device_attrs]
@@ -115,7 +115,7 @@ def returnArrayInfo(output, ctrl_id="?"):
             # Strip out from the list element not matching Xyz:12
             # Split on column: now we have and array of arrays like [['Controller', '1'], ['Connector', '1'], ['Device', '0']]
             # Casting to dict will turn Controller as key and 1 as value
-            device_attrs = dict([x.split(":") for x in device_attrs if re.match("\w+:\d+", x)])
+            device_attrs = dict([x.split(":") for x in device_attrs if re.match(r"\w+:\d+", x)])
 
             # Extract id for this device
             if "Controller" in device_attrs:
@@ -174,7 +174,7 @@ def returnDisksInfo(output, controllerid):
     for line in output:
         if re.match(r"^Reported Channel,Device(\(T:L\))?\s+: [0-9]+,[0-9]+(\([0-9]+:[0-9]+\))?$", line.strip()):
             diskid = re.split("\s:\s", line)[1].strip()
-            diskid = re.sub("\(.*\)", "", diskid)
+            diskid = re.sub(r"\(.*\)", "", diskid)
             diskid = str(controllerid) + "," + diskid
         if re.match(r"^State\s+:.*$", line.strip()):
             state = line.split(":")[1].strip()
@@ -290,8 +290,8 @@ if printarray:
             # Usually it should return either [0-9] or Simple_Volume but...
             # It can also return "6 Reed-Solomon" so we need to handle this too...
             # So let's match [0-9] followed by a space or EOL.
-            if re.match("^[0-9]+(\s|$)", arrayinfo[0]):
-                raidtype = re.sub("^", "RAID", arrayinfo[0])
+            if re.match(r"^[0-9]+(\s|$)", arrayinfo[0]):
+                raidtype = re.sub(r"^", "RAID", arrayinfo[0])
             else:
                 raidtype = arrayinfo[0]
             for tasks in tasksinfo:

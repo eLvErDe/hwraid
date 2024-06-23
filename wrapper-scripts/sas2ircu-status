@@ -44,7 +44,7 @@ def getCtrlList():
     res = getOutput(cmd)
     list = []
     for line in res:
-        if re.match("^[0-9]+.*$", line):
+        if re.match(r"^[0-9]+.*$", line):
             ctrlnmbr, ctrlname = int(line.split()[0]), line.split()[1]
             # Check if it's a RAID controller and a volume exists
             cmd = binarypath + " " + str(ctrlnmbr) + " DISPLAY"
@@ -52,9 +52,9 @@ def getCtrlList():
             raid = False
             validarray = False
             for line in res:
-                if re.match("^RAID Support\s+:\s+Yes$", line):
+                if re.match(r"^RAID Support\s+:\s+Yes$", line):
                     raid = True
-                if re.match("^IR volume [0-9]+.*$", line):
+                if re.match(r"^IR volume [0-9]+.*$", line):
                     validarray = True
             if raid and validarray:
                 list.append([ctrlnmbr, ctrlname])
@@ -72,21 +72,21 @@ def getArrayList(ctrlnmbr):
     raidlevel = ""
     size = ""
     for line in res:
-        if re.match("^IR volume [0-9]+.*$", line):
+        if re.match(r"^IR volume [0-9]+.*$", line):
             if arrayid == -1:
                 arrayid = arrayid + 1
             else:
                 list.append([arrayid, raidlevel, size, arraystatus, disklist])
                 arrayid = arrayid + 1
                 disklist = []
-        if re.match("Status of volume.*$", line):
+        if re.match(r"Status of volume.*$", line):
             arraystatus = line.split(":")[1].strip()
-        if re.match("RAID level.*$", line):
+        if re.match(r"RAID level.*$", line):
             raidlevel = line.split(":")[1].strip()
-        if re.match("Size \(in MB\)\s+.*$", line):
+        if re.match(r"Size \(in MB\)\s+.*$", line):
             size = line.split(":")[1].strip()
             size = str(int(round((float(size) / 1000)))) + "G"
-        if re.match("^PHY\[[0-9]+\] Enclosure#/Slot#.*$", line):
+        if re.match(r"^PHY\[[0-9]+\] Enclosure#/Slot#.*$", line):
             disksid = ":".join(line.split(":")[1:]).strip()
             disksid = disksid.split(":")
             disklist.append(disksid)
@@ -108,25 +108,25 @@ def getDiskList(ctrlnmbr):
     realid = ["", ""]
     for line in res:
         if (
-            re.match("^Device is a Hard disk.*$", line)
-            or re.match("^Device is a Enclosure services device.*$", line)
-            or re.match("^Device is a unknown device.*$", line)
+            re.match(r"^Device is a Hard disk.*$", line)
+            or re.match(r"^Device is a Enclosure services device.*$", line)
+            or re.match(r"^Device is a unknown device.*$", line)
         ):
             if diskid == -1:
                 diskid = diskid + 1
             else:
                 list.append([diskid, diskstatus, diskmodel, diskserial, realid])
                 diskid = diskid + 1
-        if re.match("Enclosure #.*$", line):
+        if re.match(r"Enclosure #.*$", line):
             enclid = line.split(":")[1].strip()
-        if re.match("Slot #.*$", line):
+        if re.match(r"Slot #.*$", line):
             slotid = line.split(":")[1].strip()
             realid = [enclid, slotid]
-        if re.match("^State.*$", line):
+        if re.match(r"^State.*$", line):
             diskstatus = line.split(":")[1].strip()
-        if re.match("^Model Number.*$", line):
+        if re.match(r"^Model Number.*$", line):
             diskmodel = line.split(":")[1].strip()
-        if re.match("^Serial No.*$", line):
+        if re.match(r"^Serial No.*$", line):
             diskserial = line.split(":")[1].strip()
     # ie: [[0, 'Optimal (OPT)', 'Hitachi HUA72202', 'JK1151YAHUYAZZ', ['1', '0']], [1, 'Optimal (OPT)', 'Hitachi HUA72202', 'JK1151YAHUW1DZ', ['1', '1']]]
     list.append([diskid, diskstatus, diskmodel, diskserial, realid])
